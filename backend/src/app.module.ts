@@ -1,23 +1,34 @@
-import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import * as cookieParser from 'cookie-parser';
-import * as bodyParser from 'body-parser';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import cors from 'cors';
-//Modules
+import { UserModule } from './apis/users/user.module';
+import { ConfigModule } from '@nestjs/config';
+import { MongooseModule } from '@nestjs/mongoose';
+import { AuthModule } from './auth/auth.module';
+import { JwtMiddleware } from './auth/JWT/jwt.decode';
+import * as bodyParser from 'body-parser';
+import { BlogModule } from './apis/blogs/blog.module';
+import { CourseModule } from './apis/Course/course.module';
 
 @Module({
-    imports: [],
-    controllers: [AppController],
-    providers: [AppService],
+  imports: [
+    UserModule,
+    BlogModule,
+    AuthModule,
+    CourseModule,
+    ConfigModule.forRoot({ envFilePath: '.env', isGlobal: true }),
+    MongooseModule.forRoot(process.env.MONGODB_URI),
+  ],
+  controllers: [AppController],
+  providers: [AppService],
 })
 export class AppModule implements NestModule {
-    configure(consumer: MiddlewareConsumer) {
-        consumer.apply(cookieParser()).forRoutes('*');
-        consumer
-
-            .apply(bodyParser.urlencoded({ extended: true }))
-            .forRoutes('*');
-        consumer.apply(bodyParser.json()).forRoutes('*');
-    }
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(cookieParser()).forRoutes('*');
+    consumer.apply(JwtMiddleware).forRoutes('*');
+    consumer.apply(bodyParser.urlencoded({ extended: true })).forRoutes('*');
+    consumer.apply(bodyParser.json()).forRoutes('*');
+  }
 }
+
