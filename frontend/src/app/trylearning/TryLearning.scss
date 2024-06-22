@@ -1,0 +1,114 @@
+.app-container {
+    display: flex;
+    height: 100vh;
+    flex-direction: row;
+    padding-bottom: 50px;
+
+
+    @media (max-width: 768px) {
+        flex-direction: column;
+
+    }
+
+    @media (min-width: 768px) and (max-width: 1024px) {
+        padding-top: 30px;
+    }
+}
+
+.sidebar {
+    width: 250px;
+    background: #fff;
+    transition: width 0.3s ease, transform 0.3s ease;
+    overflow: hidden;
+
+    &.collapsed {
+        width: 80px;
+    }
+
+    @media (max-width: 768px) {
+        display: none;
+    }
+
+    .toggle-btn {
+        margin: 16px 0;
+        height: 40px;
+    }
+}
+
+.content {
+    flex: 1;
+
+    .content-navigation {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        padding: 10px;
+        color: black;
+
+        a {
+            &:hover {
+                color: gray;
+                cursor: pointer;
+            }
+        }
+
+        .content-navigation-right {
+            text-align: right;
+        }
+    }
+
+    .content-items {
+        height: 600px;
+        width: 100%;
+
+        iframe {
+            height: 100%;
+            width: 100%;
+
+        }
+    }
+
+    .contetnt-sale {
+        background-repeat: no-repeat;
+        background-size: cover;
+        background-position: 50%;
+        color: #fff;
+        background-image: linear-gradient(-45deg, #ffab62, #f81757);
+        height: 40px;
+        text-align: center;
+
+        p {
+            position: relative;
+            z-index: 800;
+            padding: 5px;
+            line-height: 1.45;
+        }
+    }
+
+
+
+    @media (max-width: 768px) {
+        padding: 10px;
+        height: 400px;
+
+        .content-items {
+            height: 250px;
+            width: 100%;
+
+            iframe {
+                height: 100%;
+                width: 100%;
+            }
+        }
+    }
+}
+
+.menu-toggle-btn {
+    display: none;
+
+    @media (max-width: 768px) {
+        display: block;
+        margin: 16px auto 16px 0px;
+        width: max-content;
+        padding: auto;
+    }
+}
