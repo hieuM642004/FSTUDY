@@ -3,13 +3,12 @@
 import React from 'react';
 import { Button } from 'antd';
 
-interface PrimaryButtonProps {
+interface OutlineButtonProps {
     label: string;
     to?: string;
     size?: 'large' | 'middle' | 'small';
     className?: string;
     onClick?: () => void;
-    htmlType?: "button" | "reset" | "submit" | undefined 
 }
 const sizeClassMap = {
     large: ' py-4 px-4',
@@ -17,21 +16,20 @@ const sizeClassMap = {
     small: ' py-1 px-3',
 };
 
-const ButtonPrimary: React.FC<PrimaryButtonProps> = ({
+const ButtonOutline: React.FC<OutlineButtonProps> = ({
     label,
     to,
     size = 'middle',
-    className = '',
+    className = '' ,
     onClick,
-    htmlType 
 }) => {
-    let btnClass = `btn-primary font-semibold ${sizeClassMap[size]} ${className}`;
+    let btnClass = `btn-outline font-semibold ${sizeClassMap[size]} ${className}`;
 
-    return ( 
-        <Button className={btnClass} onClick={onClick} type="primary" href={to} htmlType={htmlType}>
+    return (
+        <Button className={btnClass} onClick={onClick} type="default" href={to}>
             {label}
         </Button>
     );
 };
 
-export default ButtonPrimary;
+export default ButtonOutline;
