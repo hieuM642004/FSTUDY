@@ -6,7 +6,8 @@
   --foreground-rgb: 0, 0, 0;
   --background-start-rgb: 214, 219, 220;
   --background-end-rgb: 255, 255, 255;
-  --button-primary: #35509a
+  --button-primary: #35509a ;
+  --button-outline:#71869d
 }
 
 @media (prefers-color-scheme: dark) {
@@ -25,6 +26,7 @@ body {
       rgb(var(--background-end-rgb))
     )
     rgb(var(--background-start-rgb)); */
+    background: #f8f9fa!important;
 }
 
 @layer utilities {
@@ -34,5 +36,11 @@ body {
 
   .btn-primary {
     background-color: var(--button-primary) !important;
+  }
+  
+  .btn-outline{
+    background-color: white !important;
+    border:  1px solid  var(--button-outline);
+    font-weight: 700;
   }
 }

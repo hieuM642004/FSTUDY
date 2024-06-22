@@ -11,17 +11,17 @@ const ClientLayout = ({ children }: { children: ReactNode }) => {
     return (
         <>
             <Header />
-            <Content style={{ padding: '0 48px' }}>
+            <Content style={{ padding: '0 24px' }}>
                 <Breadcrumb style={{ margin: '16px 0' }}>
                     <Breadcrumb.Item>Home</Breadcrumb.Item>
                     <Breadcrumb.Item>List</Breadcrumb.Item>
                     <Breadcrumb.Item>App</Breadcrumb.Item>
                 </Breadcrumb>
                 <div
-                    style={{
-                        minHeight: 280,
-                        padding: 24,
-                    }}
+                    // style={{
+                    //     minHeight: 280,
+                    //     padding: 24,
+                    // }}
                 >
                     {children}
                 </div>

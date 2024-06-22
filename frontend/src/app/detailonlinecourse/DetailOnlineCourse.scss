@@ -1,0 +1,89 @@
+// ContentHeader
+.contentHeader {
+    position: relative;
+    width: 100%;
+    .overlay {
+        display: block;
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.6);
+        z-index: 1;
+    }
+    .banner {
+        width: 100%;
+        padding: 12px;
+        background-image: url('https://tiki.vn/blog/wp-content/uploads/2023/07/thumb-67.jpg');
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+    }
+    .ContainerHeader {
+        position: relative;
+        // min-height: 300px;
+        z-index: 2;
+    }
+}
+// nav
+.MainNavBar {
+    transition: all 0.3s ease;
+    background-color: #fff;
+
+    z-index: 100;
+}
+.ant-anchor > .ant-anchor-link {
+    font-size: 1rem;
+    font-weight: 700;
+    margin: 0 4px;
+    .ant-anchor-link-title {
+        color: #35509a !important;
+    }
+}
+// wapper Item Nav bar
+blockquote {
+    background-color: rgba(55, 125, 255, 0.1);
+    border-left: 5px solid rgba(55, 125, 255, 0.582);
+    padding: 1.25em 1.5em;
+}
+.CourseDescription {
+    p {
+        margin-bottom: 1rem;
+    }
+}
+// item SeriesSyllabusCourse
+.SeriesSyllabusCourse {
+    .SeriesSyllabusCourse-number {
+        font-size: 0.95rem;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        color: #677788;
+        text-align: center;
+
+        flex-shrink: 0;
+        margin-right: 1rem;
+        margin-bottom: 1rem;
+        .SeriesSyllabusCourse-number-index {
+        }
+    }
+}
+// silde show
+.slideshow {
+    padding: 10px;
+    max-height: 100%;
+    min-height: 380px;
+    color: #fff;
+    border-radius: 25px;
+    background: #364d79;
+}
+// sidebar
+.MainSideBar {
+    border-radius: 20px;
+    z-index: 40;
+    background-color: white;
+    max-width: 100%;
+    margin: 10px 0;
+    
+}
