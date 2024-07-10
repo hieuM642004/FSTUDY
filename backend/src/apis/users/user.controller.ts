@@ -28,7 +28,7 @@ export class UserController {
     // Router get all user panigation
     @UsePipes(new ValidationPipe())
     @Get()
-    @UseGuards(AdminGuard)
+    // @UseGuards(AdminGuard)
     async getAllUsers(
         @Query('page') page: number = 1,
         @Query('limit') limit: number = process.env.PAGE_LIMIT ? parseInt(process.env.PAGE_LIMIT) : 10,

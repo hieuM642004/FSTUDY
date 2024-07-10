@@ -10,6 +10,7 @@ import { JwtMiddleware } from './auth/JWT/jwt.decode';
 import * as bodyParser from 'body-parser';
 import { BlogModule } from './apis/blogs/blog.module';
 import { CourseModule } from './apis/Course/course.module';
+import { FlashCardModule } from './apis/flashCards/flashCard.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { CourseModule } from './apis/Course/course.module';
     BlogModule,
     AuthModule,
     CourseModule,
+    FlashCardModule,
     ConfigModule.forRoot({ envFilePath: '.env', isGlobal: true }),
     MongooseModule.forRoot(process.env.MONGODB_URI),
   ],
