@@ -81,9 +81,12 @@ blockquote {
 // sidebar
 .MainSideBar {
     border-radius: 20px;
-    z-index: 40;
+    z-index: 100;
     background-color: white;
     max-width: 100%;
     margin: 10px 0;
     
+}
+.ant-anchor-ink{
+    background-color: #35509a !important;
 }

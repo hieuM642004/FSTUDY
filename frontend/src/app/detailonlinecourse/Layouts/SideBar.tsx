@@ -40,9 +40,9 @@ function SideBar() {
     return (
         <>
             <div
-                className={`MainSideBar   shadow-lg  md:w-[21.25rem]  ${
+                className={`MainSideBar   shadow-2xl  md:w-[21.25rem]  ${
                     isSticky
-                        ? 'md:fixed transition duration-150 ease-in-out delay-150 top-[-0.5rem] right-[5.625rem]'
+                        ? 'md:fixed transition duration-150 ease-in-out delay-150 top-[4rem] right-[5.625rem]'
                         : 'md:absolute  top-[123px] right-[5.625rem]'
                 } ${
                     RemovePostison
