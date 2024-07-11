@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 import { UnorderedListOutlined } from '@ant-design/icons';
 import { Drawer, Button } from 'antd';
 import './Header.scss';
@@ -28,15 +29,15 @@ const Header = () => {
     return (
         <header className="lg:px-16 bg-white flex flex-wrap items-center shadow-md z-50 fixed w-full top-0">
             <div className="flex-1 flex justify-between items-center p-1">
-                <a href="#" className="text-4xl font-bold text-black ">
+                <Link href="/home" className="text-4xl font-bold text-black ">
                     FSTUDY
-                </a>
+                </Link>
             </div>
             <button
                 className="pointer-cursor p-1  md:hidden block text-gray-600 text-2xl"
                 onClick={showDrawer}
             >
-              <UnorderedListOutlined />
+                <UnorderedListOutlined />
             </button>
             <Drawer
                 title="Menu"
@@ -57,7 +58,7 @@ const Header = () => {
                                 </a>
                             </li>
                         ))}
-                         <ButtonPrimary label='Đăng nhập' />
+                        <ButtonPrimary label="Đăng nhập" />
                     </ul>
                 </nav>
             </Drawer>
@@ -79,7 +80,7 @@ const Header = () => {
                         ))}
                     </ul>
                 </nav>
-            <ButtonPrimary size='large' label='Đăng nhập' />
+                <ButtonPrimary size="large" label="Đăng nhập" />
             </div>
         </header>
     );
