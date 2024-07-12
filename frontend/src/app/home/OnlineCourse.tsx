@@ -1,7 +1,9 @@
 'use client';
 import React from 'react';
 import { Carousel } from 'antd';
+
 import './HomePage.scss';
+import Courses from '../../components/client/Course/Courses';
 
 const OnlineCourse: React.FC = () => {
     return (
@@ -43,7 +45,10 @@ const OnlineCourse: React.FC = () => {
                     infinite={true}
                     draggable={true}
                 >
-                    <div className="carousel-item p-2">
+                    <Courses />
+                    <Courses />
+                    <Courses />
+                    {/* <div className="carousel-item p-2">
                         <a
                             href="#"
                             className="block bg-white rounded-lg shadow-lg overflow-hidden"
@@ -115,7 +120,7 @@ const OnlineCourse: React.FC = () => {
                                 </span>
                             </div>
                         </a>
-                    </div>
+                    </div> */}
                 </Carousel>
             </div>
         </>
