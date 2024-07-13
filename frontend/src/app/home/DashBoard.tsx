@@ -5,9 +5,9 @@ const Dashboard = () => {
     return (
         <div className=" bg-blue-50 p-10">
             <div className="max-w-7xl m-auto">
-                <div className="mt-6 flex flex-wrap">
+                <div className="mt-6 flex flex-wrap justify-between">
                     <div>
-                        <h1 className="text-4xl font-bold text-blue-900 mb-4">
+                        <h1 className="text-4xl font-bold text-blue-900 mb-4 ">
                             Xin chào, NgoDuy
                         </h1>
                     </div>
