@@ -1,0 +1,19 @@
+.ant-tabs-tab {
+    .ant-tabs-tab-btn {
+        font-weight: 600;
+        color: #8c98a4;
+    }
+}
+.ant-tabs-tab-active {
+    .ant-tabs-tab-btn {
+        font-weight: 600;
+        color: var(--button-primary) !important;
+    }
+}
+.ant-tabs-nav-list {
+    .ant-tabs-ink-bar-animated {
+        border: 1px solid var(--button-primary) !important;
+
+        color: var(--button-primary) !important;
+    }
+}
