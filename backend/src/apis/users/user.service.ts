@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import RegisterDto from './dto/user.dto';
 import mongoose from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
-import { TypeLogin, User, UserRole } from './UserSchema/user.schema';
+import { TypeLogin, User, UserRole } from './userSchema/user.schema';
 import { Readable } from 'stream';
 import * as bcrypt from 'bcrypt';
 import { GoogleDriveUploader } from 'src/providers/storage/drive/drive.upload';
@@ -16,7 +16,7 @@ export class UserService {
         private readonly googleDriveUploader: GoogleDriveUploader,
     ) {}
     // Create New use function
-    async CreateUser(user: User, file: Express.Multer.File): Promise<User> {
+    async createUser(user: User, file: Express.Multer.File): Promise<User> {
         try {
             const checkExists = await this.userModel.findOne({
                 email: user.email,
@@ -62,7 +62,7 @@ export class UserService {
     }
 
     // Update user function
-    async UpdateUser(
+    async updateUser(
         id: string,
         user: User,
         file: Express.Multer.File,

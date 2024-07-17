@@ -1,5 +1,5 @@
 import { IsEmail, IsNotEmpty, IsString, MinLength } from 'class-validator';
-import { UserRole } from 'src/apis/users/UserSchema/user.schema';
+import { UserRole } from 'src/apis/users/userSchema/user.schema';
 
 
 export class RegisterDto {

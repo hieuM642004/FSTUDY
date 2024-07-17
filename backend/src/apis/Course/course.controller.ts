@@ -5,6 +5,7 @@ import {
   Get,
   Param,
   Post,
+  Put,
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
@@ -12,7 +13,7 @@ import { ResponseData } from 'src/global/globalClass';
 import { HttpMessage, HttpStatus } from 'src/global/globalEnum';
 import { CourseService } from './course.service';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { Course, CourseType } from './CourseSchema/course.schema';
+import { Course, CourseType } from './courseSchema/course.schema';
 import { CreateCourseTypeDto } from './dto/create-course-type.dto';
 
 @Controller('course')
@@ -42,7 +43,7 @@ export class CourseController {
   }
   // Create course type
 
-  @Post('type/createCourseType')
+  @Post('type/create-course-type')
   async createCourseType(
     @Body() CourseType: CreateCourseTypeDto,
   ): Promise<ResponseData<CourseType>> {
@@ -51,7 +52,7 @@ export class CourseController {
       Object.assign(NewCourseType, CourseType);
       NewCourseType.generateSlug();
       const saveCourse =
-        await this.courseService.CreateTypeCourse(NewCourseType);
+        await this.courseService.createTypeCourse(NewCourseType);
       return new ResponseData<CourseType>(
         saveCourse,
         HttpStatus.SUCCESS,
@@ -88,7 +89,7 @@ export class CourseController {
   }
 
   //update Course Type
-  @Post('type/updateCourseType/:id')
+  @Put('type/update-course-type/:id')
   async updateCourseType(
     @Param('id') id: string,
     @Body() CourseType: CreateCourseTypeDto,
@@ -119,7 +120,7 @@ export class CourseController {
   @Delete('type/:id')
   async deleteCourseType(@Param('id') id : string): Promise<ResponseData<CourseType>> {
     try {
-      const courses = await this.courseService.DeleteCourseTypesById(id);
+      const courses = await this.courseService.deleteCourseTypesById(id);
       return new ResponseData<CourseType>(
         courses,
         HttpStatus.SUCCESS,
@@ -162,58 +163,4 @@ export class CourseController {
   //   }
   // }
 
-  // @Post('/createBlog')
-  // @UseInterceptors(FileInterceptor('avatar'))
-  // async createBlog(
-  //   @Body() blog: Course,
-  //   @UploadedFile() file: Express.Multer.File,
-  // ): Promise<ResponseData<Course>> {
-  //   try {
-  //     const NewBlog = new Course();
-  //     Object.assign(NewBlog, blog);
-  //     // NewBlog.generateSlug();
-  //     const saveBlog = await this.courseService.create(NewBlog);
-  //     return new ResponseData<Course>(
-  //       saveBlog,
-  //       HttpStatus.SUCCESS,
-  //       HttpMessage.SUCCESS,
-  //     );
-  //   } catch (error) {
-  //     return new ResponseData<Course>(
-  //       null,
-  //       HttpStatus.ERROR,
-  //       HttpMessage.ERROR,
-  //     );
-  //   }
-  // }
-
-  // @Post('/updateBlog/:id')
-  // @UseInterceptors(FileInterceptor('avatar'))
-  // async updateBlog(
-  //   @Body() blog: Course,
-  //   @Param('id') id: string,
-  //   @UploadedFile() file: Express.Multer.File,
-  // ): Promise<ResponseData<Course>> {
-  //   try {
-  //     const updateBlogData = new Course();
-  //     Object.assign(updateBlogData, blog);
-  //     // updateBlogData.generateSlug();
-  //     const BlogData = await this.courseService.update(
-  //       updateBlogData,
-  //       file,
-  //       id,
-  //     );
-  //     return new ResponseData<Course>(
-  //       BlogData,
-  //       HttpStatus.SUCCESS,
-  //       HttpMessage.SUCCESS,
-  //     );
-  //   } catch (error) {
-  //     return new ResponseData<Course>(
-  //       null,
-  //       HttpStatus.ERROR,
-  //       HttpMessage.ERROR,
-  //     );
-  //   }
-  // }
 }

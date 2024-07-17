@@ -4,6 +4,7 @@ import {
     Get,
     Param,
     Post,
+    Put,
     Query,
     UploadedFile,
     UseGuards,
@@ -16,7 +17,7 @@ import { plainToClass } from 'class-transformer';
 import { UserService } from './user.service';
 import { UserRepository } from './repositories/user.respository';
 import { ResponseData } from 'src/global/globalClass';
-import { User } from './UserSchema/user.schema';
+import { User } from './userSchema/user.schema';
 import { HttpMessage, HttpStatus } from 'src/global/globalEnum';
 import { AdminGuard } from 'src/auth/guards/authorization.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -71,7 +72,7 @@ export class UserController {
 
     // Router Create new user
 
-    @Post('/createUser')
+    @Post('/create-user')
     @UseInterceptors(FileInterceptor('avatar'))
     @UseGuards(AdminGuard)
     async registerAdmin(
@@ -82,7 +83,7 @@ export class UserController {
             const newUser = new User();
             Object.assign(newUser, user);
             newUser.generateSlug();
-            const saveUser = await this.userService.CreateUser(newUser, file);
+            const saveUser = await this.userService.createUser(newUser, file);
             return new ResponseData<User>(
                 saveUser,
                 HttpStatus.SUCCESS,
@@ -99,7 +100,7 @@ export class UserController {
 
       // Router update user by id
 
-    @Post('/updateUser/:id')
+    @Put('/update-user/:id')
     @UseInterceptors(FileInterceptor('avatar'))
     @UseGuards(AdminGuard)
     async updateAdmin(
@@ -111,7 +112,7 @@ export class UserController {
             const newUser = new User();
             Object.assign(newUser, user);
             newUser.generateSlug();
-            const saveUser = await this.userService.UpdateUser(
+            const saveUser = await this.userService.updateUser(
                 id,
                 newUser,
                 file,
