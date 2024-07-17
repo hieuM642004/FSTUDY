@@ -6,6 +6,7 @@ import Link from 'next/link';
 import WapperItemCard from '@/components/client/WapperItemCard/WapperItemCard';
 import ButtonOutline from '@/components/shared/ButtonPrimary/ButtonOutline';
 import ButtonPrimary from '@/components/shared/ButtonPrimary/ButtonPrimary';
+import ForgotPass from '../forgotpass/page';
 
 function Login() {
     const onFinish = (values: any) => {
@@ -91,6 +92,7 @@ function Login() {
                     >
                         Bạn chưa là một thành viên? Đăng ký ngay!
                     </Link>
+                    <ForgotPass/>
                 </WapperItemCard>
             </div>
         </>
