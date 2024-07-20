@@ -9,7 +9,8 @@ interface PrimaryButtonProps {
     size?: 'large' | 'middle' | 'small';
     className?: string;
     onClick?: () => void;
-    htmlType?: "button" | "reset" | "submit" | undefined 
+    htmlType?: "button" | "reset" | "submit" | undefined ,
+    iconbtn? : any
 }
 const sizeClassMap = {
     large: ' py-4 px-4',
@@ -23,12 +24,14 @@ const ButtonPrimary: React.FC<PrimaryButtonProps> = ({
     size = 'middle',
     className = '',
     onClick,
-    htmlType 
+    htmlType ,
+    iconbtn 
 }) => {
     let btnClass = `btn-primary font-semibold ${sizeClassMap[size]} ${className}`;
 
     return ( 
         <Button className={btnClass} onClick={onClick} type="primary" href={to} htmlType={htmlType}>
+            {iconbtn}
             {label}
         </Button>
     );
