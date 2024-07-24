@@ -3,7 +3,7 @@ import { AppModule } from "src/app.module";
 import { UserController } from "./user.controller";
 import { UserService } from "./user.service";
 import { MongooseModule } from "@nestjs/mongoose";
-import { UserSchema } from "./UserSchema/user.schema";
+import { UserSchema } from "./userSchema/user.schema";
 import { GoogleDriveUploader } from "src/providers/storage/drive/drive.upload";
 
 @Module({

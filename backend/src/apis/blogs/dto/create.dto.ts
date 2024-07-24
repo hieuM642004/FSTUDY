@@ -1,4 +1,5 @@
-import { IsString } from 'class-validator';
+import { IsMongoId, IsString } from 'class-validator';
+import { ObjectId } from 'mongoose';
 
 export class CreateBlogDto {
   @IsString()
@@ -12,5 +13,6 @@ export class CreateBlogDto {
   @IsString()
   readonly status: string;
   readonly slug: string;
-
+  @IsString()
+  childTopics: ObjectId[];
 }

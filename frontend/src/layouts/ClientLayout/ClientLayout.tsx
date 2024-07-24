@@ -4,6 +4,7 @@ import { ReactNode } from 'react';
 import { Breadcrumb, Layout } from 'antd';
 import Header from '@/components/client/Header/Header';
 import FooterComponent from '@/components/client/Footer/Footer';
+import SiteElevator from '@/components/client/SiteElevator/SiteElevator';
 
 const { Content } = Layout;
 
@@ -23,6 +24,7 @@ const ClientLayout = ({ children }: { children: ReactNode }) => {
                     //     padding: 24,
                     // }}
                 >
+                    <SiteElevator/>
                     {children}
                 </div>
             </Content>

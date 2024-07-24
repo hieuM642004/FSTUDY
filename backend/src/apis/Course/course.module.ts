@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { GoogleDriveUploader } from 'src/providers/storage/drive/drive.upload';
-import { Course,  CourseSchema, CourseType, CourseTypeSchema } from './CourseSchema/course.schema';
+import { Course,  CourseSchema, CourseType, CourseTypeSchema } from './courseSchema/course.schema';
 import { CourseController } from './course.controller';
 import { CourseService } from './course.service';
 

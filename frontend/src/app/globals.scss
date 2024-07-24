@@ -43,4 +43,18 @@ body {
     border:  1px solid  var(--button-outline);
     font-weight: 700;
   }
+  // Studyplane 
+  .hidden-element {
+    display: none;
+    position: absolute;
+    top: -9px;
+    left: -10px;
+    color: red;
+    font-size: 20px;
+    cursor: pointer;
+ }
+
+  .task:hover .hidden-element {
+      display: block;
+  }
 }

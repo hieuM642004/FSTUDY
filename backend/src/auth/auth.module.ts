@@ -8,7 +8,7 @@ import { AuthService } from './auth.service';
 
 import { JwtStrategy } from './JWT/jwt.strategy';
 import { GoogleDriveUploader } from 'src/providers/storage/drive/drive.upload';
-import { UserSchema } from 'src/apis/users/UserSchema/user.schema';
+import { UserSchema } from 'src/apis/users/userSchema/user.schema';
 import { googleStrategy } from './google.strategy';
 import { FacebookStrategy } from './facebook.strategy';
 

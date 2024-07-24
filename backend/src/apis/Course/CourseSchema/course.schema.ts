@@ -16,9 +16,8 @@ export class Course {
   featured: boolean;
 
   @Prop({ required: true, default: 0 })
-  display_order: number;
+  displayOrder: number;
 
-  // Syllabus
   @Prop({
     type: [
       {
@@ -29,7 +28,7 @@ export class Course {
             videoUrl: { type: String, required: true, default: '' }
           }
         ],
-        display_order: { type: Number, required: true, default: 0 },
+        displayOrder: { type: Number, required: true, default: 0 },
         free: { type: Boolean, required: true, default: false }
       }
     ]
@@ -40,26 +39,26 @@ export class Course {
       title: string;
       videoUrl: string;
     }[];
-    display_order: number;
+    displayOrder: number;
     free: boolean;
   }[];
 
   // Details
   @Prop({ required: true })
-  detail_title: string;
+  detailTitle: string;
 
   @Prop({
     required: true,
     enum: COURSE_DETAIL_TYPES,
     default: COURSE_DETAIL_TYPES.OBJECTIVE,
   })
-  detail_type: string;
+  detailType: string;
 
   @Prop({ required: true, default: '' })
-  detail_short_description: string;
+  detailShortDescription: string;
 
   @Prop({ required: true, default: '' })
-  detail_content: string;
+  detailContent: string;
 
   // Type
   @Prop({ type: SchemaTypes.ObjectId, ref: 'CourseType' })

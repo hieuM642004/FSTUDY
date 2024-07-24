@@ -19,8 +19,7 @@ import { RegisterDto } from './dto/register.tdo';
 
 import { HttpStatus, HttpMessage } from 'src/global/globalEnum';
 import { ResponseData } from 'src/global/globalClass';
-import { log } from 'console';
-import { User } from 'src/apis/users/UserSchema/user.schema';
+import { User } from 'src/apis/users/userSchema/user.schema';
 import { AuthGuard } from '@nestjs/passport';
 import { response } from 'express';
 UnauthorizedException;

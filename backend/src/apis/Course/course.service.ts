@@ -6,7 +6,7 @@ import mongoose from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { UpdateCourseDto } from './dto/update-course.dto';
-import { Course, CourseType } from './CourseSchema/course.schema';
+import { Course, CourseType } from './courseSchema/course.schema';
 import { CreateCourseTypeDto } from './dto/create-course-type.dto';
 
 @Injectable()
@@ -23,7 +23,7 @@ export class CourseService {
    *  */ 
 
   // Create Course Type
-  async CreateTypeCourse(course : CreateCourseTypeDto) : Promise<CourseType> {
+  async createTypeCourse(course : CreateCourseTypeDto) : Promise<CourseType> {
     try {
       const courseType = { ...course };
       const res = await this.courseTypeModel.create(courseType);
@@ -63,34 +63,12 @@ export class CourseService {
     }
   }
   // Delete course type
-  async DeleteCourseTypesById(id:string): Promise<CourseType> {
+  async deleteCourseTypesById(id:string): Promise<CourseType> {
     try {
       const res = await this.courseTypeModel.findByIdAndDelete(id);
       return res
     } catch (error) {
       throw error;
     }
-  }
-
-
-  create(createCourseDto: CreateCourseDto) {
-    return 'This action adds a new course';
-  }
-
-  async findAll() {
-    const blogs = await this.courseModel.find();
-    return blogs;
-  }
-
-  findOne(id: string) {
-    return `This action returns a #${id} course`;
-  }
-
-  update(id: string, updateCourseDto: UpdateCourseDto) {
-    return `This action updates a #${id} course`;
-  }
-
-  remove(id: string) {
-    return `This action removes a #${id} course`;
   }
 }

@@ -12,7 +12,7 @@ import { JwtService } from '@nestjs/jwt';
 import { LoginDto } from './dto/login.dto';
 import { GoogleDriveUploader } from 'src/providers/storage/drive/drive.upload';
 import { transporter } from '../providers/mail/mailler';
-import { TypeLogin, User, UserRole } from 'src/apis/users/UserSchema/user.schema';
+import { TypeLogin, User, UserRole } from 'src/apis/users/userSchema/user.schema';
 import slugify from 'slugify';
 import * as jwt from 'jsonwebtoken';
 
@@ -33,19 +33,10 @@ export class AuthService {
                 ...user,
                 password: hashedPassword,
             };
-            // const fileStream = Readable.from(file.buffer);
-            // const fileId = await this.googleDriveUploader.uploadImage(
-            //     fileStream,
-            //     file.originalname,
-            //     '1eHh70ah2l2JuqHQlA1riebJZiRS9L20q',
-            // );
-
-            // const avatarUrl = this.googleDriveUploader.getThumbnailUrl(fileId);
             const userWithAvatar = {
                 ...userWithHashedPassword,
                 typeLogin : TypeLogin.BASIC,
                 role : UserRole.USER
-                // avatar: avatarUrl,
             };
         
             const createdUser = new this.userModel(userWithAvatar);
@@ -341,7 +332,7 @@ export class AuthService {
         await user.save();
 
         // Send the password reset email
-        const resetUrl = `http://localhost:3000/auth/reset-password?token=${token}`;
+        const resetUrl = `http://localhost:4000/auth/reset-password?token=${token}`;
         const mailOptions = {
             from: '<hieu@78544@gmail.com>',
             to: user.email,

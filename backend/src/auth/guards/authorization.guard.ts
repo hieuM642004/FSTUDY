@@ -1,6 +1,6 @@
 import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
 import { Observable } from 'rxjs';
-import { UserRole } from 'src/apis/users/UserSchema/user.schema';
+import { UserRole } from 'src/apis/users/userSchema/user.schema';
 import { JwtMiddleware } from '../JWT/jwt.decode';
 import * as jwt from 'jsonwebtoken';
 interface DecodedToken {
