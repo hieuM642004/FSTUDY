@@ -1,4 +1,9 @@
 .banner {
+    width: 100%;
+    max-width: 1170px;
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+    margin: auto;
 
     .ant-carousel .slick-prev,
     .ant-carousel .slick-next {
@@ -43,9 +48,7 @@
 
     .slick-track {
         display: flex;
-        gap: 20px;
-        padding: 10px;
-        margin-left: -5px;
+        // gap: 5px;
     }
 
     h2 {

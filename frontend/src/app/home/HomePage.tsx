@@ -4,6 +4,7 @@ import { CheckOutlined } from '@ant-design/icons';
 
 import './HomePage.scss';
 import OnlineCourse from './OnlineCourse';
+import Dashboard from './DashBoard';
 import IELTSCard from '../../components/client/IELTSCard/IELTSCard';
 import ButtonPrimary from '@/components/shared/ButtonPrimary/ButtonPrimary';
 
@@ -22,6 +23,9 @@ const App: React.FC = () => {
     return (
         <>
             <div className="container">
+                <div>
+                    <Dashboard />
+                </div>
                 <div className="banner">
                     <Carousel arrows infinite={false}>
                         <img
