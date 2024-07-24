@@ -7,35 +7,31 @@ const ExamResults: React.FC = () => {
     const listCoursesResults = [
         {
             key: 1,
-            courses: 'IELTS Simulation Listening test 10',
             date: '17/07/2024',
+            courses: 'IELTS Simulation Listening test 10',
             results: '10/10',
             time: '0:05',
-            type: 'Luyen tap',
         },
         {
             key: 2,
-            courses: 'IELTS Simulation Listening test 10',
             date: '17/07/2024',
+            courses: 'IELTS Simulation Listening test 10',
             results: '10/10',
             time: '0:05',
-            type: 'Luyen tap',
         },
         {
             key: 3,
-            courses: 'IELTS Simulation Listening test 10',
             date: '17/07/2024',
+            courses: 'IELTS Simulation Listening test 10',
             results: '10/10',
             time: '0:05',
-            type: 'Luyen tap',
         },
         {
             key: 4,
-            courses: 'IELTS Simulation Listening test 10',
             date: '17/07/2024',
+            courses: 'IELTS Simulation Listening test 10',
             results: '10/10',
             time: '0:05',
-            type: 'Luyen tap',
         },
     ];
 
@@ -44,6 +40,11 @@ const ExamResults: React.FC = () => {
             title: 'Ngày làm',
             dataIndex: 'date',
             key: 'date',
+        },
+        {
+            title: 'Đề thi',
+            dataIndex: 'courses',
+            key: 'courses',
         },
         {
             title: 'Kết quả',
@@ -65,21 +66,14 @@ const ExamResults: React.FC = () => {
     ];
 
     return (
-        <div className="pt-5 pb-2">
-            {listCoursesResults.map((result) => (
-                <Card key={result.key} className="mb-4">
-                    <h3 className="text-3xl md:text-2xl sm:text-xl font-bold mt-2">
-                        {result.courses}
-                    </h3>
-                    <Table
-                        dataSource={[result]}
-                        columns={columns}
-                        pagination={false}
-                        bordered
-                    />
-                </Card>
-            ))}
-        </div>
+        <Card className="mb-4">
+            <Table
+                dataSource={listCoursesResults}
+                columns={columns}
+                pagination={false}
+                bordered
+            />
+        </Card>
     );
 };
 
