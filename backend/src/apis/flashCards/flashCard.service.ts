@@ -2,12 +2,13 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { firstValueFrom } from 'rxjs';
+
 import {
     FlashCard,
     FlashCardDocument,
 } from './FlashCardSchema/FlashCard.schema';
-import { CreateFlashCardDto } from './dto/CreateFlashCard.dto';
+import { CreateFlashCardDto, WordDto } from './dto/CreateFlashCard.dto';
+
 
 @Injectable()
 export class FlashCardService {
@@ -25,7 +26,14 @@ export class FlashCardService {
     }
     async getFlashCardById(id: string): Promise<FlashCard[]> {
         try {
-            return await this.flashCardModel.findById(id);
+           const flashCard= await this.flashCardModel.findById(id);
+           if (!flashCard) {
+            throw new HttpException(
+                `FlashCard with ID '${id}' not found`,
+                HttpStatus.NOT_FOUND,
+            );
+        }
+        return [flashCard]
         } catch (error) {
             console.error(error);
         }
@@ -37,8 +45,6 @@ export class FlashCardService {
         flashCard.wordCount = createFlashCardDto.words.length;
         for (const word of flashCard.words) {
             try {
-                const audioUrl = await this.getAudioUrl(word.word);
-                word.audioUrl = audioUrl;
             } catch (error) {
                 console.error('Error creating flash card:', error);
                 throw new HttpException(error.message, error.status);
@@ -60,15 +66,7 @@ export class FlashCardService {
             );
         }
 
-        for (const word of updateFlashCardDto.words) {
-            try {
-                const audioUrl = await this.getAudioUrl(word.word);
-                word.audioUrl = audioUrl;
-            } catch (error) {
-                console.error('Error updating flash card:', error);
-                throw new HttpException(error.message, error.status);
-            }
-        }
+  
 
         updateFlashCardDto.wordCount = updateFlashCardDto.words.length;
         updateFlashCardDto.userId = updateFlashCardDto.userId;
@@ -98,7 +96,7 @@ export class FlashCardService {
     // Add a word to the words array
     async addWordToFlashCard(
         id: string,
-        wordDto: { word: string; definition: string },
+        wordDto: WordDto,
     ): Promise<FlashCard> {
         const flashCard = await this.flashCardModel.findById(id);
         if (!flashCard) {
@@ -108,8 +106,7 @@ export class FlashCardService {
             );
         }
 
-        const audioUrl = await this.getAudioUrl(wordDto.word);
-        flashCard.words.push({ ...wordDto, audioUrl });
+        flashCard.words.push(wordDto );
         flashCard.wordCount = flashCard.words.length;
 
         return flashCard.save();
@@ -119,7 +116,7 @@ export class FlashCardService {
     async updateWordInFlashCard(
         id: string,
         wordIndex: number,
-        wordDto: { word: string; definition: string },
+        wordDto: WordDto,
     ): Promise<FlashCard> {
         const flashCard = await this.flashCardModel.findById(id);
         if (!flashCard) {
@@ -136,8 +133,8 @@ export class FlashCardService {
             );
         }
 
-        const audioUrl = await this.getAudioUrl(wordDto.word);
-        flashCard.words[wordIndex] = { ...wordDto, audioUrl };
+      
+        flashCard.words[wordIndex] = wordDto ;
         flashCard.wordCount = flashCard.words.length;
 
         return flashCard.save();
@@ -168,34 +165,6 @@ export class FlashCardService {
 
         return flashCard.save();
     }
-    private async getAudioUrl(word: string): Promise<string> {
-        try {
-            const response = await firstValueFrom(
-                this.httpService.get(
-                    `https://api.dictionaryapi.dev/api/v2/entries/en/${word}`,
-                ),
-            );
-            const phonetics = response.data[0]?.phonetics;
-            if (
-                !phonetics ||
-                phonetics.length === 0 ||
-                !phonetics.some((phonetic: { audio: string }) => phonetic.audio)
-            ) {
-                throw new HttpException(
-                    `Word '${word}' is not found in dictionary`,
-                    HttpStatus.NOT_FOUND,
-                );
-            }
-            const audioUrl = phonetics.find(
-                (phonetic: { audio: string }) => phonetic.audio,
-            )?.audio;
-            return audioUrl || '';
-        } catch (error) {
-            console.error('Error fetching audio URL:', error);
-            throw new HttpException(
-                'Failed to fetch audio URL from dictionary API',
-                HttpStatus.INTERNAL_SERVER_ERROR,
-            );
-        }
-    }
+   
+   
 }

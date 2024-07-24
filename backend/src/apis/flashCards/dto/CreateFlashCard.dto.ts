@@ -3,7 +3,7 @@ import { IsArray, IsBoolean, IsMongoId, IsNotEmpty, IsNumber, IsString, Validate
 import { Type } from 'class-transformer';
 import { User } from 'src/apis/users/UserSchema/user.schema';
 
-class WordDto {
+export class WordDto {
 //   @IsString()
 //   @IsNotEmpty()
   word: string;
@@ -14,6 +14,8 @@ class WordDto {
 
 //   @IsString()
   audioUrl: string;
+
+  image: string;
 }
 
 export class CreateFlashCardDto {

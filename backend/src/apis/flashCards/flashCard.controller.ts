@@ -9,7 +9,7 @@ import {
 } from '@nestjs/common';
 import { FlashCardService } from './flashCard.service';
 import { ResponseData } from 'src/global/globalClass';
-import { CreateFlashCardDto } from './dto/CreateFlashCard.dto';
+import { CreateFlashCardDto, WordDto } from './dto/CreateFlashCard.dto';
 import { HttpMessage, HttpStatus } from 'src/global/globalEnum';
 import { FlashCard } from './FlashCardSchema/FlashCard.schema';
 import { UpdateFlashCardDto } from './dto/UpdateFlashCard.dto';
@@ -121,7 +121,7 @@ export class FlashCardController {
     @Post('add-word/:id')
     async addWordToFlashCard(
         @Param('id') id: string,
-        @Body() wordDto: { word: string; definition: string },
+        @Body() wordDto: WordDto,
     ): Promise<ResponseData<FlashCard>> {
         try {
             const updatedFlashCard =
@@ -140,7 +140,7 @@ export class FlashCardController {
     async updateWordInFlashCard(
         @Param('id') id: string,
         @Param('wordIndex') wordIndex: number,
-        @Body() wordDto: { word: string; definition: string },
+        @Body() wordDto: WordDto,
     ): Promise<ResponseData<FlashCard>> {
         try {
             const updatedFlashCard =
@@ -179,4 +179,6 @@ export class FlashCardController {
             return new ResponseData<any>(null, HttpStatus.ERROR, error.message);
         }
     }
+
+   
 }

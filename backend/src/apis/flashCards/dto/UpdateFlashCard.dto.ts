@@ -14,6 +14,7 @@ class WordDto {
 
 //   @IsString()
   audioUrl: string;
+  image: string;
 }
 
 export class UpdateFlashCardDto {

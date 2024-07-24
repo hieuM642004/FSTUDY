@@ -13,6 +13,8 @@ class Word {
 
   @Prop()
   audioUrl: string;
+  @Prop()
+  image: string;
 }
 
 @Schema({ timestamps: true })
