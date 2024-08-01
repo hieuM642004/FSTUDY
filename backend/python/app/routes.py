@@ -1,78 +1,47 @@
+import time
 from flask import Blueprint, jsonify, request
+from googleapiclient.discovery import build
+from youtube_transcript_api import YouTubeTranscriptApi
+from youtube_transcript_api.formatters import JSONFormatter
 from pydub import AudioSegment
-import requests
 import os
 import numpy as np
-import soundfile as sf
-from flask_cors import CORS
-import time
-import re
 import librosa
+from flask_cors import CORS
+import re
+import assemblyai as aai
+import requests
 
 generate_response_api = Blueprint('generate_response_api', __name__)
 CORS(generate_response_api)
 
-ASSEMBLYAI_API_KEY = '1d122f8f2f644b43a9b690494f619db0'
+# Replace with your API key
+aai.settings.api_key = "1d122f8f2f644b43a9b690494f619db0"
 
 def upload_audio(file_path):
-    headers = {
-        'authorization': ASSEMBLYAI_API_KEY,
-        'content-type': 'application/json'
-    }
-    upload_url = 'https://api.assemblyai.com/v2/upload'
+    # Note: AssemblyAI doesn't require separate upload for local files
+    return file_path
 
-    try:
-        with open(file_path, 'rb') as f:
-            response = requests.post(upload_url, headers=headers, files={'file': f})
-        response.raise_for_status()
-        return response.json()['upload_url']
-    except requests.RequestException as e:
-        raise Exception(f"Error uploading file: {e}")
+def transcribe_audio(file_url):
+    transcriber = aai.Transcriber()
+    transcript = transcriber.transcribe(file_url)
+    return transcript
 
-def transcribe_audio(upload_url):
-    headers = {
-        'authorization': ASSEMBLYAI_API_KEY,
-        'content-type': 'application/json'
-    }
-    json_data = {
-        'audio_url': upload_url
-    }
-    try:
-        response = requests.post('https://api.assemblyai.com/v2/transcript', json=json_data, headers=headers)
-        response.raise_for_status()
-        transcript_id = response.json()['id']
-        return transcript_id
-    except requests.RequestException as e:
-        raise Exception(f"Error starting transcription: {e}")
-
-def get_transcription_result(transcript_id):
-    headers = {
-        'authorization': ASSEMBLYAI_API_KEY
-    }
-    try:
-        response = requests.get(f'https://api.assemblyai.com/v2/transcript/{transcript_id}', headers=headers)
-        response.raise_for_status()
-        result = response.json()
-        if result['status'] == 'completed':
-            return result['text']
-        elif result['status'] == 'failed':
-            raise Exception(f"Transcription failed: {result['error']}")
-        else:
-            return None
-    except requests.RequestException as e:
-        raise Exception(f"Error fetching transcription result: {e}")
+def get_transcription_result(transcript):
+    while transcript.status not in [aai.TranscriptStatus.completed, aai.TranscriptStatus.error]:
+        time.sleep(5)  # Wait before polling again
+        transcript = aai.Transcriber.get_transcript(transcript.id)
+    
+    if transcript.status == aai.TranscriptStatus.error:
+        raise Exception(f"Transcription failed: {transcript.error}")
+    
+    return transcript.text
 
 def convert_audio_to_text(file_path):
     try:
-        upload_url = upload_audio(file_path)
-        transcript_id = transcribe_audio(upload_url)
-        
-        # Polling until the transcription is completed
-        while True:
-            text = get_transcription_result(transcript_id)
-            if text is not None:
-                return text
-            time.sleep(5)  # Wait before polling again
+        file_url = upload_audio(file_path)
+        transcript = transcribe_audio(file_url)
+        return get_transcription_result(transcript)
     except Exception as e:
         raise Exception(f"Error converting audio to text: {str(e)}")
 
@@ -159,10 +128,72 @@ def evaluate_proficiency():
 
     try:
         user_text = convert_audio_to_text(user_audio_path)
+        print(user_text)
         reference_text = convert_audio_to_text(wav_path)
-        text_similarity = compare_text(user_text, reference_text)
+        text_similarity = compare_text(user_text, word)
         result = {'text_similarity': text_similarity}
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
     return jsonify(result), 200
+
+
+
+
+YOUTUBE_API_KEY = 'AIzaSyCH8l3BK-JCGRe6p8DmZZg5D17_anLHTfk'
+youtube = build('youtube', 'v3', developerKey=YOUTUBE_API_KEY)
+
+search_api = Blueprint('search_api', __name__)
+
+def search_youtube(query):
+    request = youtube.search().list(
+        q=query,
+        part='id,snippet',
+        type='video',
+        order='relevance',
+        
+    )
+    response = request.execute()
+    return response.get('items', [])
+
+def get_video_transcript(video_id):
+    try:
+        transcript = YouTubeTranscriptApi.get_transcript(video_id)
+        return transcript
+    except Exception as e:
+        return None
+
+def find_word_in_transcript(transcript, word):
+    timestamps = []
+    for entry in transcript:
+        if word.lower() in entry['text'].lower():
+            timestamps.append(entry['start'])  
+    return timestamps
+
+@generate_response_api.route('/search_video', methods=['GET'])
+def search_video():
+    word = request.args.get('word')
+    
+    if not word:
+        return jsonify({'error': 'Missing word parameter'}), 400
+
+    videos = search_youtube(word)
+    results = []
+
+    for video in videos:
+        video_id = video['id']['videoId']
+        transcript = get_video_transcript(video_id)
+        if transcript:
+            timestamps = find_word_in_transcript(transcript, word)
+            if timestamps:
+                first_timestamp = timestamps[0]
+                video_url = f'https://www.youtube.com/watch?v={video_id}&t={int(first_timestamp)}s'
+                results.append({
+                    'video_url': video_url,
+                    'timestamp': int(first_timestamp)
+                })
+
+    if not results:
+        return jsonify({'message': 'No video found with the specified word.'}), 404
+
+    return jsonify(results), 200

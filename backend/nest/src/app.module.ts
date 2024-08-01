@@ -11,6 +11,7 @@ import * as bodyParser from 'body-parser';
 import { BlogModule } from './apis/blogs/blog.module';
 import { CourseModule } from './apis/Course/course.module';
 import { FlashCardModule } from './apis/flashCards/flashCard.module';
+import { CommentModule1 } from './apis/socket/comments/comment.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { FlashCardModule } from './apis/flashCards/flashCard.module';
     AuthModule,
     CourseModule,
     FlashCardModule,
+    CommentModule1,
     ConfigModule.forRoot({ envFilePath: '.env', isGlobal: true }),
     MongooseModule.forRoot(process.env.MONGODB_URI),
   ],
