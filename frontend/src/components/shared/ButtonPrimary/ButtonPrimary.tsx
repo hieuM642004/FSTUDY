@@ -1,7 +1,8 @@
-'use-client';
+'use client';
 
 import React from 'react';
 import { Button } from 'antd';
+import Link from 'next/link';
 
 interface PrimaryButtonProps {
     label: string;
@@ -9,13 +10,14 @@ interface PrimaryButtonProps {
     size?: 'large' | 'middle' | 'small';
     className?: string;
     onClick?: () => void;
-    htmlType?: "button" | "reset" | "submit" | undefined ,
-    iconbtn? : any
+    htmlType?: "button" | "reset" | "submit" | undefined;
+    disabled?: boolean;
 }
+
 const sizeClassMap = {
-    large: ' py-4 px-4',
+    large: 'py-4 px-4 w-32 h-10',
     middle: 'py-2 px-3',
-    small: ' py-1 px-3',
+    small: 'py-1 px-3',
 };
 
 const ButtonPrimary: React.FC<PrimaryButtonProps> = ({
@@ -24,14 +26,19 @@ const ButtonPrimary: React.FC<PrimaryButtonProps> = ({
     size = 'middle',
     className = '',
     onClick,
-    htmlType ,
-    iconbtn 
+    htmlType = "button",
+    disabled = false,
 }) => {
     let btnClass = `btn-primary font-semibold ${sizeClassMap[size]} ${className}`;
 
-    return ( 
-        <Button className={btnClass} onClick={onClick} type="primary" href={to} htmlType={htmlType}>
-            {iconbtn}
+    return to ? (
+        <Link href={to}>
+            <Button className={btnClass} onClick={onClick} type="primary" htmlType={htmlType} disabled={disabled}>
+                {label}
+            </Button>
+        </Link>
+    ) : (
+        <Button className={btnClass} onClick={onClick} type="primary" htmlType={htmlType} disabled={disabled}>
             {label}
         </Button>
     );

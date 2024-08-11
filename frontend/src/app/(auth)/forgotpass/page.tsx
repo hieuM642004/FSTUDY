@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { Modal } from 'antd';
 import {  UserOutlined } from '@ant-design/icons';
 import { Form, Input } from 'antd';
-
 import ButtonPrimary from '@/components/shared/ButtonPrimary/ButtonPrimary';
+
 
 function ForgotPass() {
     const [open, setOpen] = useState(false);

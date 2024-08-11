@@ -1,0 +1,17 @@
+.account-info {
+    width: 100%;
+    max-width: 800px;
+    padding-top: 3.5rem;
+    padding-bottom: 2rem;
+    margin: auto;
+
+    .proflie-avatar {
+        display: flex;
+        margin: -6.3rem auto .5rem;
+        position: relative;
+        width: 7.875rem;
+        height: 7.875rem;
+        border: .1875rem solid #fff;
+        border-radius: 50%;
+    }
+}
