@@ -12,6 +12,7 @@ import { BlogModule } from './apis/blogs/blog.module';
 import { CourseModule } from './apis/Course/course.module';
 import { FlashCardModule } from './apis/flashCards/flashCard.module';
 import { CommentModule1 } from './apis/socket/comments/comment.module';
+import { ExamModule } from './apis/exams/exam.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { CommentModule1 } from './apis/socket/comments/comment.module';
     CourseModule,
     FlashCardModule,
     CommentModule1,
+    ExamModule,
     ConfigModule.forRoot({ envFilePath: '.env', isGlobal: true }),
     MongooseModule.forRoot(process.env.MONGODB_URI),
   ],

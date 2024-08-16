@@ -1,6 +1,7 @@
 import { google } from 'googleapis';
 import { Credentials } from 'google-auth-library';
 import { Readable } from 'stream';
+
 export class GoogleDriveUploader {
     private readonly drive;
 
@@ -13,40 +14,41 @@ export class GoogleDriveUploader {
  
         this.drive = google.drive({ version: 'v3', auth });
     }
+
     async uploadVideo(
-      fileStream: Readable,
-      fileName: string,
-      folderId: string,
-  ): Promise<string> {
-      try {
-          const videoMetadata = {
-              name: fileName,
-              parents: [folderId],
-          };
-          
-          const response = await this.drive.files.create({
-              requestBody: videoMetadata,
-              media: {
-                  mimeType: 'video/*', 
-                  body: fileStream,
-              },
-              fields: 'id',
-          });
-  
-          const fileId = response.data.id;
-  
-          await this.drive.files.update({
-              fileId: fileId,
-              requestBody: { name: fileId },
-          });
-  
-          return fileId;
-      } catch (error) {
-          console.error('Error uploading video to Google Drive:', error);
-          throw error;
-      }
-  }
-  
+        fileStream: Readable,
+        fileName: string,
+        folderId: string,
+    ): Promise<string> {
+        try {
+            const videoMetadata = {
+                name: fileName,
+                parents: [folderId],
+            };
+            
+            const response = await this.drive.files.create({
+                requestBody: videoMetadata,
+                media: {
+                    mimeType: 'video/*',
+                    body: fileStream,
+                },
+                fields: 'id',
+            });
+
+            const fileId = response.data.id;
+
+            await this.drive.files.update({
+                fileId: fileId,
+                requestBody: { name: fileId },
+            });
+
+            return fileId;
+        } catch (error) {
+            console.error('Error uploading video to Google Drive:', error);
+            throw error;
+        }
+    }
+
     async uploadImage(
         fileStream: Readable,
         fileName: string,
@@ -81,20 +83,61 @@ export class GoogleDriveUploader {
         }
     }
 
-    getThumbnailUrl(fileId: string): string {
-        return `https://drive.google.com/thumbnail?id=${fileId}`;
-    }
-    getVideoUrl(fileId: string): string {
-        return `https://drive.google.com/file/d/${fileId}/view`;
-    }
-    async deleteImage(fileId: string): Promise<void> {
+    async uploadAudio(
+        fileStream: Readable,
+        fileName: string,
+        folderId: string,
+    ): Promise<string> {
         try {
-            await this.drive.files.delete({ fileId });
+            const audioMetadata = {
+                name: fileName,
+                parents: [folderId],
+            };
+
+            const response = await this.drive.files.create({
+                requestBody: audioMetadata,
+                media: {
+                    mimeType: 'audio/*',
+                    body: fileStream,
+                },
+                fields: 'id',
+            });
+
+            const fileId = response.data.id;
+
+            await this.drive.files.update({
+                fileId: fileId,
+                requestBody: { name: fileId },
+            });
+
+            return fileId;
         } catch (error) {
-            console.error('Error deleting image from Google Drive:', error);
+            console.error('Error uploading audio to Google Drive:', error);
             throw error;
         }
     }
+
+    getThumbnailUrl(fileId: string): string {
+        return `https://drive.google.com/thumbnail?id=${fileId}`;
+    }
+
+    getVideoUrl(fileId: string): string {
+        return `https://drive.google.com/file/d/${fileId}/view`;
+    }
+
+    getAudioUrl(fileId: string): string {
+        return `https://drive.google.com/file/d/${fileId}/view`;
+    }
+
+    async delete(fileId: string): Promise<void> {
+        try {
+            await this.drive.files.delete({ fileId });
+        } catch (error) {
+            console.error('Error deleting from Google Drive:', error);
+            throw error;
+        }
+    }
+
     extractFileIdFromUrl(url: string): string {
         const regex = /(?:\/d\/|id=)([^\/\&\?]+)/;
         const match = url.match(regex);
