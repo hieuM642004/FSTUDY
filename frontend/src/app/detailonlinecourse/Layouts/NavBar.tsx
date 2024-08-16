@@ -3,7 +3,6 @@ import { Anchor } from 'antd';
 import { useEffect, useState } from 'react';
 import { UserOutlined, CommentOutlined, StarFilled } from '@ant-design/icons';
 
-import Comment from '../Evaluates/Comment';
 import Evaluate from '../Evaluates/Evaluate';
 import SideBar from './SideBar';
 import WapperItemCard from '../../../components/client/WapperItemCard/WapperItemCard';
@@ -735,10 +734,7 @@ function NavBar() {
                             <Evaluate />
                         </WapperItemCard>
                     </div>
-                    {/* bình luận */}
-                    <WapperItemCard>
-                        <Comment />
-                    </WapperItemCard>
+                  
                 </div>
             </div>
         </>

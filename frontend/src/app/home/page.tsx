@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import HomePage from './HomePage';
+import HomePage from './Home/HomePage';
 const Home: React.FC = () => {
     return (
         <>

@@ -6,8 +6,9 @@ import LearnAbout from '../Layouts/LearnAbout';
 import Categories from '../Layouts/Categories';
 import BannerBlog from '../Layouts/BannerBlog';
 import WapperItemCard from '@/components/client/WapperItemCard/WapperItemCard';
-import ItemPost from '../Items/ItemPost';
 import Comment from '../../../components/client/Comment/Comment';
+import Blog from '../Blog/Blog';
+
 
 function BlogDetail({ id }: string | any) {
     console.log('check id' , id);
@@ -127,10 +128,10 @@ function BlogDetail({ id }: string | any) {
                                             <h3 className="font-bold text-2xl mb-2">
                                                 Các bài viết cùng chủ đề
                                             </h3>
-                                            <ItemPost />
-                                            <ItemPost />
-                                            <ItemPost />
-                                            <ItemPost />
+                                            <Blog />
+                                            <Blog />
+                                            <Blog />
+                                            <Blog />
                                         </div>
                                     </div>
                                 </div>

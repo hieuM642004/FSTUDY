@@ -3,9 +3,9 @@ import { Carousel } from 'antd';
 import { CheckOutlined } from '@ant-design/icons';
 
 import './HomePage.scss';
-import OnlineCourse from './OnlineCourse';
-import Dashboard from './DashBoard';
-import IELTSCard from '../../components/client/IELTSCard/IELTSCard';
+import OnlineCourse from './CoursesOnline/CoursesOnline';
+import Dashboard from '../DashBoard/DashBoard';
+import IELTSCard from '../../../components/client/IELTSCard/IELTSCard';
 import ButtonPrimary from '@/components/shared/ButtonPrimary/ButtonPrimary';
 
 const App: React.FC = () => {

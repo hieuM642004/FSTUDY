@@ -1,9 +1,9 @@
-import Blog from './Blog';
+import Blogs from './Blogs';
 
 function PageBlog() {
     return (
         <>
-           <Blog/>
+           <Blogs/>
         </>
     );
 }
