@@ -12,7 +12,6 @@ const roboto = Roboto({
 
 const ClientLayout = dynamic(
     () => import('../layouts/ClientLayout/ClientLayout'),
-    { ssr: false },
 );
 
 export const metadata = {

@@ -2,7 +2,7 @@
 import React from 'react';
 import { Carousel } from 'antd';
 
-
+import '../HomePage.scss';
 import Courses from '../../../../components/client/Course/Courses';
 
 const CoursesOnline: React.FC = () => {

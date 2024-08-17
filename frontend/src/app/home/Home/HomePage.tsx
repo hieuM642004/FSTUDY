@@ -1,3 +1,4 @@
+'use client';
 import React from 'react';
 import { Carousel } from 'antd';
 import { CheckOutlined } from '@ant-design/icons';
