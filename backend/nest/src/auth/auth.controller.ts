@@ -38,12 +38,15 @@ export class AuthController {
   async callback(@Req() req , @Res() res){
     const jwt = await this.authService.loginGoogle(req.user)
     res.set('authorization', jwt.accessToken)
-    res.cookie('accessToken', jwt.accessToken, { httpOnly: true });
-    res.cookie('refreshToken', jwt.refreshToken, { httpOnly: true });
-    res.json({
-      accessToken : jwt.accessToken,
-      refreshToken : jwt.refreshToken
-    });
+    // res.cookie('accessToken', jwt.accessToken, { httpOnly: true });
+    // res.cookie('refreshToken', jwt.refreshToken, { httpOnly: true });
+    // res.json({
+    //   accessToken : jwt.accessToken,
+    //   refreshToken : jwt.refreshToken
+    // });
+    res.cookie('token', jwt.accessToken);
+    res.cookie('refreshToken', jwt.refreshToken);
+    res.redirect(`${process.env.BASEURL_FE}`);
   }
   @Get('LoginGoogle')
   @UseGuards(AuthGuard('jwt'))

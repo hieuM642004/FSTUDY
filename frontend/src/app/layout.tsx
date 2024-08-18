@@ -2,6 +2,7 @@ import { Roboto } from 'next/font/google';
 import dynamic from 'next/dynamic';
 import './globals.scss';
 import StyledComponentsRegistry from '../lib/AntdRegistry';
+import { AuthProvider } from '@/context/auth/AuthContext';
 
 const roboto = Roboto({
     weight: ['400', '700'],
@@ -23,11 +24,13 @@ export const metadata = {
 const RootLayout = ({ children }: React.PropsWithChildren) => {
     return (
         <html lang="en">
+            <AuthProvider>
             <body className={roboto.className}>
                 <StyledComponentsRegistry>
                     <ClientLayout>{children}</ClientLayout>
                 </StyledComponentsRegistry>
             </body>
+            </AuthProvider>
         </html>
     );
 };

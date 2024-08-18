@@ -5,6 +5,8 @@ import { Breadcrumb, Layout } from 'antd';
 import Header from '@/components/client/Header/Header';
 import FooterComponent from '@/components/client/Footer/Footer';
 import SiteElevator from '@/components/client/SiteElevator/SiteElevator';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const { Content } = Layout;
 
@@ -26,6 +28,7 @@ const ClientLayout = ({ children }: { children: ReactNode }) => {
                 >
                     <SiteElevator/>
                     {children}
+                    <ToastContainer />
                 </div>
             </Content>
             <FooterComponent />

@@ -12,6 +12,7 @@ interface PrimaryButtonProps {
     onClick?: () => void;
     htmlType?: "button" | "reset" | "submit" | undefined;
     disabled?: boolean;
+    loading?: boolean
 }
 
 const sizeClassMap = {
@@ -28,6 +29,7 @@ const ButtonPrimary: React.FC<PrimaryButtonProps> = ({
     onClick,
     htmlType = "button",
     disabled = false,
+    loading = false,
 }) => {
     let btnClass = `btn-primary font-semibold ${sizeClassMap[size]} ${className}`;
 
@@ -38,7 +40,7 @@ const ButtonPrimary: React.FC<PrimaryButtonProps> = ({
             </Button>
         </Link>
     ) : (
-        <Button className={btnClass} onClick={onClick} type="primary" htmlType={htmlType} disabled={disabled}>
+        <Button className={btnClass} onClick={onClick} loading={loading} type="primary" htmlType={htmlType} disabled={disabled}>
             {label}
         </Button>
     );
