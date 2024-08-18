@@ -1,16 +1,20 @@
 'use client';
+import React from 'react';
+import Link from 'next/link';
+
 import Pagination from '../../components/shared/Pagination/Pagination';
 import Categories from './Layouts/Categories';
 import LearnAbout from './Layouts/LearnAbout';
 import BannerBlog from './Layouts/BannerBlog';
 import Blog from './Blog/Blog';
+import ButtonPrimary from '@/components/shared/ButtonPrimary/ButtonPrimary';
 
 function Blogs() {
     return (
         <>
             <div className="pb-4 pt-4">
                 <div className="pt-4 px-3">
-                    {/* Banner  */}
+                    {/* Banner */}
                     <BannerBlog />
                     {/* content */}
                     <div>
@@ -21,15 +25,21 @@ function Blogs() {
                             <div className="flex flex-wrap md:flex-nowrap justify-center">
                                 {/* category */}
                                 <Categories />
-                                {/* content  */}
-                                <div className="grow pl-6  pb-8  md:border-l-[1px]">
-                                   <Blog />
-                                   <Blog />
-                                   <Blog />
+                                {/* content */}
+                                <div className="grow pl-6 pb-8 md:border-l-[1px]">
+                                    <Link href={'/blogs/AddBlog'}>
+                                        <ButtonPrimary
+                                            size={'large'}
+                                            label={'Thêm bài viết'}
+                                            className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg"
+                                        />
+                                    </Link>
+
+                                    <Blog />
                                     {/* pagination */}
                                     <Pagination />
                                 </div>
-                                {/* learn about  */}
+                                {/* learn about */}
                                 <LearnAbout />
                             </div>
                         </div>

@@ -1,6 +1,7 @@
 'use client';
 import Image from 'next/image';
 import Link from 'next/link';
+import React, { useState, useEffect } from 'react';
 
 import LearnAbout from '../Layouts/LearnAbout';
 import Categories from '../Layouts/Categories';
@@ -8,11 +9,24 @@ import BannerBlog from '../Layouts/BannerBlog';
 import WapperItemCard from '@/components/client/WapperItemCard/WapperItemCard';
 import Comment from '../../../components/client/Comment/Comment';
 import Blog from '../Blog/Blog';
-
+import { nestApiInstance } from '../../../constant/api';
 
 function BlogDetail({ id }: string | any) {
-    console.log('check id' , id);
-    
+    console.log('check id', id);
+    const [blogDetail, setBlogDetail] = useState([]);
+
+    useEffect(() => {
+        const fetchBlogs = async () => {
+            try {
+                const res = await nestApiInstance.get(`/blog/${id}`);
+                setBlogDetail(res.data.data);
+            } catch (error) {
+                console.error('Failed to fetch blogs:', error);
+            }
+        };
+        fetchBlogs();
+    }, []);
+
     return (
         <>
             <div className=" pt-4">
@@ -55,13 +69,13 @@ function BlogDetail({ id }: string | any) {
                                                 <Image
                                                     width={35}
                                                     height={35}
-                                                    src="https://study4.com/static/img/user_icon.png"
+                                                    src={blogDetail.avatar}
                                                     alt="Picture of the author"
                                                     className="rounded-full"
                                                 />
                                             </div>
                                             <div className="ml-3">
-                                                <p>Kim Thanh Loi</p>
+                                                <p>{blogDetail.}</p>
                                                 <span>11/07/2024</span>
                                             </div>
                                         </div>
