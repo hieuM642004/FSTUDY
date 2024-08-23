@@ -24,7 +24,10 @@ class AuthService {
         dataEmailandPass: RegisterAndLogin,
     ): Promise<RegisterAndLogin | undefined> {
         try {
-            const response = await nestApiInstance.post('/auth/login', dataEmailandPass);
+            const response = await nestApiInstance.post(
+                '/auth/login',
+                dataEmailandPass,
+            );
             return response.data;
         } catch (error) {
             toast.error(error.response.data.message);
@@ -80,18 +83,19 @@ class AuthService {
             console.error('Error fetching login:', error);
         }
     };
-    static async handleRefreshToken(): Promise<undefined | any[]> {
+    static async handleRefreshToken(
+        originalConfig?: any,
+    ): Promise<undefined | any[]> {
         try {
             const RefreshToken = getCookie('refreshToken');
-            const response = await nestApiInstance.post(
-                `/auth/refresh-token`,
-                RefreshToken,
-            );
+            const response = await nestApiInstance.post(`/auth/refresh-token`, {
+                refresh_token: RefreshToken,
+            });
             const accessToken = response.data.accessToken;
             const refreshToken = response.data.refreshToken;
             setCookie('token', accessToken);
             setCookie('refreshToken', refreshToken);
-            return [accessToken, refreshToken];
+            return nestApiInstance(originalConfig);
         } catch (error) {
             console.error('Error fetching login:', error);
         }

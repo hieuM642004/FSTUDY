@@ -7,6 +7,7 @@ import { Drawer, MenuProps } from 'antd';
 import {  hasCookie } from 'cookies-next';
 import { AuthContext } from '@/context/auth/AuthContext';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation'
 
 import './Header.scss';
 import ButtonPrimary from '../../shared/ButtonPrimary/ButtonPrimary';
@@ -21,8 +22,9 @@ const menuItems = [
 ];
 
 const Header = () => {
-    const { user, logout, getProfileUser }: any = useContext(AuthContext);
-
+    const router = useRouter()
+    const { user, logout, getProfileUser , userInfo}: any = useContext(AuthContext);
+    
     const [visible, setVisible] = useState(false);
     const [token, setToken] = useState(false);
     const [dataUser, setDataUser] = useState();
@@ -65,7 +67,9 @@ const Header = () => {
         },
         {
             label: (
-                <div onClick={() => {}} className="">
+                <div onClick={() => {
+                    router.push('/myaccount')
+                }} className="">
                     Trang cá nhân
                 </div>
             ),
@@ -82,9 +86,9 @@ const Header = () => {
                     Đăng xuất
                 </div>
             ),
-            key: '1',
+            key: '2',
         },
-    ];
+    ];    
     return (
         <header className="lg:px-16 bg-white flex flex-wrap items-center shadow-md z-50 fixed w-full top-0">
             <div className="flex-1 flex justify-between items-center p-1">
@@ -142,14 +146,14 @@ const Header = () => {
                         <Dropdowns
                             items={itemsdropdown}
                             title={
-                                dataUser?.avatar ? (
+                                dataUser?.avatar  ? (
                                     <>
                                         <Image
                                             src={dataUser?.avatar}
                                             width={30}
                                             height={30}
                                             alt="Picture of the author"
-                                            className="mr-2"
+                                            className="mr-2 rounded-full"
                                         />
                                     </>
                                 ) : (

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import RegisterDto from './dto/user.dto';
 import mongoose from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
@@ -68,18 +68,22 @@ export class UserService {
         file: Express.Multer.File,
     ): Promise<User> {
         try {
-            const checkExists = await this.userModel.findOne({
-                email: user.email,
-                _id: { $ne: id },
-            });
-            if (checkExists) {
-                throw 'Email already exists';
+            const checkuser = await this.userModel.findById(id);
+
+            if (!checkuser) {
+                throw new NotFoundException('User not found.');
             }
-            const hashedPassword = await bcrypt.hash(user.password, 10);
-            const userWithHashedPassword = {
+            let newDataUser : object ={
                 ...user,
-                password: hashedPassword,
-            };
+            }
+            if(user.password){
+                const hashedPassword = await bcrypt.hash(user.password, 10);
+                newDataUser ={
+                    ...user,
+                    password: hashedPassword,
+                }
+            }
+            if(file){
             const fileStream = Readable.from(file.buffer);
             const fileId = await this.googleDriveUploader.uploadImage(
                 fileStream,
@@ -87,18 +91,18 @@ export class UserService {
                 '1eHh70ah2l2JuqHQlA1riebJZiRS9L20q',
             );
             const avatarUrl = this.googleDriveUploader.getThumbnailUrl(fileId);
-            const userWithAvatar = {
-                ...userWithHashedPassword,
+             newDataUser ={
+                ...user,
                 avatar: avatarUrl,
-            };
-            const res = await this.userModel.findByIdAndUpdate(
+             }
+            }            
+             const res = await this.userModel.findByIdAndUpdate(
                 id,
-                userWithAvatar,
+                newDataUser,
             );
-            const refreshToken = jwt.sign({ userWithAvatar}, process.env.JWT_SECRET);
+            const refreshToken = jwt.sign({ newDataUser}, process.env.JWT_SECRET);
             res.refreshToken = refreshToken;
-            await res.save();
-            return res;
+            return await res.save();
         } catch (error) {
             console.error('Error creating user:', error);
             throw error;
