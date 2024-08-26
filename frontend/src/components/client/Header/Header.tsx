@@ -9,7 +9,7 @@ import ButtonPrimary from '../../shared/ButtonPrimary/ButtonPrimary';
 
 const menuItems = [
     { key: 1, label: 'Khoá học online', href: '/courses-online' },
-    { key: 2, label: 'Đề thi online', href: '#' },
+    { key: 2, label: 'Đề thi online', href: '/tests' },
     { key: 3, label: 'Flashcards', href: '/flashcard' },
     { key: 4, label: 'Blog', href: '/blogs' },
     { key: 5, label: 'Kích hoạt khóa học', href: '/activate-courses' },

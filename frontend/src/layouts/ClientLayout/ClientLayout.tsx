@@ -5,7 +5,8 @@ import { Breadcrumb, Layout } from 'antd';
 import Header from '@/components/client/Header/Header';
 import FooterComponent from '@/components/client/Footer/Footer';
 import SiteElevator from '@/components/client/SiteElevator/SiteElevator';
-
+import { store } from '../../lib/redux/store';
+import { Provider } from 'react-redux';
 const { Content } = Layout;
 
 const ClientLayout = ({ children }: { children: ReactNode }) => {
@@ -19,13 +20,13 @@ const ClientLayout = ({ children }: { children: ReactNode }) => {
                     <Breadcrumb.Item>App</Breadcrumb.Item>
                 </Breadcrumb>
                 <div
-                    // style={{
-                    //     minHeight: 280,
-                    //     padding: 24,
-                    // }}
+                // style={{
+                //     minHeight: 280,
+                //     padding: 24,
+                // }}
                 >
-                    <SiteElevator/>
-                    {children}
+                    <SiteElevator />
+                    <Provider store={store}>{children}</Provider>
                 </div>
             </Content>
             <FooterComponent />

@@ -1,10 +1,10 @@
 import React from 'react';
-import OnlineTests from './OnlineTests';
+import Tests from './Tests';
 
 const PageOnlineTests: React.FC = () => {
     return (
         <>
-            <OnlineTests />
+            <Tests />
         </>
     );
 };

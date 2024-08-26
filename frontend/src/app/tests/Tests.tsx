@@ -1,101 +1,117 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 
 import ButtonPrimary from '@/components/shared/ButtonPrimary/ButtonPrimary';
 import IELTSCard from '../../components/client/IELTSCard/IELTSCard';
 import Pagination from '../../components/shared/Pagination/Pagination';
-import './Onlinetests.scss';
-const OnlineTests: React.FC = () => {
+import { Input } from 'antd';
+import './Tests.scss';
+import ExamService from '@/services/ExamsService';
+import { Exams } from '@/types/Exams';
+import Target from '@/components/client/Target/Target';
+
+const Tests: React.FC = () => {
     const [activeTab, setActiveTab] = useState('all');
-    const list = [
-        'Tất cả',
-        'IELTS Academic',
-        'IELTS General',
-        'TOEIC',
-        'HSK 1',
-        'HSK 2',
-        'HSK 3',
-        'HSK 4',
-        'HSK 5',
-        'HSK 6',
-        'Tiếng Anh THPTQG',
-        'Toán THPTQG',
-        'Sinh học THPTQG',
-        'Hóa học THPTQG',
-        'Vật lý THPTQG',
-        'NEW SAT',
-        'ACT',
-    ];
-    const tests = [
-        { testNumber: 1, views: 442326, comments: 1432 },
-        { testNumber: 2, views: 176373, comments: 392 },
-        { testNumber: 3, views: 112365, comments: 204 },
-        { testNumber: 4, views: 88719, comments: 215 },
-        { testNumber: 5, views: 72702, comments: 143 },
-        { testNumber: 6, views: 64167, comments: 115 },
-        { testNumber: 7, views: 45558, comments: 74 },
-        { testNumber: 10, views: 138996, comments: 396 },
-        { testNumber: 10, views: 138996, comments: 396 },
-        { testNumber: 10, views: 138996, comments: 396 },
-        { testNumber: 10, views: 138996, comments: 396 },
-        { testNumber: 10, views: 138996, comments: 396 },
-        { testNumber: 10, views: 138996, comments: 396 },
-        { testNumber: 10, views: 138996, comments: 396 },
-        { testNumber: 10, views: 138996, comments: 396 },
-        { testNumber: 10, views: 138996, comments: 396 },
-    ];
+    const [tests, setTests] = useState<Exams[]>([]);
+    const [examTypes, setExamTypes] = useState<
+        { label: string; value: string }[]
+    >([]);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [empty, setEmpty] = useState('');
+    useEffect(() => {
+        const fetchExamTypes = async () => {
+            const allExams = await ExamService.getAllExams();
+
+            const uniqueExamTypes = Array.from(
+                new Set(allExams.data.map((exam: any) => exam.examType)),
+            );
+
+            const tabs = [
+                { label: 'Tất cả', value: 'all' },
+                ...uniqueExamTypes.map((type: any) => ({
+                    label: type,
+                    value: type,
+                })),
+            ];
+
+            setExamTypes(tabs);
+        };
+
+        fetchExamTypes();
+    }, []);
+
+    useEffect(() => {
+        const getTests = async () => {
+            let examTypeQuery =
+                activeTab !== 'all' ? `examType=${activeTab}` : '';
+            const testsData = await ExamService.getAllExams(examTypeQuery);
+
+            const formattedTests = testsData.data.map((exam: any) => ({
+                title: exam.title,
+                examType: exam.examType,
+                slug: exam.slug,
+                durition: exam.idSession.reduce(
+                    (acc: number, session: any) =>
+                        acc + (session.duration || 0),
+                    0,
+                ),
+                idSession: exam.idSession.map((session: any) => ({
+                    title: session.title,
+                    description: session.description,
+                    slug: session.slug,
+                })),
+            }));
+
+            setTests(formattedTests);
+        };
+
+        getTests();
+    }, [activeTab]);
+
+    const handleSearch = async () => {
+        const searchExams = await ExamService.getAllExams(
+            `title=${searchQuery}`,
+        );
+        if (searchExams.data.length === 0) {
+            setEmpty('Không tìm thấy đề thi');
+            setTests([]);
+        } else {
+            setTests(searchExams.data);
+        }
+    };
     return (
         <>
             <div className="container mx-auto p-6">
                 <div className="flex flex-col md:flex-row md:space-x-4 mt-4 gap-8">
-                    <div className="w-full md:w-64 p-4 border rounded-lg order-1 md:order-2 mb-4 md:mb-0">
-                        <div className="flex items-center space-x-2">
-                            <Image
-                                src=""
-                                alt="Avatar"
-                                width={40}
-                                height={40}
-                                className="bg-gray-300 rounded-full mb-2"
-                            />
-                            <div>
-                                <div className="font-bold">NgoDuy</div>
-                            </div>
-                        </div>
-                        <hr />
-                        <div className="mt-4">
-                            <p className="text-sm">IELTS General</p>
-                            <p className="text-sm">Ngày dự thi: -</p>
-                            <p className="text-sm">Tới kỳ thi: 0 ngày</p>
-                            <p className="text-sm">Điểm mục tiêu: -</p>
-                        </div>
-                        <ButtonPrimary
-                            size={'large'}
-                            label={' Thống kê kết quả'}
-                            className="mt-4 px-4 py-2 w-full bg-blue-500 text-white rounded-lg"
-                        />
-                    </div>
+                    <Target />
                     <div className="md:basis-2/3 order-2 md:order-1">
                         <h1 className="text-3xl font-bold">Thư viện đề thi</h1>
                         <div className="flex space-x-2 flex-wrap w-auto mt-4">
-                            {list.map((item, index) => (
-                                <Link
-                                    href={'#'}
+                            {examTypes.map((item, index) => (
+                                <button
                                     key={index}
-                                    className="whitespace-pre-wrap px-4 rounded-lg hover:bg-gray-200 h-8 items-center hover:text-black"
+                                    onClick={() => setActiveTab(item.value)}
+                                    className={`whitespace-pre-wrap px-4 rounded-lg hover:bg-gray-200 items-center hover:text-black ${
+                                        activeTab === item.value
+                                            ? 'bg-gray-200 text-black'
+                                            : ''
+                                    }`}
                                 >
-                                    {item}
-                                </Link>
+                                    {item.label}
+                                </button>
                             ))}
                         </div>
                         <div className="mt-4 flex flex-wrap items-center space-x-2">
-                            <input
+                            <Input
                                 type="text"
                                 placeholder="Tìm kiếm"
                                 className="flex-1 p-1 border rounded-lg"
+                                onChange={(e) => setSearchQuery(e.target.value)}
                             />
                             <ButtonPrimary
+                                onClick={handleSearch}
                                 size={'large'}
                                 label={'Tìm kiếm'}
                                 className="px-4 py-2 bg-blue-500 text-white rounded-lg"
@@ -158,16 +174,23 @@ const OnlineTests: React.FC = () => {
                         </Link>
                     </div>
                     <div className="md:basis-2/3 order-1 md:order-1">
-                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 ">
-                            {tests.map((test, index) => (
-                                <IELTSCard
-                                    key={index}
-                                    testNumber={test.testNumber}
-                                    views={test.views}
-                                    comments={test.comments}
-                                />
-                            ))}
-                        </div>
+                        {tests.length > 0 ? (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 ">
+                                {tests.map((test, index) => (
+                                    <IELTSCard
+                                        key={index}
+                                        title={test.title}
+                                        idSession={test.idSession}
+                                        durition={test.durition}
+                                        examType={test.examType}
+                                        description={''}
+                                        slug={test.slug}
+                                    />
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="text-center">{empty}</div>
+                        )}
                     </div>
                 </div>
                 <div className="pt-4">
@@ -187,4 +210,4 @@ const OnlineTests: React.FC = () => {
     );
 };
 
-export default OnlineTests;
+export default Tests;

@@ -4,7 +4,7 @@ import type { TabsProps } from 'antd';
 import WapperItemCard from '@/components/client/WapperItemCard/WapperItemCard';
 import UserInfo from './Labels/UserInfo';
 import ChangePass from './Labels/ChangePass';
-import Tab from '../../components/client/Tabs/Tabs';
+import Tab from '@/components/client/Tabs/Tabs';
 
 const items: TabsProps['items'] = [
     {

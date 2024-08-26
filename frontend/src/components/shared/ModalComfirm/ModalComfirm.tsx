@@ -2,32 +2,34 @@
 'use client';
 import React from 'react';
 import { Modal } from 'antd';
-import ButtonPrimary from '../ButtonPrimary/ButtonPrimary';
 import './ModalConfirm.scss';
+
 interface ConfirmModalProps {
   visible: boolean;
   message: string;
   onConfirm: () => void;
   onCancel: () => void;
+  okText?: string;
+  cancelText?: string;
 }
 
-const ConfirmModal: React.FC<ConfirmModalProps> = ({ visible, message, onConfirm, onCancel }) => {
+const ConfirmModal: React.FC<ConfirmModalProps> = ({ visible, message, onConfirm, onCancel, okText = 'Có', cancelText = 'Hủy' }) => {
   const handleConfirm = () => {
-    onConfirm(); // Call the confirm handler passed as a prop
+    onConfirm(); 
   };
 
   const handleCancel = () => {
-    onCancel(); // Call the cancel handler passed as a prop
+    onCancel(); 
   };
 
   return (
     <Modal
       title="Xác nhận"
-      visible={visible}
+      open={visible}
       onOk={handleConfirm}
       onCancel={handleCancel}
-      okText='có'
-      cancelText="Không"
+      okText={okText}
+      cancelText={cancelText}
     >
       <p>{message}</p>
     </Modal>
