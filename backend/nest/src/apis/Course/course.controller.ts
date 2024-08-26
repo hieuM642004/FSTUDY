@@ -3,19 +3,24 @@ import {
     Controller,
     Delete,
     Get,
+    HttpCode,
     Param,
     Patch,
     Post,
     Put,
+    Query,
+    Req,
+    Res,
     UploadedFile,
     UseInterceptors,
 } from '@nestjs/common';
 import { ResponseData } from 'src/global/globalClass';
+import { Response, Request } from 'express';
 import { HttpMessage, HttpStatus } from 'src/global/globalEnum';
 import { CourseService } from './course.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import {
-  Content,
+    Content,
     Course,
     CourseType,
     Lesson,
@@ -35,11 +40,13 @@ import { updateContentDto } from './dto/content/updateContent.dto';
 import { createLessonDto } from './dto/lesson/createLesson.dto';
 import { updateLessonDto } from './dto/lesson/updateLesson.dto';
 import { ContentType } from 'src/utils/constants';
-import { error } from 'console';
+import { error, log } from 'console';
 import { CreateCourseDto } from './dto/course/create-course.dto';
 import { UpdateCourseDto } from './dto/course/update-course.dto';
-import { generateSlug } from 'src/utils/generateSlug';
+const crypto = require('crypto');
+
 import { Types } from 'mongoose';
+import axios from 'axios';
 
 @Controller('course')
 export class CourseController {
@@ -138,7 +145,7 @@ export class CourseController {
     }
 
     @Delete('word-matching/:id')
-    removeWordMatching(@Param('id') id: string){
+    removeWordMatching(@Param('id') id: string) {
         return this.courseService.removeWordMatching(id);
     }
 
@@ -185,75 +192,90 @@ export class CourseController {
      */
 
     @Post('content/create')
-    createContent(@Body() createContentDto: createContentDto): Promise<Content> {
-      return this.courseService.createContent(createContentDto);
+    createContent(
+        @Body() createContentDto: createContentDto,
+    ): Promise<Content> {
+        return this.courseService.createContent(createContentDto);
     }
-  
+
     @Get('content')
     findAllContent(): Promise<Content[]> {
-      return this.courseService.findAllContent();
+        return this.courseService.findAllContent();
     }
-  
+
     @Get('content/:id')
     findOneContent(@Param('id') id: string): Promise<Content> {
-      return this.courseService.findOneContent(id);
+        return this.courseService.findOneContent(id);
     }
-  
+
     @Put('content/:id')
-    updateContent(@Param('id') id: string, @Body() updateContentDto: updateContentDto): Promise<Content> {
-      return this.courseService.updateContent(id, updateContentDto);
+    updateContent(
+        @Param('id') id: string,
+        @Body() updateContentDto: updateContentDto,
+    ): Promise<Content> {
+        return this.courseService.updateContent(id, updateContentDto);
     }
-  
+
     @Delete('content/:id')
     removeContent(@Param('id') id: string) {
-      return this.courseService.removeContent(id);
+        return this.courseService.removeContent(id);
     }
-    
+
     /**
      * Lesson Controller
      */
 
     @Post('lesson/create')
     createLesson(@Body() createLessonDto: createLessonDto): Promise<Lesson> {
-      return this.courseService.createLesson(createLessonDto);
+        return this.courseService.createLesson(createLessonDto);
     }
-  
+
     @Get('lesson')
     findAllLesson(): Promise<Lesson[]> {
-      return this.courseService.findAllLesson();
+        return this.courseService.findAllLesson();
     }
-  
+
     @Get('lesson/:id')
     findOneLesson(@Param('id') id: string): Promise<Lesson> {
-      return this.courseService.findOneLesson(id);
+        return this.courseService.findOneLesson(id);
     }
-  
+
     @Put('lesson/:id')
-    updateLesson(@Param('id') id: string, @Body() updateLessonDto: updateLessonDto): Promise<Lesson> {
-      return this.courseService.updateLesson(id, updateLessonDto);
+    updateLesson(
+        @Param('id') id: string,
+        @Body() updateLessonDto: updateLessonDto,
+    ): Promise<Lesson> {
+        return this.courseService.updateLesson(id, updateLessonDto);
     }
-  
+
     @Delete('lesson/:id')
     removeLesson(@Param('id') id: string) {
-      return this.courseService.removeLesson(id);
+        return this.courseService.removeLesson(id);
     }
     @Patch('lesson/add/:id')
-    async addContent(@Param('id') lessonId: string, @Body('content') contentId: string) {
-      return this.courseService.addContentToLesson(lessonId, contentId);
+    async addContent(
+        @Param('id') lessonId: string,
+        @Body('content') contentId: string,
+    ) {
+        return this.courseService.addContentToLesson(lessonId, contentId);
     }
 
     @Patch('content/add/:id')
     async addData(
-      @Param('id') contentId: string,
-      @Body() body: { contentType: ContentType; dataId: string }
+        @Param('id') contentId: string,
+        @Body() body: { contentType: ContentType; dataId: string },
     ): Promise<Content> {
-      const { contentType, dataId } = body;
-  
-      if (!Object.values(ContentType).includes(contentType)) {
-        throw new error('Invalid content type');
-      }
-  
-      return this.courseService.addDataToContent(contentId, contentType, dataId);
+        const { contentType, dataId } = body;
+
+        if (!Object.values(ContentType).includes(contentType)) {
+            throw new error('Invalid content type');
+        }
+
+        return this.courseService.addDataToContent(
+            contentId,
+            contentType,
+            dataId,
+        );
     }
     /**
      * Course Type
@@ -354,10 +376,8 @@ export class CourseController {
 
     //Delete a Course Type
     @Delete('type/:id')
-    async deleteCourseType(
-        @Param('id') id: string,
-    ){
-      return this.courseService.deleteCourseTypesById(id);
+    async deleteCourseType(@Param('id') id: string) {
+        return this.courseService.deleteCourseTypesById(id);
     }
 
     /**
@@ -366,60 +386,165 @@ export class CourseController {
 
     @Post('create')
     @UseInterceptors(FileInterceptor('thumbnail'))
-  createCourse(
-    @Body() createCourseDto: CreateCourseDto ,
-    @UploadedFile() file: Express.Multer.File,
-): Promise<Course> {
-    return this.courseService.createCourse(createCourseDto,file);
-  }
+    createCourse(
+        @Body() createCourseDto: CreateCourseDto,
+        @UploadedFile() file: Express.Multer.File,
+    ): Promise<Course> {
+        return this.courseService.createCourse(createCourseDto, file);
+    }
 
-  @Get()
-  findAllCourse(): Promise<Course[]> {
-    return this.courseService.findAllCourse();
-  }
+    @Get()
+    findAllCourse(): Promise<Course[]> {
+        return this.courseService.findAllCourse();
+    }
 
-  @Get(':id')
-  findOneCourse(@Param('id') id: string): Promise<Course> {
-    return this.courseService.findOneCourse(id);
-  }
+    @Get(':id')
+    findOneCourse(@Param('id') id: string): Promise<Course> {
+        return this.courseService.findOneCourse(id);
+    }
 
-  @Put(':id')
-  @UseInterceptors(FileInterceptor('thumbnail'))
-  updateCourse(
-    @Param('id') id: string, 
-    @Body() updateCourseDto: UpdateCourseDto ,
-    @UploadedFile() file: Express.Multer.File,
-): Promise<Course> {
-    return this.courseService.updateCourse(id,updateCourseDto,file);
-  }
+    @Put(':id')
+    @UseInterceptors(FileInterceptor('thumbnail'))
+    updateCourse(
+        @Param('id') id: string,
+        @Body() updateCourseDto: UpdateCourseDto,
+        @UploadedFile() file: Express.Multer.File,
+    ): Promise<Course> {
+        return this.courseService.updateCourse(id, updateCourseDto, file);
+    }
 
-  @Delete(':id')
-  removeCourse(@Param('id') id: string) {
-    return this.courseService.removeCourse(id);
-  }
+    @Delete(':id')
+    removeCourse(@Param('id') id: string) {
+        return this.courseService.removeCourse(id);
+    }
 
-  @Patch('course/add/:id')
-  async addLesson(@Param('id') lessonId: string, @Body('lesson') contentId: string) {
-    return this.courseService.addLessontoCourse(lessonId, contentId);
-  }
+    @Patch('course/add/:id')
+    async addLesson(
+        @Param('id') lessonId: string,
+        @Body('lesson') contentId: string,
+    ) {
+        return this.courseService.addLessontoCourse(lessonId, contentId);
+    }
 
-  @Post('purchase/:courseId')
-  async createPurchase(
+    @Post('purchase/:courseId')
+    async createPurchase(
+        @Param('courseId') courseId: string,
+        @Body('userId') userId: string,
+    ) {
+        const purchase = await this.courseService.createPurchase(
+            new Types.ObjectId(userId),
+            new Types.ObjectId(courseId),
+        );
+        return purchase;
+    }
+
+
+    @Post('purchase-vnpay/:courseId')
+    async createPurchaseVNPAY(
       @Param('courseId') courseId: string,
-      @Body('userId') userId: string
-  ) {
-      const purchase = await this.courseService.createPurchase(
-          new Types.ObjectId(userId),
-          new Types.ObjectId(courseId)
-      );
-      return purchase;
-  }
+      @Body('userId') userId: string,
+      @Body('bankCode') bankCode: string,
+      @Body('orderDescription') orderDescription: string,
+      @Body('orderType') orderType: string,
+      @Req() req: Request,
+    ) {
+      const ipAddr = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+    //   const ipAddr = req.ip || req.headers['x-forwarded-for'] || '';
+      const paymentUrl = await this.courseService.createPurchaseAndPaymentUrl(
+        new Types.ObjectId(userId),
+        new Types.ObjectId(courseId),
+        bankCode,
+        ipAddr as string,
+      ); 
+  
+      return { paymentUrl };
+    }
+    @Get('/callbackvnpay')
+    async handlePostCallbackVnPay(@Res() res: Response , @Req() req: Request) {
+        const { vnp_ResponseCode, email, transId } = req.query;
+        if (vnp_ResponseCode === '00' && email) {
+            const key = transId; 
+            try {
+                await this.courseService.sendSuccessEmail(email as string, req.query.key as string);
+                //code redirect
+            } catch (error) {
+                console.error('Failed to send success email:', error);
+            }
+        }
+        return res.status(204).json(req.body);
+    }
 
-  @Post('complete/:purchaseKey')
-  async completePayment(
-      @Param('purchaseKey') purchaseKey: string
-  ) {
-      const purchase = await this.courseService.completePayment(purchaseKey);
-      return purchase;
-  }
+    @Get('/callback')
+    async handlePostCallback(@Res() res: Response , @Req() req: Request) {
+        const { resultCode, email, transId } = req.query;
+        
+        // Check if the resultCode is present and successful (assuming 0 means success)
+        if (resultCode === '0' && email) {
+            const key = transId; // Assuming you want to send the transaction ID as the key
+            try {
+                await this.courseService.sendSuccessEmail(email as string, req.query.key as string);
+                //code redirect
+            } catch (error) {
+                console.error('Failed to send success email:', error);
+            }
+        }
+    
+        return res.status(204).json(req.body);
+    }
+
+    @Post('/check-status-transaction')
+    async checkStatusTransaction(
+      @Body() checkStatusTransactionDto,
+      @Res() res: Response,
+    ) {
+      const { orderId } = checkStatusTransactionDto;
+  
+      // Setup MoMo API credentials and signature generation
+      const secretKey = 'K951B6PE1waDMi640xX08PD3vg6EkVlz';
+      const accessKey = 'F8BBA842ECF85';
+      const rawSignature = `accessKey=${accessKey}&orderId=${orderId}&partnerCode=MOMO&requestId=${orderId}`;
+  
+      const signature = crypto
+        .createHmac('sha256', secretKey)
+        .update(rawSignature)
+        .digest('hex');
+  
+      const requestBody = {
+        partnerCode: 'MOMO',
+        requestId: orderId,
+        orderId: orderId,
+        signature: signature,
+        lang: 'vi',
+      };
+  
+      try {
+        // Make the HTTP request to MoMo's API using axios
+        const result = await axios.post(
+          'https://test-payment.momo.vn/v2/gateway/api/query',
+          requestBody,
+          {
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          },
+        );
+
+        return res.status(HttpStatus.SUCCESS).json(result.data);
+      } catch (error) {
+        // Handle errors
+        console.error('Error checking transaction status:', error.message);
+        return res.status(HttpStatus.ERROR).json({
+          message: 'Error checking transaction status',
+          error: error.message,
+        });
+      }
+    }
+
+
+
+    @Post('complete/')
+    async completePayment(@Body('key') purchaseKey: string) {
+        const purchase = await this.courseService.completePurchase(purchaseKey);
+        return purchase;
+    }
 }

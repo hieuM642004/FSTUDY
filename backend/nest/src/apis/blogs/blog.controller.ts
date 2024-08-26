@@ -3,6 +3,8 @@ import {
     Controller,
     Delete,
     Get,
+    HttpException,
+    NotFoundException,
     Param,
     Post,
     Put,
@@ -14,6 +16,7 @@ import { Blog, ChildTopic, Topic } from './blogSchema/blog.schema';
 import { HttpMessage, HttpStatus } from 'src/global/globalEnum';
 import { BlogService } from './blog.service';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { title } from 'process';
 
 @Controller('blog')
 export class BlogController {
@@ -293,29 +296,43 @@ export class BlogController {
 
     // Create blog routes
     @Post('/create-blog')
-    @UseInterceptors(FileInterceptor('avatar'))
-    async createBlog(
-        @Body() blog: Blog,
-        @UploadedFile() file: Express.Multer.File,
-    ): Promise<ResponseData<Blog>> {
-        try {
-            const NewBlog = new Blog();
-            Object.assign(NewBlog, blog);
-            NewBlog.generateSlug();
-            const saveBlog = await this.blogService.createBlog(NewBlog, file);
-            return new ResponseData<Blog>(
-                saveBlog,
-                HttpStatus.SUCCESS,
-                HttpMessage.SUCCESS,
-            );
-        } catch (error) {
-            return new ResponseData<Blog>(
-                null,
-                HttpStatus.ERROR,
-                HttpMessage.ERROR,
-            );
-        }
+  @UseInterceptors(FileInterceptor('avatar'))
+  async createBlog(
+    @Body() blogDto: Blog,
+    @UploadedFile() file: Express.Multer.File,
+  ): Promise<ResponseData<Blog>> {
+    try {
+      const NewBlog = new Blog();
+      Object.assign(NewBlog, blogDto);
+      await NewBlog.generateSlug(); // Ensure generateSlug is awaited if it's asynchronous
+
+      const savedBlog = await this.blogService.createBlog(NewBlog, file);
+      return new ResponseData<Blog>(
+        savedBlog,
+        HttpStatus.SUCCESS,
+        'Blog created successfully',
+      );
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        // Return specific error response for NotFoundException
+        return new ResponseData<Blog>(
+          null,
+          HttpStatus.NOT_FOUND,
+          error.message,
+        );
+      }
+      if (error instanceof HttpException) {
+        // Handle other known HttpExceptions
+        throw error;
+      }
+      // Handle unexpected errors
+      return new ResponseData<Blog>(
+        null,
+        HttpStatus.ERROR,
+        'An unexpected error occurred while creating the blog',
+      );
     }
+  }
 
     // Update blog routes
     @Put('/update-blog/:id')
@@ -377,10 +394,10 @@ export class BlogController {
     // Search Blog by name route
     @Post('search')
     async searchUserByName(
-        @Body('key') name: string,
+        @Body('key') title: string,
     ): Promise<ResponseData<Blog[]>> {
         try {
-            const blogs = await this.blogService.searchBlogByName(name);
+            const blogs = await this.blogService.searchBlogByName(title);
             return new ResponseData<Blog[]>(
                 blogs,
                 HttpStatus.SUCCESS,

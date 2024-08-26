@@ -28,6 +28,12 @@ export class AuthService {
 
     async register(user: User, file: Express.Multer.File): Promise<User> {
         try {
+            // Check if the email already exists
+            const existingUser = await this.userModel.findOne({ email: user.email });
+            if (existingUser) {
+                throw new Error('Email already exists');
+            }
+    
             const hashedPassword = await bcrypt.hash(user.password, 10);
             const userWithHashedPassword = {
                 ...user,
@@ -35,14 +41,14 @@ export class AuthService {
             };
             const userWithAvatar = {
                 ...userWithHashedPassword,
-                typeLogin : TypeLogin.BASIC,
-                role : UserRole.USER
+                typeLogin: TypeLogin.BASIC,
+                role: UserRole.USER
             };
-        
+    
             const createdUser = new this.userModel(userWithAvatar);
             const savedUser = await createdUser.save();
     
-            const refreshToken = jwt.sign({ userWithAvatar}, process.env.JWT_SECRET);
+            const refreshToken = jwt.sign({ user: savedUser }, process.env.JWT_SECRET); // Adjust payload if needed
             savedUser.refreshToken = refreshToken;
     
             await savedUser.save();
@@ -54,87 +60,99 @@ export class AuthService {
         }
     }
     //Login Google
-    async loginGoogle(
-        user: any,
-    ): Promise<{ accessToken: string; refreshToken: string }> {
+    async loginGoogle(user: any): Promise<{ accessToken: string; refreshToken: string }> {
         if (!user) {
             return {
                 accessToken: '',
                 refreshToken: '',
             };
         }
-        const existingUser = await this.userModel.findOne({
-            email: user.emails[0].value,
-        });
-        const slug = await this.generateSlug(user.displayName);
-
+    
+        // Extract the user information
+        const email = user.emails[0].value;
+        const displayName = user.displayName;
+        const userId = user.id; // This should be the ID from your database, not Google
+        const avatar = user.photos[0].value;
+        const slug = await this.generateSlug(displayName);
+    
+        let existingUser = await this.userModel.findOne({ email });
+    
         if (existingUser) {
             // User exists in the database
             const accessToken = this.jwtService.sign({
-                user: user.id,
-                name: user.displayName,
-                email: user.emails[0].value,
-                avatar: user.photos[0].value,
-                typeLogin : TypeLogin.GOOGLE,
-                slug: slug,
+                id: existingUser._id, // Use the ID from your database
+                name: displayName,
+                email,
+                avatar,
+                typeLogin: TypeLogin.GOOGLE,
+                slug,
                 role: UserRole.USER,
-                sub: 'access', // Sử dụng 'access' làm subject của accessToken
+                sub: 'access',
             });
-
-            user.refreshToken = this.jwtService.sign(
+    
+            const refreshToken = this.jwtService.sign(
                 {
-                    user: user.id,
-                    name: user.displayName,
-                    email: user.emails[0].value,
-                    avatar: user.photos[0].value,
-                    typeLogin : TypeLogin.GOOGLE,
-                    slug: slug,
+                    id: existingUser._id, // Use the ID from your database
+                    name: displayName,
+                    email,
+                    avatar,
+                    typeLogin: TypeLogin.GOOGLE,
+                    slug,
                     role: UserRole.USER,
-                    sub: 'refresh', // Sử dụng 'refresh' làm subject của accessToken
+                    sub: 'refresh',
                 },
                 { expiresIn: '7d' },
             );
-
-            return { accessToken, refreshToken: user.refreshToken };
+    
+            // Update the refreshToken in the database
+            existingUser.refreshToken = refreshToken;
+            await existingUser.save();
+    
+            return { accessToken, refreshToken };
         } else {
-            // const slug = await this.generateSlug(user.displayName);
-
-            const accessToken = this.jwtService.sign({
-                user: user.id,
+            // Create a new user in the database
+            const newUser = await this.userModel.create({
+                id: userId, // Use the ID from Google or your system as appropriate
                 username: user.fullname,
-                fullname: user.displayName,
-                email: user.emails[0].value,
-                avatar: user.photos[0].value,
-                typeLogin : TypeLogin.GOOGLE,
-                slug: slug,
+                fullname: displayName,
+                email,
+                avatar,
+                typeLogin: TypeLogin.GOOGLE,
+                slug,
                 role: UserRole.USER,
-                sub: 'access', // Sử dụng 'access' làm subject của accessToken
             });
-
-            user.refreshToken = this.jwtService.sign(
+    
+            const accessToken = this.jwtService.sign({
+                id: newUser._id, // Use the ID from your database
+                username: user.fullname,
+                fullname: displayName,
+                email,
+                avatar,
+                typeLogin: TypeLogin.GOOGLE,
+                slug,
+                role: UserRole.USER,
+                sub: 'access',
+            });
+    
+            const refreshToken = this.jwtService.sign(
                 {
-                    user: user.id,
-                    name: user.displayName,
-                    email: user.emails[0].value,
-                    avatar: user.photos[0].value,
-                    typeLogin : TypeLogin.GOOGLE,
-                    slug: slug,
+                    id: newUser._id, // Use the ID from your database
+                    name: displayName,
+                    email,
+                    avatar,
+                    typeLogin: TypeLogin.GOOGLE,
+                    slug,
                     role: UserRole.USER,
-                    sub: 'refresh', // Sử dụng 'refresh' làm subject của accessToken
+                    sub: 'refresh',
                 },
                 { expiresIn: '7d' },
             );
-            const newUser = await this.userModel.create({
-                username: user.fullname,
-                fullname: user.displayName,
-                email: user.emails[0].value,
-                avatar: user.photos[0].value,
-                typeLogin : TypeLogin.GOOGLE,
-                slug: slug,
-                role: UserRole.USER,
-                refreshToken: user.refreshToken,
-            });
-            return { accessToken, refreshToken: user.refreshToken };
+    
+            // Save the refreshToken to the user document
+            newUser.refreshToken = refreshToken;
+            await newUser.save();
+    
+            return { accessToken, refreshToken };
         }
     }
     async loginFacebook(

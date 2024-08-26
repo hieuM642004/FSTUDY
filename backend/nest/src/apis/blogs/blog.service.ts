@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { Blog, ChildTopic, Topic } from './blogSchema/blog.schema';
 import mongoose from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
@@ -9,6 +9,7 @@ import { CreateTopicDto } from './dto/createTopic.dto';
 import { UpdateTopicDto } from './dto/updateTopic.dto';
 import { CreateChildTopicDto } from './dto/createChildTopic.dto';
 import { UpdateChildTopicDto } from './dto/updateChildTopic.dto';
+import { User } from '../users/userSchema/user.schema';
 
 @Injectable()
 export class BlogService {
@@ -19,6 +20,8 @@ export class BlogService {
         private readonly topicModel: mongoose.Model<Topic>,
         @InjectModel(ChildTopic.name)
         private readonly childTopicModel: mongoose.Model<ChildTopic>,
+        @InjectModel(User.name)
+        private readonly userModel: mongoose.Model<User>,
         private readonly googleDriveUploader: GoogleDriveUploader,
     ) {}
 
@@ -98,13 +101,15 @@ export class BlogService {
 
     // Find All Child Topics
     async findAllChildTopics(): Promise<ChildTopic[]> {
-        const childTopics = await this.childTopicModel.find().exec();
+        const childTopics = await this.childTopicModel.find()
+        .populate('topic')
+        .exec();
         return childTopics;
     }
     // Find Child Topic By Id
     async findChildTopicById(id: string): Promise<ChildTopic> {
         try {
-            const res = await this.childTopicModel.findById(id);
+            const res = await this.childTopicModel.findById(id).populate('topic');
             return res;
         } catch (error) {
             console.error('Error create child topic:', error);
@@ -129,38 +134,85 @@ export class BlogService {
 
     // Find all blogs
     async findAll(): Promise<Blog[]> {
-        const blogs = await this.blogModel.find();
+        const blogs = await this.blogModel
+            .find()
+            .populate({
+                path: 'user', 
+                model: 'User' 
+            })
+            .populate({
+                path: 'childTopics',
+                populate: {
+                    path: 'topic',
+                    model: 'Topic' 
+                }
+            })
+            .populate('likes')         
+            .populate('comments')      
+            .exec();
         return blogs;
     }
 
     // Find Blog by Id
-    async findById(id: string): Promise<Blog> {
-        const blog = await this.blogModel.findById(id);
+    async findById(key: string): Promise<Blog | null> {
+        let query: any;
+        if (this.isValidObjectId(key)) {
+            query = { _id: key };
+        } else {
+            query = { slug: key };
+        }
+    
+        const blog = await this.blogModel.findOne(query)
+        .populate({
+            path: 'user', 
+            model: 'User' 
+        })
+            .populate({
+                path: 'childTopics',
+                populate: {
+                    path: 'topic',
+                    model: 'Topic'
+                }
+            })
+            .populate('likes')         
+            .populate('comments')      
+            .exec();
+    
         return blog;
+    }
+    
+    private isValidObjectId(id: string): boolean {
+        return /^[0-9a-fA-F]{24}$/.test(id);
     }
 
     // Create Blog
     async createBlog(
         blog: CreateBlogDto,
         file: Express.Multer.File,
-    ): Promise<Blog> {
+      ): Promise<Blog> {
         try {
-            const blogcreate = { ...blog };
-            const fileStream = Readable.from(file.buffer);
-            const fileId = await this.googleDriveUploader.uploadImage(
-                fileStream,
-                file.originalname,
-                '1eHh70ah2l2JuqHQlA1riebJZiRS9L20q',
-            );
-            const ImageUrl = this.googleDriveUploader.getThumbnailUrl(fileId);
-            const blogData = { ...blogcreate, avatar: ImageUrl };
-            const res = await this.blogModel.create(blogData);
-            return res;
+          const userExists = await this.userModel.findById(blog.user).exec();
+          if (!userExists) {
+            throw new NotFoundException('User does not exist');
+          }
+    
+          const fileStream = Readable.from(file.buffer);
+          const fileId = await this.googleDriveUploader.uploadImage(
+            fileStream,
+            file.originalname,
+            '1eHh70ah2l2JuqHQlA1riebJZiRS9L20q',
+          );
+          const ImageUrl = this.googleDriveUploader.getThumbnailUrl(fileId);
+          const blogData = { ...blog, avatar: ImageUrl };
+          return await this.blogModel.create(blogData);
         } catch (error) {
-            console.error('Error create blog:', error);
-            throw error;
+          console.error('Error creating blog:', error);
+          if (error instanceof NotFoundException) {
+            throw error; // Rethrow NotFoundException to be caught by the controller
+          }
+          throw new InternalServerErrorException('Error creating blog');
         }
-    }
+      }
 
     // Update blog by Id
     async updateBlog(
@@ -199,7 +251,7 @@ export class BlogService {
     }
 
     async searchBlogByName(key: string): Promise<Blog[]> {
-        const blogs = await this.blogModel.find({ name: key });
+        const blogs = await this.blogModel.find({ title: key });
         return blogs;
     }
 
