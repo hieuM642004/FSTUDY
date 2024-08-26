@@ -3,8 +3,8 @@ import { ObjectId } from 'mongoose';
 
 export class CreateBlogDto {
   
-  @IsString()
-  readonly name: string;
+  // @IsString()
+  // readonly name: string;
   @IsString()
   readonly title: string;
   @IsString()

@@ -1,6 +1,8 @@
 'use client';
-import Image from 'next/image';
+
 import Link from 'next/link';
+import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
 
 import LearnAbout from '../Layouts/LearnAbout';
 import Categories from '../Layouts/Categories';
@@ -8,11 +10,33 @@ import BannerBlog from '../Layouts/BannerBlog';
 import WapperItemCard from '@/components/client/WapperItemCard/WapperItemCard';
 import Comment from '../../../components/client/Comment/Comment';
 import Blog from '../Blog/Blog';
-
+import { nestApiInstance } from '../../../constant/api';
 
 function BlogDetail({ id }: string | any) {
-    console.log('check id' , id);
-    
+    const [blogDetail, setBlogDetail] = useState<any>([]);
+    const [blogs, setBlogs] = useState<any[]>([]);
+    useEffect(() => {
+        const fetchBlogs = async () => {
+            try {
+                const res = await nestApiInstance.get(`/blog/${id}`);
+                setBlogDetail(res.data.data);
+            } catch (error) {
+                console.error('Failed to fetch blogs:', error);
+            }
+        };
+        const fetchAllBlogs = async () => {
+            try {
+                const response = await nestApiInstance.get(`/blog`);
+                setBlogs(response.data.data);
+                // setTotalPages(response.data.totalPages || 1);
+            } catch (error) {
+                console.error('Error fetching blogs:', error);
+            }
+        };
+        fetchBlogs();
+        fetchAllBlogs();
+    }, []);
+
     return (
         <>
             <div className=" pt-4">
@@ -29,16 +53,11 @@ function BlogDetail({ id }: string | any) {
                     {/* title blogdetail */}
                     <div className="text-center">
                         <h2 className=" xl:text-4xl md:text-2xl  text-xl font-bold mb-4">
-                            Location and Types of Dance Classes Young People Are
-                            Attending - Bài mẫu IELTS Writing Task 1 (Multiple
-                            Charts)
+                            {blogDetail.title}
                         </h2>
-                        <p className="mb-4 font-semibold text-lg">
-                            Tham khảo đề thi IELTS Writing Task 1 “Location and
-                            Types of Dance Classes Young People Are Attending”
-                            thuộc Cambridge 19 Test 4. Hãy cùng xem bài mẫu đạt
-                            band 8.0+ này cùng STUDY4 nhé!
-                        </p>
+                        {/* <p className="mb-4 font-semibold text-lg">
+                            {blogDetail.content}
+                        </p> */}
                     </div>
                     {/* content */}
                     <div className="py-3">
@@ -55,14 +74,18 @@ function BlogDetail({ id }: string | any) {
                                                 <Image
                                                     width={35}
                                                     height={35}
-                                                    src="https://study4.com/static/img/user_icon.png"
+                                                    src={
+                                                        blogDetail?.user?.avatar
+                                                    }
                                                     alt="Picture of the author"
                                                     className="rounded-full"
                                                 />
                                             </div>
                                             <div className="ml-3">
-                                                <p>Kim Thanh Loi</p>
-                                                <span>11/07/2024</span>
+                                                <p>
+                                                    {blogDetail?.user?.fullname}
+                                                </p>
+                                                <span>{blogDetail.date}</span>
                                             </div>
                                         </div>
                                         {/*  Related articles */}
@@ -96,7 +119,18 @@ function BlogDetail({ id }: string | any) {
                                         </WapperItemCard>
                                         {/* main content  */}
                                         <div>
-                                            <h2>Render Nội dung </h2>
+                                            <Image
+                                                src={blogDetail.avatar}
+                                                alt="pics"
+                                                width={1000}
+                                                height={0}
+                                                className="w-auto h-auto pb-8"
+                                            />
+                                            <div
+                                                dangerouslySetInnerHTML={{
+                                                    __html: blogDetail.content,
+                                                }}
+                                            />
                                         </div>
                                         {/* comment  */}
                                         <div className="my-7">
@@ -128,10 +162,10 @@ function BlogDetail({ id }: string | any) {
                                             <h3 className="font-bold text-2xl mb-2">
                                                 Các bài viết cùng chủ đề
                                             </h3>
-                                            <Blog />
-                                            <Blog />
-                                            <Blog />
-                                            <Blog />
+                                            <Blog
+                                                data={blogs}
+                                                onChange={() => ''}
+                                            />
                                         </div>
                                     </div>
                                 </div>

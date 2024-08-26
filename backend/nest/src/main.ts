@@ -8,6 +8,7 @@ import { Logger } from '@nestjs/common';
 import { json, urlencoded } from 'express';
 
 
+
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.useGlobalPipes(new ValidationPipe());
@@ -17,8 +18,6 @@ async function bootstrap() {
         origin: '*',
         credentials: true
     })
-    app.use(json());
-    app.use(urlencoded({ extended: true }));
   await app.listen(4000);
   
   if (module.hot) {

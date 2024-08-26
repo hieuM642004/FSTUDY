@@ -16,6 +16,7 @@ import { Blog, ChildTopic, Topic } from './blogSchema/blog.schema';
 import { HttpMessage, HttpStatus } from 'src/global/globalEnum';
 import { BlogService } from './blog.service';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { title } from 'process';
 
 @Controller('blog')
 export class BlogController {
@@ -393,10 +394,10 @@ export class BlogController {
     // Search Blog by name route
     @Post('search')
     async searchUserByName(
-        @Body('key') name: string,
+        @Body('key') title: string,
     ): Promise<ResponseData<Blog[]>> {
         try {
-            const blogs = await this.blogService.searchBlogByName(name);
+            const blogs = await this.blogService.searchBlogByName(title);
             return new ResponseData<Blog[]>(
                 blogs,
                 HttpStatus.SUCCESS,

@@ -36,8 +36,8 @@ export class Blog {
     @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'user' })
     user: mongoose.Schema.Types.ObjectId;
 
-    @Prop({ type: String })
-    name: string;
+    // @Prop({ type: String })
+    // name: string;
 
     @Prop({ type: String })
     content: string;
@@ -48,7 +48,7 @@ export class Blog {
     @Prop({ type: String })
     avatar: string;
 
-    @Prop({ type: String, required: true })
+    @Prop({ type: String, default: "1"})
     status: string;
 
     @Prop({ type: String })

@@ -137,10 +137,14 @@ export class BlogService {
         const blogs = await this.blogModel
             .find()
             .populate({
+                path: 'user', 
+                model: 'User' 
+            })
+            .populate({
                 path: 'childTopics',
                 populate: {
                     path: 'topic',
-                    model: 'Topic'  // Ensure this model is defined if using nested topics
+                    model: 'Topic' 
                 }
             })
             .populate('likes')         
@@ -150,19 +154,35 @@ export class BlogService {
     }
 
     // Find Blog by Id
-    async findById(id: string): Promise<Blog> {
-        const blog = await this.blogModel.findById(id)
+    async findById(key: string): Promise<Blog | null> {
+        let query: any;
+        if (this.isValidObjectId(key)) {
+            query = { _id: key };
+        } else {
+            query = { slug: key };
+        }
+    
+        const blog = await this.blogModel.findOne(query)
         .populate({
-            path: 'childTopics',
-            populate: {
-                path: 'topic',
-                model: 'Topic'  // Ensure this model is defined if using nested topics
-            }
+            path: 'user', 
+            model: 'User' 
         })
-        .populate('likes')         
-        .populate('comments')      
-        .exec();;
+            .populate({
+                path: 'childTopics',
+                populate: {
+                    path: 'topic',
+                    model: 'Topic'
+                }
+            })
+            .populate('likes')         
+            .populate('comments')      
+            .exec();
+    
         return blog;
+    }
+    
+    private isValidObjectId(id: string): boolean {
+        return /^[0-9a-fA-F]{24}$/.test(id);
     }
 
     // Create Blog
@@ -231,7 +251,7 @@ export class BlogService {
     }
 
     async searchBlogByName(key: string): Promise<Blog[]> {
-        const blogs = await this.blogModel.find({ name: key });
+        const blogs = await this.blogModel.find({ title: key });
         return blogs;
     }
 
