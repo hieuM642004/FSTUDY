@@ -14,7 +14,7 @@ export class UpdateExamSessionDto {
    readonly idExam: string;
 
     @IsOptional()
-   readonly idQuestions: string[];
+   readonly idQuestionGroups: string[];
 
     @IsOptional()
    readonly slug: string;

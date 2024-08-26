@@ -32,6 +32,8 @@ export const ExamSchema = SchemaFactory.createForClass(Exams);
 //ExamSession
 @Schema({ timestamps: true })
 export class ExamSession {
+    _id?: any;
+
     @Prop()
     title: string;
 
@@ -44,43 +46,67 @@ export class ExamSession {
     @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Exams' })
     idExam: string;
 
-    @Prop([{ type: mongoose.Schema.Types.ObjectId, ref: 'Question' }])
-    idQuestions: string[];
+    @Prop([{ type: mongoose.Schema.Types.ObjectId, ref: 'QuestionGroup' }])
+    idQuestionGroups: string[];
 
     @Prop()
     slug:string
+   
 }
 export const ExamSessionSchema = SchemaFactory.createForClass(ExamSession);
+
+// QuestionGroup
+@Schema({ timestamps: true })
+export class QuestionGroup {
+    @Prop()
+    title: string;  
+
+    @Prop()
+    description: string;  
+
+    @Prop()
+    audioUrl?: string;  
+
+    @Prop()
+    passageText?: string;  
+
+    @Prop()
+    imageUrl?: string;  
+    @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'ExamSession' })
+    examSession: mongoose.Schema.Types.ObjectId;;  
+
+    @Prop([{ type: mongoose.Schema.Types.ObjectId, ref: 'Question' }])
+    questions: mongoose.Schema.Types.ObjectId[];
+}
+
+export const QuestionGroupSchema = SchemaFactory.createForClass(QuestionGroup);
 
 //Questions
 @Schema({ timestamps: true })
 export class Question {
     @Prop()
-    question: string;
+    questionText: string;
 
     @Prop({ enum: ['multiple-choice', 'fill-in-the-blank', 'short-answer'] })
     questionType: string;
 
-    @Prop()
-    questionText: string;
-
     @Prop([String])
     options?: string[];
 
-    @Prop({type:mongoose.Schema.Types.Mixed})
+    @Prop({ type: mongoose.Schema.Types.Mixed })
     correctAnswer: string | string[];
 
     @Prop()
     explanation: string;
 
-    @Prop()
-    audioUrl?: string;
 
-    @Prop()
-    imageUrl?: string;
 
-    @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'ExamSession' })
-    examSession: string;
+    @Prop({ default: 0 })
+    order: number;
+
+    @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'QuestionGroup' })
+    questionGroup: mongoose.Schema.Types.ObjectId;
 }
+
 
 export const QuestionSchema = SchemaFactory.createForClass(Question);

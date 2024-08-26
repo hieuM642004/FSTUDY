@@ -7,14 +7,18 @@ import {
     Controller,
     Param,
     UseInterceptors,
-    UploadedFile,
     UploadedFiles,
     Query,
 } from '@nestjs/common';
 import { ExamService } from './exam.service';
 import { ResponseData } from 'src/global/globalClass';
 import { HttpMessage, HttpStatus } from 'src/global/globalEnum';
-import { Exams, ExamSession, Question } from './ExamSchema/exam.schema';
+import {
+    Exams,
+    ExamSession,
+    Question,
+    QuestionGroup,
+} from './ExamSchema/exam.schema';
 import { CreateExamsDto } from './dto/exams/createExams.dto';
 import { UpdateExamsDto } from './dto/exams/updateExams.dto';
 import { UpdateExamSessionDto } from './dto/examSession/updateExamSession.dto';
@@ -23,10 +27,10 @@ import { CreateQuestionDto } from './dto/questions/createQuestion.dto';
 import { UpdateQuestionDto } from './dto/questions/updateQuestion.dto';
 import {
     FileFieldsInterceptor,
-    FileInterceptor,
-    FilesInterceptor,
 } from '@nestjs/platform-express';
 import { PaginatedResult } from './interfaces/paginatedResult';
+import { CreateQuestionGroupDto } from './dto/questionGroup/createQuestionGroup.dto';
+import { UpdateQuestionGroupDto } from './dto/questionGroup/updateQuestionGroup.dto';
 
 @Controller('exams')
 export class ExamController {
@@ -192,6 +196,25 @@ export class ExamController {
             );
         }
     }
+    @Get('questions-by-sessions')
+    async getQuestionsBySessionIds(
+        @Query('slug') sessionSlugs: string[],
+    ): Promise<ResponseData<ExamSession>> {
+        try {
+            const session = await this.examService.getQuestionsBySessionIds(sessionSlugs);
+            return new ResponseData<ExamSession>(
+                session,
+                HttpStatus.SUCCESS,
+                HttpMessage.SUCCESS,
+            );
+        } catch (error) {
+            return new ResponseData<ExamSession>(
+                null,
+                HttpStatus.ERROR,
+                HttpMessage.ERROR,
+            );
+        }
+    }
 
     @Post('create-session')
     async createSession(
@@ -257,6 +280,140 @@ export class ExamController {
         }
     }
 
+    //
+    //Group Question
+    @Get('group-questions')
+    async findAllQuestionGroups(): Promise<ResponseData<QuestionGroup[]>> {
+        try {
+            const questionGroups =
+                await this.examService.findAllQuestionGroups();
+            return new ResponseData<QuestionGroup[]>(
+                questionGroups,
+                HttpStatus.SUCCESS,
+                HttpMessage.SUCCESS,
+            );
+        } catch (error) {
+            return new ResponseData<QuestionGroup[]>(
+                null,
+                HttpStatus.ERROR,
+                HttpMessage.ERROR,
+            );
+        }
+    }
+
+    @Get('question-groups/:id')
+    async findQuestionGroupById(
+        @Param('id') id: string,
+    ): Promise<ResponseData<QuestionGroup>> {
+        try {
+            const questionGroup =
+                await this.examService.findQuestionGroupById(id);
+            return new ResponseData<QuestionGroup>(
+                questionGroup,
+                HttpStatus.SUCCESS,
+                HttpMessage.SUCCESS,
+            );
+        } catch (error) {
+            return new ResponseData<QuestionGroup>(
+                null,
+                HttpStatus.ERROR,
+                HttpMessage.ERROR,
+            );
+        }
+    }
+
+    @Post('create-question-groups')
+    @UseInterceptors(
+        FileFieldsInterceptor([
+            { name: 'image', maxCount: 1 },
+            { name: 'audio', maxCount: 1 },
+        ]),
+    )
+    async createQuestionGroup(
+        @Body() createQuestionGroupDto: CreateQuestionGroupDto,
+        @UploadedFiles()
+        files: { image?: Express.Multer.File[]; audio?: Express.Multer.File[] },
+    ): Promise<ResponseData<QuestionGroup>> {
+        try {
+            const imageFile = files?.image ? files.image[0] : null;
+            const audioFile = files?.audio ? files.audio[0] : null;
+            const newQuestionGroup = await this.examService.createQuestionGroup(
+                createQuestionGroupDto,
+                imageFile,
+                audioFile,
+            );
+            return new ResponseData<QuestionGroup>(
+                newQuestionGroup,
+                HttpStatus.CREATED,
+                HttpMessage.SUCCESS,
+            );
+        } catch (error) {
+            return new ResponseData<QuestionGroup>(
+                null,
+                HttpStatus.ERROR,
+                error.response.message,
+            );
+        }
+    }
+
+    @Put('update-question-groups/:id')
+    @UseInterceptors(
+        FileFieldsInterceptor([
+            { name: 'image', maxCount: 1 },
+            { name: 'audio', maxCount: 1 },
+        ]),
+    )
+    async updateQuestionGroup(
+        @Param('id') id: string,
+        @Body() updateQuestionGroupDto: UpdateQuestionGroupDto,
+        @UploadedFiles()
+        files: { image?: Express.Multer.File[]; audio?: Express.Multer.File[] },
+    ): Promise<ResponseData<QuestionGroup>> {
+        try {
+            const imageUrl = files?.image ? files.image[0] : null;
+            const audioUrl = files?.audio ? files.audio[0] : null;
+            const updatedQuestionGroup =
+                await this.examService.updateQuestionGroup(
+                    id,
+                    updateQuestionGroupDto,
+                    imageUrl,
+                    audioUrl,
+                );
+            return new ResponseData<QuestionGroup>(
+                updatedQuestionGroup,
+                HttpStatus.SUCCESS,
+                HttpMessage.SUCCESS,
+            );
+        } catch (error) {
+            return new ResponseData<QuestionGroup>(
+                null,
+                HttpStatus.ERROR,
+                error.response.message,
+            );
+        }
+    }
+
+    @Delete('question-groups/:id')
+    async deleteQuestionGroup(
+        @Param('id') id: string,
+    ): Promise<ResponseData<QuestionGroup>> {
+        try {
+            const deletedQuestionGroup =
+                await this.examService.deleteQuestionGroup(id);
+            return new ResponseData<QuestionGroup>(
+                deletedQuestionGroup,
+                HttpStatus.SUCCESS,
+                HttpMessage.SUCCESS,
+            );
+        } catch (error) {
+            return new ResponseData<QuestionGroup>(
+                null,
+                HttpStatus.ERROR,
+                error.response.message,
+            );
+        }
+    }
+
     //Question
     @Get('questions')
     async findAllQuestions(): Promise<ResponseData<Question[]>> {
@@ -297,25 +454,12 @@ export class ExamController {
     }
 
     @Post('create-question')
-    @UseInterceptors(
-        FileFieldsInterceptor([
-            { name: 'image', maxCount: 1 },
-            { name: 'audio', maxCount: 1 },
-        ]),
-    )
     async createQuestion(
         @Body() createQuestionDto: CreateQuestionDto,
-        @UploadedFiles()
-        files: { image?: Express.Multer.File[]; audio?: Express.Multer.File[] },
     ): Promise<ResponseData<Question>> {
         try {
-            const imageFile = files?.image ? files.image[0] : null;
-            const audioFile = files?.audio ? files.audio[0] : null;
-            const savedQuestion = await this.examService.createQuestion(
-                createQuestionDto,
-                imageFile,
-                audioFile,
-            );
+            const savedQuestion =
+                await this.examService.createQuestion(createQuestionDto);
             return new ResponseData<Question>(
                 savedQuestion,
                 HttpStatus.CREATED,
@@ -331,26 +475,14 @@ export class ExamController {
     }
 
     @Put('update-question/:id')
-    @UseInterceptors(
-        FileFieldsInterceptor([
-            { name: 'image', maxCount: 1 },
-            { name: 'audio', maxCount: 1 },
-        ]),
-    )
     async updateQuestion(
         @Param('id') id: string,
         @Body() updateQuestionDto: UpdateQuestionDto,
-        @UploadedFiles()
-        files: { image?: Express.Multer.File[]; audio?: Express.Multer.File[] },
     ): Promise<ResponseData<Question>> {
         try {
-            const imageFile = files?.image ? files.image[0] : null;
-            const audioFile = files?.audio ? files.audio[0] : null;
             const updatedQuestion = await this.examService.updateQuestion(
                 id,
                 updateQuestionDto,
-                imageFile,
-                audioFile,
             );
             return new ResponseData<Question>(
                 updatedQuestion,

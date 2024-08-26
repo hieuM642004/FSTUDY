@@ -1,30 +1,27 @@
-import { IsEnum,IsOptional } from "class-validator";
+import { IsEnum, IsOptional } from 'class-validator';
 
-export class UpdateQuestionDto{
+export class UpdateQuestionDto {
     @IsOptional()
-  readonly  question: string;
+    readonly question: string;
 
-   @IsEnum( ['multiple-choice', 'fill-in-the-blank', 'short-answer'])
-   readonly questionType: string;
-
-    @IsOptional()
-   readonly questionText: string;
+    @IsEnum(['multiple-choice', 'fill-in-the-blank', 'short-answer'])
+    readonly questionType: string;
 
     @IsOptional()
-  readonly  options?: string[];
+    readonly questionText: string;
 
     @IsOptional()
-   readonly correctAnswer: string | string[];
+    readonly options?: string[];
 
     @IsOptional()
-  readonly  explanation: string;
+    readonly correctAnswer: string | string[];
 
     @IsOptional()
-    audioUrl?: string;
+    readonly explanation: string;
+    
+    @IsOptional()
+     order: number;
 
     @IsOptional()
-    imageUrl?: string;
-
-    @IsOptional()
- readonly   examSession: string;
+    readonly questionGroup: string;
 }

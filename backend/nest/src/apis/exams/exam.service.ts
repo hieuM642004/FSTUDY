@@ -7,15 +7,20 @@ import {
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose from 'mongoose';
 
-import { Exams, ExamSession, Question } from './ExamSchema/exam.schema';
+import {
+    Exams,
+    ExamSession,
+    Question,
+    QuestionGroup,
+} from './ExamSchema/exam.schema';
 import { generateSlug } from 'src/utils/generateSlug';
-import FirebaseService from 'src/providers/storage/firebase/firebase.service';
 import { CreateQuestionDto } from './dto/questions/createQuestion.dto';
 import { UpdateQuestionDto } from './dto/questions/updateQuestion.dto';
 import { GoogleDriveUploader } from 'src/providers/storage/drive/drive.upload';
 import { Readable } from 'stream';
-import { populate } from 'dotenv';
 import { PaginatedResult } from './interfaces/paginatedResult';
+import { UpdateQuestionGroupDto } from './dto/questionGroup/updateQuestionGroup.dto';
+import { CreateQuestionGroupDto } from './dto/questionGroup/createQuestionGroup.dto';
 
 @Injectable()
 export class ExamService {
@@ -24,6 +29,8 @@ export class ExamService {
         private readonly examModel: mongoose.Model<Exams>,
         @InjectModel(ExamSession.name)
         private readonly examSessionModel: mongoose.Model<ExamSession>,
+        @InjectModel(QuestionGroup.name)
+        private readonly questionGroupModel: mongoose.Model<QuestionGroup>,
         @InjectModel(Question.name)
         private readonly questionModel: mongoose.Model<Question>,
         private readonly googleDriveUploader: GoogleDriveUploader,
@@ -157,6 +164,24 @@ export class ExamService {
         return session;
     }
 
+    async getQuestionsBySessionIds(slug: string[]): Promise<ExamSession[]> {
+        const sessions = await this.examSessionModel
+            .find({ slug: { $in: slug } })
+            .populate({
+                path: 'idQuestionGroups',
+                populate: {
+                    path: 'questions',
+                },
+            })
+            .exec();
+
+        const allQuestions = sessions.reduce((acc, session) => {
+            return acc.concat(session.idQuestionGroups);
+        }, []);
+
+        return allQuestions;
+    }
+
     async createSession(session: ExamSession): Promise<ExamSession> {
         try {
             session.slug = generateSlug(session.title);
@@ -222,6 +247,160 @@ export class ExamService {
         }
     }
 
+    //Group Question
+    async findAllQuestionGroups(): Promise<QuestionGroup[]> {
+        return await this.questionGroupModel.find().exec();
+    }
+    async findQuestionGroupById(id: string): Promise<QuestionGroup> {
+        const questionGroup = await this.questionGroupModel.findById(id).exec();
+        if (!questionGroup) {
+            throw new NotFoundException('QuestionGroup not found.');
+        }
+        return questionGroup;
+    }
+    async createQuestionGroup(
+        createQuestionGroupDto: CreateQuestionGroupDto,
+        image?: Express.Multer.File,
+        audio?: Express.Multer.File,
+    ): Promise<QuestionGroup> {
+        try {
+            if (image) {
+                const fileStream = Readable.from(image.buffer);
+                const imageId = await this.googleDriveUploader.uploadImage(
+                    fileStream,
+                    image.originalname,
+                    '1dBsbu_CDHGOY_9Jsq_wBwB5_gqAWNMvu',
+                );
+                createQuestionGroupDto.imageUrl =
+                    this.googleDriveUploader.getThumbnailUrl(imageId);
+            }
+
+            if (audio) {
+                const fileStream = Readable.from(audio.buffer);
+                const audioId = await this.googleDriveUploader.uploadVideo(
+                    fileStream,
+                    audio.originalname,
+                    '1dBsbu_CDHGOY_9Jsq_wBwB5_gqAWNMvu',
+                );
+                createQuestionGroupDto.audioUrl =
+                    this.googleDriveUploader.getVideoUrl(audioId);
+            }
+            const questionGroup = await this.questionGroupModel.create(
+                createQuestionGroupDto,
+            );
+            await this.examSessionModel
+                .updateMany(
+                    { _id: { $in: createQuestionGroupDto.examSession } },
+                    { $push: { idQuestionGroups: questionGroup._id } },
+                )
+                .exec();
+            return questionGroup;
+        } catch (error) {
+            throw new Error('Error creating questionGroup: ' + error.message);
+        }
+    }
+
+    async updateQuestionGroup(
+        id: string,
+        updateQuestionGroupDto: UpdateQuestionGroupDto,
+        imageFile?: Express.Multer.File,
+        audioFile?: Express.Multer.File,
+    ): Promise<QuestionGroup> {
+        try {
+            const existingQuestionGroup = await this.questionGroupModel
+                .findById(id)
+                .exec();
+            if (!existingQuestionGroup) {
+                throw new NotFoundException('QuestionGroup not found.');
+            }
+
+            if (imageFile && existingQuestionGroup.imageUrl) {
+                const oldImageFileId =
+                    this.googleDriveUploader.extractFileIdFromUrl(
+                        existingQuestionGroup.imageUrl,
+                    );
+                if (oldImageFileId) {
+                    await this.googleDriveUploader.delete(oldImageFileId);
+                }
+            }
+
+            if (imageFile) {
+                const fileStream = Readable.from(imageFile.buffer);
+                const newImageFileId =
+                    await this.googleDriveUploader.uploadImage(
+                        fileStream,
+                        imageFile.originalname,
+                        '1dBsbu_CDHGOY_9Jsq_wBwB5_gqAWNMvu',
+                    );
+                updateQuestionGroupDto.imageUrl =
+                    this.googleDriveUploader.getThumbnailUrl(newImageFileId);
+            }
+
+            if (audioFile && existingQuestionGroup.audioUrl) {
+                const oldAudioFileId =
+                    this.googleDriveUploader.extractFileIdFromUrl(
+                        existingQuestionGroup.audioUrl,
+                    );
+                if (oldAudioFileId) {
+                    await this.googleDriveUploader.delete(oldAudioFileId);
+                }
+            }
+
+            if (audioFile) {
+                const fileStream = Readable.from(audioFile.buffer);
+                const newAudioFileId =
+                    await this.googleDriveUploader.uploadVideo(
+                        fileStream,
+                        audioFile.originalname,
+                        '1dBsbu_CDHGOY_9Jsq_wBwB5_gqAWNMvu',
+                    );
+                updateQuestionGroupDto.audioUrl =
+                    this.googleDriveUploader.getVideoUrl(newAudioFileId);
+            }
+
+            const updatedQuestionGroup = await this.questionGroupModel
+                .findByIdAndUpdate(id, updateQuestionGroupDto, { new: true })
+                .exec();
+            return updatedQuestionGroup;
+        } catch (error) {
+            throw new Error('Error updating questionGroup: ' + error.message);
+        }
+    }
+
+    async deleteQuestionGroup(id: string): Promise<QuestionGroup> {
+        const existingQuestionGroup = await this.questionGroupModel
+            .findById(id)
+            .exec();
+        if (!existingQuestionGroup) {
+            throw new NotFoundException('QuestionGroup not found.');
+        }
+        if (existingQuestionGroup.audioUrl) {
+            const audioFileId = this.googleDriveUploader.extractFileIdFromUrl(
+                existingQuestionGroup.audioUrl,
+            );
+            if (audioFileId) {
+                await this.googleDriveUploader.delete(audioFileId);
+            }
+        }
+
+        if (existingQuestionGroup.imageUrl) {
+            const imageFileId = this.googleDriveUploader.extractFileIdFromUrl(
+                existingQuestionGroup.imageUrl,
+            );
+            if (imageFileId) {
+                await this.googleDriveUploader.delete(imageFileId);
+            }
+        }
+
+        await this.examSessionModel
+            .updateMany(
+                { _id: existingQuestionGroup.examSession },
+                { $pull: { idQuestionGroups: existingQuestionGroup._id } },
+            )
+            .exec();
+        return await this.questionGroupModel.findByIdAndDelete(id).exec();
+    }
+
     //Question
     async findAllQuestions(): Promise<Question[]> {
         return await this.questionModel.find().exec();
@@ -237,38 +416,71 @@ export class ExamService {
 
     async createQuestion(
         createQuestionDto: CreateQuestionDto,
-        image?: Express.Multer.File,
-        audio?: Express.Multer.File,
     ): Promise<Question> {
         try {
-            if (image) {
-                const fileStream = Readable.from(image.buffer);
-                const imageId = await this.googleDriveUploader.uploadImage(
-                    fileStream,
-                    image.originalname,
-                    '1dBsbu_CDHGOY_9Jsq_wBwB5_gqAWNMvu',
-                );
-                createQuestionDto.imageUrl =
-                    this.googleDriveUploader.getThumbnailUrl(imageId);
+            // Fetch the QuestionGroup
+            const questionGroup = await this.questionGroupModel
+                .findById(createQuestionDto.questionGroup)
+                .populate({
+                    path: 'examSession',
+                    populate: {
+                        path: 'idExam',
+                        model: 'Exams',
+                    },
+                })
+                .exec();
+
+            if (!questionGroup) {
+                throw new NotFoundException('QuestionGroup not found.');
             }
 
-            if (audio) {
-                const fileStream = Readable.from(audio.buffer);
-                const audioId = await this.googleDriveUploader.uploadVideo(
-                    fileStream,
-                    audio.originalname,
-                    '1dBsbu_CDHGOY_9Jsq_wBwB5_gqAWNMvu',
+            // Ensure we are working with the correct Exam ID
+            const examSession =
+                questionGroup.examSession as unknown as ExamSession;
+            const examId = examSession?.idExam; 
+
+            if (!examId) {
+                throw new NotFoundException(
+                    'Exam ID not found in ExamSession.',
                 );
-                createQuestionDto.audioUrl =
-                    this.googleDriveUploader.getVideoUrl(audioId);
             }
+
+            // Fetch all ExamSessions for the given Exam
+            const examSessions = await this.examSessionModel
+                .find({ idExam: examId })
+                .exec();
+            const examSessionIds = examSessions.map((es) => es._id);
+
+            // Fetch all QuestionGroups for these ExamSessions
+            const questionGroups = await this.questionGroupModel
+                .find({ examSession: { $in: examSessionIds } })
+                .exec();
+            const questionGroupIds = questionGroups.map((qg) => qg._id);
+
+            // Find the maximum order value for all questions in these QuestionGroups
+            const maxOrderQuestion = await this.questionModel
+                .find({ questionGroup: { $in: questionGroupIds } })
+                .sort({ order: -1 })
+                .limit(1)
+                .exec();
+
+            const nextOrder =
+                maxOrderQuestion.length > 0 ? maxOrderQuestion[0].order + 1 : 1;
+
+            // Assign the new order to the question
+            createQuestionDto.order = nextOrder;
+
+            // Create the new question
             const question = await this.questionModel.create(createQuestionDto);
-            await this.examSessionModel
-                .updateMany(
-                    { _id: { $in: createQuestionDto.examSession } },
-                    { $push: { idQuestions: question._id } },
+
+            // Update the QuestionGroup with the new question
+            await this.questionGroupModel
+                .updateOne(
+                    { _id: createQuestionDto.questionGroup },
+                    { $push: { questions: question._id } },
                 )
                 .exec();
+
             return question;
         } catch (error) {
             throw new Error('Error creating question: ' + error.message);
@@ -278,8 +490,6 @@ export class ExamService {
     async updateQuestion(
         id: string,
         updateQuestionDto: UpdateQuestionDto,
-        imageFile?: Express.Multer.File,
-        audioFile?: Express.Multer.File,
     ): Promise<Question> {
         try {
             const existingQuestion = await this.questionModel
@@ -287,50 +497,6 @@ export class ExamService {
                 .exec();
             if (!existingQuestion) {
                 throw new NotFoundException('Question not found.');
-            }
-
-            if (imageFile && existingQuestion.imageUrl) {
-                const oldImageFileId =
-                    this.googleDriveUploader.extractFileIdFromUrl(
-                        existingQuestion.imageUrl,
-                    );
-                if (oldImageFileId) {
-                    await this.googleDriveUploader.delete(oldImageFileId);
-                }
-            }
-
-            if (imageFile) {
-                const fileStream = Readable.from(imageFile.buffer);
-                const newImageFileId =
-                    await this.googleDriveUploader.uploadImage(
-                        fileStream,
-                        imageFile.originalname,
-                        '1dBsbu_CDHGOY_9Jsq_wBwB5_gqAWNMvu',
-                    );
-                updateQuestionDto.imageUrl =
-                    this.googleDriveUploader.getThumbnailUrl(newImageFileId);
-            }
-
-            if (audioFile && existingQuestion.audioUrl) {
-                const oldAudioFileId =
-                    this.googleDriveUploader.extractFileIdFromUrl(
-                        existingQuestion.audioUrl,
-                    );
-                if (oldAudioFileId) {
-                    await this.googleDriveUploader.delete(oldAudioFileId);
-                }
-            }
-
-            if (audioFile) {
-                const fileStream = Readable.from(audioFile.buffer);
-                const newAudioFileId =
-                    await this.googleDriveUploader.uploadVideo(
-                        fileStream,
-                        audioFile.originalname,
-                        '1dBsbu_CDHGOY_9Jsq_wBwB5_gqAWNMvu',
-                    );
-                updateQuestionDto.audioUrl =
-                    this.googleDriveUploader.getVideoUrl(newAudioFileId);
             }
 
             const updatedQuestion = await this.questionModel
@@ -347,28 +513,11 @@ export class ExamService {
         if (!existingQuestion) {
             throw new NotFoundException('Question not found.');
         }
-        if (existingQuestion.audioUrl) {
-            const audioFileId = this.googleDriveUploader.extractFileIdFromUrl(
-                existingQuestion.audioUrl,
-            );
-            if (audioFileId) {
-                await this.googleDriveUploader.delete(audioFileId);
-            }
-        }
 
-        if (existingQuestion.imageUrl) {
-            const imageFileId = this.googleDriveUploader.extractFileIdFromUrl(
-                existingQuestion.imageUrl,
-            );
-            if (imageFileId) {
-                await this.googleDriveUploader.delete(imageFileId);
-            }
-        }
-
-        await this.examSessionModel
+        await this.questionGroupModel
             .updateMany(
-                { _id: existingQuestion.examSession },
-                { $pull: { idQuestions: existingQuestion._id } },
+                { _id: existingQuestion.questionGroup },
+                { $pull: { questions: existingQuestion._id } },
             )
             .exec();
         return await this.questionModel.findByIdAndDelete(id).exec();

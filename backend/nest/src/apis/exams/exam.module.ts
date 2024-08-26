@@ -7,6 +7,8 @@ import {
     ExamSchema,
     ExamSessionSchema,
     QuestionSchema,
+    QuestionGroupSchema,
+    QuestionGroup,
 } from './ExamSchema/exam.schema';
 import { ExamController } from './exam.controller';
 import { ExamService } from './exam.service';
@@ -17,6 +19,7 @@ import { GoogleDriveUploader } from 'src/providers/storage/drive/drive.upload';
         MongooseModule.forFeature([
             { name: Exams.name, schema: ExamSchema },
             { name: ExamSession.name, schema: ExamSessionSchema },
+            { name: QuestionGroup.name, schema: QuestionGroupSchema },
             { name: Question.name, schema: QuestionSchema },
         ]),
     ],
