@@ -1,7 +1,7 @@
 import { Readable } from 'stream';
 import { GoogleDriveUploader } from 'src/providers/storage/drive/drive.upload';
 // import { CourseLessonService } from './course-lesson.service';
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, Req } from '@nestjs/common';
 import mongoose, { Types } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { CreateCourseDto } from './dto/course/create-course.dto';
@@ -34,10 +34,14 @@ import { createContentDto } from './dto/content/createContent.dto';
 import { createLessonDto } from './dto/lesson/createLesson.dto';
 import { updateLessonDto } from './dto/lesson/updateLesson.dto';
 import { v4 as uuidv4 } from 'uuid';
-
+const crypto = require('crypto');
+import * as qs from 'querystring';
 import { User } from '../users/userSchema/user.schema';
 import { ContentType } from 'src/utils/constants';
 import { generateSlug } from 'src/utils/generateSlug';
+import axios from 'axios';
+import { transporter } from '../../providers/mail/mailler';
+import { createHash } from 'crypto';
 
 @Injectable()
 export class CourseService {
@@ -62,7 +66,6 @@ export class CourseService {
         private readonly purchaseModel: mongoose.Model<Purchase>,
         @InjectModel(User.name)
         private readonly userModel: mongoose.Model<User>,
-
         private readonly googleDriveUploader: GoogleDriveUploader,
     ) {}
     /**
@@ -112,6 +115,12 @@ export class CourseService {
                 );
             }
             const res = await this.quizModel.findByIdAndDelete(id);
+
+            await this.contentModel.updateMany(
+                { quiz: id },
+                { $pull: { quiz: id } },
+            );
+
             return new ResponseData<Course>(
                 [],
                 HttpStatus.SUCCESS,
@@ -180,6 +189,11 @@ export class CourseService {
                 );
             }
             const res = await this.fillInTheBlankModel.findByIdAndDelete(id);
+            await this.contentModel.updateMany(
+                { fill_in_the_blank: id },
+                { $pull: { fill_in_the_blank: id } },
+            );
+
             return new ResponseData<FillInTheBlank>(
                 [],
                 HttpStatus.SUCCESS,
@@ -240,6 +254,11 @@ export class CourseService {
                 );
             }
             const res = await this.wordMatchingModel.findByIdAndDelete(id);
+            await this.contentModel.updateMany(
+                { word_matching: id },
+                { $pull: { word_matching: id } },
+            );
+
             return new ResponseData<WordMatching>(
                 [],
                 HttpStatus.SUCCESS,
@@ -330,6 +349,10 @@ export class CourseService {
                 );
             }
             const res = await this.videoModel.findByIdAndDelete(id);
+            await this.contentModel.updateMany(
+                { video: id },
+                { $pull: { video: id } },
+            );
             return new ResponseData<Video>(
                 [],
                 HttpStatus.SUCCESS,
@@ -343,16 +366,30 @@ export class CourseService {
 
     //Content Service
     async createContent(createContentDto: createContentDto): Promise<Content> {
+        createContentDto.slug = generateSlug(createContentDto.content_type);
+
         const createdContent = new this.contentModel(createContentDto);
         return createdContent.save();
     }
 
     async findAllContent(): Promise<Content[]> {
-        return this.contentModel.find().exec();
+        return this.contentModel
+            .find()
+            .populate('quiz')
+            .populate('fill_in_the_blank')
+            .populate('word_matching')
+            .populate('video')
+            .exec();
     }
 
     async findOneContent(id: string): Promise<Content> {
-        const content = await this.contentModel.findById(id).exec();
+        const content = await this.contentModel
+            .findById(id)
+            .populate('quiz')
+            .populate('fill_in_the_blank')
+            .populate('word_matching')
+            .populate('video')
+            .exec();
         if (!content) {
             throw Error;
         }
@@ -381,7 +418,6 @@ export class CourseService {
         if (!lesson) {
             throw new Error('Lesson not found');
         }
-        console.log(lesson);
         const content = await this.contentModel
             .findById(contentObjectId)
             .exec();
@@ -480,8 +516,24 @@ export class CourseService {
 
     async removeContent(id: string): Promise<ResponseData<Content>> {
         try {
+            // Chuyển id thành ObjectId nếu cần
+            const objectId = new mongoose.Types.ObjectId(id);
+
+            // Cập nhật các Lesson để xóa contentId từ mảng content
+            const updateResult = await this.lessonModel
+                .updateMany(
+                    { content: objectId },
+                    { $pull: { content: objectId } },
+                )
+                .exec(); // Đảm bảo exec() được sử dụng
+
+            if (updateResult.modifiedCount === 0) {
+                console.log('No lessons were updated');
+            }
+
+            // Bây giờ xóa Content
             const deletedContent = await this.contentModel
-                .findByIdAndDelete(id)
+                .findByIdAndDelete(objectId)
                 .exec();
             if (!deletedContent) {
                 return new ResponseData<Content>(
@@ -490,14 +542,14 @@ export class CourseService {
                     'Content not found',
                 );
             }
-            const res = await this.contentModel.findByIdAndDelete(id);
+
             return new ResponseData<Content>(
                 [],
                 HttpStatus.SUCCESS,
-                'Delete Content successfully',
+                'Deleted Content successfully',
             );
         } catch (error) {
-            console.error('Error deleting video:', error);
+            console.error('Error deleting content:', error);
             throw error;
         }
     }
@@ -510,11 +562,35 @@ export class CourseService {
     }
 
     async findAllLesson(): Promise<Lesson[]> {
-        return this.lessonModel.find().exec();
+        const lessons = await this.lessonModel
+            .find()
+            .populate({
+                path: 'content',
+                model: 'Content',
+                populate: [
+                    { path: 'quiz', model: 'Quiz' },
+                    { path: 'fill_in_the_blank', model: 'FillInTheBlank' },
+                    { path: 'word_matching', model: 'WordMatching' },
+                    { path: 'video', model: 'Video' },
+                ],
+            })
+            .exec();
+        return lessons;
     }
-
     async findOneLesson(id: string): Promise<Lesson> {
-        const lesson = await this.lessonModel.findById(id).exec();
+        const lesson = await this.lessonModel
+            .findById(id)
+            .populate({
+                path: 'content',
+                model: 'Content',
+                populate: [
+                    { path: 'quiz', model: 'Quiz' },
+                    { path: 'fill_in_the_blank', model: 'FillInTheBlank' },
+                    { path: 'word_matching', model: 'WordMatching' },
+                    { path: 'video', model: 'Video' },
+                ],
+            })
+            .exec();
         if (!lesson) {
             throw Error;
         }
@@ -537,8 +613,24 @@ export class CourseService {
 
     async removeLesson(id: string): Promise<ResponseData<Lesson>> {
         try {
+            // Chuyển id thành ObjectId nếu cần
+            const objectId = new mongoose.Types.ObjectId(id);
+
+            // Cập nhật các Course để xóa lessonId từ mảng lessons
+            const updateResult = await this.courseModel
+                .updateMany(
+                    { lessons: objectId },
+                    { $pull: { lessons: objectId } },
+                )
+                .exec();
+
+            if (updateResult.modifiedCount === 0) {
+                console.log('No courses were updated');
+            }
+
+            // Bây giờ xóa Lesson
             const deletedLesson = await this.lessonModel
-                .findByIdAndDelete(id)
+                .findByIdAndDelete(objectId)
                 .exec();
             if (!deletedLesson) {
                 return new ResponseData<Lesson>(
@@ -547,17 +639,18 @@ export class CourseService {
                     'Lesson not found',
                 );
             }
-            const res = await this.lessonModel.findByIdAndDelete(id);
+
             return new ResponseData<Lesson>(
                 [],
                 HttpStatus.SUCCESS,
-                'Delete Lesson successfully',
+                'Deleted Lesson successfully',
             );
         } catch (error) {
-            console.error('Error deleting video:', error);
+            console.error('Error deleting lesson:', error);
             throw error;
         }
     }
+
     //Course Type Service
     // Create Course Type
     async createTypeCourse(course: CreateCourseTypeDto): Promise<CourseType> {
@@ -654,11 +747,57 @@ export class CourseService {
     }
 
     async findAllCourse(): Promise<Course[]> {
-        return this.courseModel.find().exec();
+        return this.courseModel
+            .find()
+            .populate('typeCourse')
+            .populate({
+                path: 'lessons',
+                model: 'Lesson',
+                populate: [
+                    {
+                        path: 'content',
+                        model: 'Content',
+                        populate: [
+                            { path: 'quiz', model: 'Quiz' },
+                            {
+                                path: 'fill_in_the_blank',
+                                model: 'FillInTheBlank',
+                            },
+                            { path: 'word_matching', model: 'WordMatching' },
+                            { path: 'video', model: 'Video' },
+                        ],
+                    },
+                ],
+            })
+            .populate('comments')
+            .exec();
     }
 
     async findOneCourse(id: string): Promise<Course> {
-        const course = await this.courseModel.findById(id).exec();
+        const course = await this.courseModel
+            .findById(id)
+            .populate('typeCourse')
+            .populate({
+                path: 'lessons',
+                model: 'Lesson',
+                populate: [
+                    {
+                        path: 'content',
+                        model: 'Content',
+                        populate: [
+                            { path: 'quiz', model: 'Quiz' },
+                            {
+                                path: 'fill_in_the_blank',
+                                model: 'FillInTheBlank',
+                            },
+                            { path: 'word_matching', model: 'WordMatching' },
+                            { path: 'video', model: 'Video' },
+                        ],
+                    },
+                ],
+            })
+            .populate('comments')
+            .exec();
         if (!course) {
             throw new Error(`Course with ID ${id} not found`);
         }
@@ -733,59 +872,350 @@ export class CourseService {
 
         return course;
     }
+    // async  momoPayment() {
+    //     var accessKey = 'F8BBA842ECF85';
+    //     var secretKey = 'K951B6PE1waDMi640xX08PD3vg6EkVlz';
+    //     var orderInfo = 'pay with MoMo';
+    //     var partnerCode = 'MOMO';
+    //     var redirectUrl = 'https://webhook.site/b3088a6a-2d17-4f8d-a383-71389a6c600b';
+    //     var ipnUrl = 'https://webhook.site/b3088a6a-2d17-4f8d-a383-71389a6c600b';
+    //     var requestType = 'payWithMethod';
+    //     var amount = '50000';
+    //     var orderId = partnerCode + new Date().getTime();
+    //     var requestId = orderId;
+    //     var extraData = '';
+    //     var orderGroupId = '';
+    //     var autoCapture = true;
+    //     var lang = 'vi';
 
-    async createPurchase(userId: Types.ObjectId, courseId: Types.ObjectId): Promise<Purchase> {
+    //     // Generate the raw signature
+    //     var rawSignature = `accessKey=${accessKey}&amount=${amount}&extraData=${extraData}&ipnUrl=${ipnUrl}&orderId=${orderId}&orderInfo=${orderInfo}&partnerCode=${partnerCode}&redirectUrl=${redirectUrl}&requestId=${requestId}&requestType=${requestType}`;
+    //     console.log('--------------------RAW SIGNATURE----------------');
+    //     console.log(rawSignature);
 
-        const userExists = await this.userModel.exists({ _id: new Types.ObjectId(userId) });
+    //     // Create the signature
+    //     var signature = crypto.createHmac('sha256', secretKey)
+    //         .update(rawSignature)
+    //         .digest('hex');
+    //     console.log('--------------------SIGNATURE----------------');
+    //     console.log(signature);
+
+    //     // Create the request body
+    //     const requestBody = {
+    //         partnerCode: partnerCode,
+    //         partnerName: 'Test',
+    //         storeId: 'MomoTestStore',
+    //         requestId: requestId,
+    //         amount: amount,
+    //         orderId: orderId,
+    //         orderInfo: orderInfo,
+    //         redirectUrl: redirectUrl,
+    //         ipnUrl: ipnUrl,
+    //         lang: lang,
+    //         requestType: requestType,
+    //         autoCapture: autoCapture,
+    //         extraData: extraData,
+    //         orderGroupId: orderGroupId,
+    //         signature: signature,
+    //     };
+
+    //     // Define the request options
+    //     const options = {
+    //         method: 'POST',
+    //         url: 'https://test-payment.momo.vn/v2/gateway/api/create',
+    //         headers: {
+    //             'Content-Type': 'application/json',
+    //             'Content-Length': Buffer.byteLength(JSON.stringify(requestBody)),
+    //         },
+    //         data: JSON.stringify(requestBody),
+    //     };
+
+    //     try {
+    //         // Make the request and handle the response
+    //         const response = await axios(options);
+    //         return {
+    //             status: response.status,
+    //             data: response.data
+    //         };
+    //     } catch (error) {
+    //         console.error('Error:', error);
+    //         return {
+    //             status: 500,
+    //             message: 'Error'
+    //         };
+    //     }
+    // }
+    async createPurchase(
+        userId: Types.ObjectId,
+        courseId: Types.ObjectId,
+    ): Promise<any> {
+        // Check if the user exists
+        const userExists = await this.userModel.exists({ _id: userId });
         if (!userExists) {
             throw new InternalServerErrorException('User does not exist');
         }
 
-        const courseExists = await this.courseModel.exists({ _id: new Types.ObjectId(courseId) });
-        if (!courseExists) {
+        // Get the user details
+        const user = await this.userModel.findById(userId);
+
+        // Check if the course exists and get its price
+        const course = await this.courseModel
+            .findById(courseId)
+            .select('price');
+        if (!course) {
             throw new InternalServerErrorException('Course does not exist');
         }
+
+        const coursePrice = course.price;
+        if (!coursePrice) {
+            throw new InternalServerErrorException('Course price is not set');
+        }
+
+        // Check if the user has already registered for this course
         const existingPurchase = await this.purchaseModel.findOne({
-            user: new Types.ObjectId(userId),
-            course: new Types.ObjectId(courseId),
+            user: userId,
+            course: courseId,
             paymentStatus: PaymentStatus.COMPLETED,
         });
 
         if (existingPurchase) {
             throw new InternalServerErrorException(
-                `User has already registered for this course`,
-              );
+                'User has already registered for this course',
+            );
         }
-        const purchaseKey = uuidv4();
 
+        // Create a new purchase record
+        const purchaseKey = uuidv4();
         const newPurchase = new this.purchaseModel({
-            user: new Types.ObjectId(userId),
-            course: new Types.ObjectId(courseId),
+            user: userId,
+            course: courseId,
             purchaseKey,
             purchaseDate: new Date(),
-            expiryDate: new Date(new Date().setFullYear(new Date().getFullYear() + 1)), // Ví dụ: 1 năm hiệu lực
+            expiryDate: new Date(
+                new Date().setFullYear(new Date().getFullYear() + 1),
+            ), // Example: 1 year validity
             paymentStatus: PaymentStatus.PENDING,
         });
 
-        return await newPurchase.save();
+        const savedPurchase = await newPurchase.save();
+
+        // MoMo Payment Integration
+        const baseUrl = process.env.BASE_URL || 'http://localhost:4000';
+        const accessKey = 'F8BBA842ECF85';
+        const secretKey = 'K951B6PE1waDMi640xX08PD3vg6EkVlz';
+        const orderInfo = 'pay with MoMo';
+        const partnerCode = 'MOMO';
+        const redirectUrl = `http://localhost:4000/course/callback?email=${user.email}&key=${purchaseKey}`;
+        // const redirectUrl = `${baseUrl}/course/activeMail?email=${user.email}&key=${purchaseKey}`;
+        const ipnUrl = 'http://localhost:4000/course/callback'; // Replace with your IPN URL
+        const requestType = 'payWithMethod';
+        const amount = coursePrice.toString(); // Use course price for amount
+        const orderId = `${partnerCode}${new Date().getTime()}`;
+        const requestId = orderId;
+        const extraData = '';
+
+        // Generate the raw signature
+        const rawSignature = `accessKey=${accessKey}&amount=${amount}&extraData=${extraData}&ipnUrl=${ipnUrl}&orderId=${orderId}&orderInfo=${orderInfo}&partnerCode=${partnerCode}&redirectUrl=${redirectUrl}&requestId=${requestId}&requestType=${requestType}`;
+
+        // Create the signature
+        const signature = crypto
+            .createHmac('sha256', secretKey)
+            .update(rawSignature)
+            .digest('hex');
+
+        // Create the request body
+        const requestBody = {
+            partnerCode,
+            partnerName: 'Test',
+            storeId: 'MomoTestStore',
+            requestId,
+            amount,
+            orderId,
+            orderInfo,
+            redirectUrl,
+            ipnUrl,
+            lang: 'vi',
+            requestType,
+            autoCapture: true,
+            extraData,
+            orderGroupId: '',
+            signature,
+        };
+
+        // Define the request options
+        const options = {
+            method: 'POST',
+            url: 'https://test-payment.momo.vn/v2/gateway/api/create',
+            headers: {
+                'Content-Type': 'application/json',
+                'Content-Length': Buffer.byteLength(
+                    JSON.stringify(requestBody),
+                ),
+            },
+            data: JSON.stringify(requestBody),
+        };
+
+        try {
+            // Make the request to MoMo
+            const response = await axios(options);
+
+            // Return the payment URL for redirection
+            return {
+                status: response.status,
+                data: response.data,
+                paymentUrl: response.data.payUrl, // Adjust this according to MoMo API response
+            };
+        } catch (error) {
+            console.error('MoMo Payment Error:', error);
+            throw new InternalServerErrorException('MoMo payment error');
+        }
     }
 
-    async completePayment(purchaseKey: string): Promise<Purchase> {
+    async createPurchaseAndPaymentUrl(
+        userId: Types.ObjectId,
+        courseId: Types.ObjectId,
+        bankCode: string,
+        ipAddr: string,
+    ): Promise<string> {
+        // Check if the user exists
+        const userExists = await this.userModel.exists({ _id: userId });
+        if (!userExists) {
+            throw new InternalServerErrorException('User does not exist');
+        }
 
-        // Access payment success callback
+        // Check if the course exists and get its price
+        const course = await this.courseModel
+            .findById(courseId)
+            .select('price');
+        if (!course) {
+            throw new InternalServerErrorException('Course does not exist');
+        }
+        const coursePrice = course.price;
+        if (!coursePrice) {
+            throw new InternalServerErrorException('Course price is not set');
+        }
+
+        // Check if the user has already registered for this course
+        const existingPurchase = await this.purchaseModel.findOne({
+            user: userId,
+            course: courseId,
+            paymentStatus: PaymentStatus.COMPLETED,
+        });
+        if (existingPurchase) {
+            throw new InternalServerErrorException(
+                'User has already registered for this course',
+            );
+        }
+
+        // Create a purchase
+        const purchaseKey = uuidv4();
+        const newPurchase = new this.purchaseModel({
+            user: userId,
+            course: courseId,
+            purchaseKey,
+            purchaseDate: new Date(),
+            expiryDate: new Date(
+                new Date().setFullYear(new Date().getFullYear() + 1),
+            ),
+            paymentStatus: PaymentStatus.PENDING,
+        });
+        await newPurchase.save();
+        const user = await this.userModel.findById(userId);
+        const tmnCode = process.env.VNP_TMN_CODE;
+        const secretKey = process.env.VNP_HASH_SECRET;
+        const vnpUrl = process.env.VNP_URL;
+        const returnUrl = `http://localhost:4000/course/callbackvnpay?email=${user.email}&key=${purchaseKey}`;
+
+        const date = new Date();
+        const padZero = (num) => num.toString().padStart(2, '0');
+
+        const createDate = `${date.getFullYear()}${padZero(date.getMonth() + 1)}${padZero(date.getDate())}${padZero(date.getHours())}${padZero(date.getMinutes())}${padZero(date.getSeconds())}`;
+        const orderId = `${padZero(date.getHours())}${padZero(date.getMinutes())}${padZero(date.getSeconds())}`;
+        const locale = 'vn';
+        const currCode = 'VND';
+
+        let vnp_Params: any = {
+            vnp_Version: '2.1.0',
+            vnp_Command: 'pay',
+            vnp_TmnCode: tmnCode,
+            vnp_Locale: locale,
+            vnp_CurrCode: currCode,
+            vnp_TxnRef: orderId,
+            vnp_OrderInfo: 'thanhtoan',
+            vnp_OrderType: 'billpayment',
+            vnp_Amount: coursePrice * 100,
+            vnp_ReturnUrl: returnUrl,
+            vnp_IpAddr: ipAddr,
+            vnp_CreateDate: createDate,
+        };
+
+        if (bankCode) {
+            vnp_Params['vnp_BankCode'] = bankCode;
+        }
+
+        vnp_Params = this.sortObject(vnp_Params);
+        const signData = qs.stringify(vnp_Params);
+        const hmac = crypto.createHmac('sha512', secretKey);
+        const signed = hmac.update(signData, 'utf-8').digest('hex');
+        vnp_Params['vnp_SecureHash'] = signed;
+        const paymentUrl = `${vnpUrl}?${qs.stringify(vnp_Params)}`;
+        return paymentUrl;
+    }
+
+    private sortObject(obj: any): any {
+        const sorted: any = {};
+        const keys = Object.keys(obj).sort();
+        for (const key of keys) {
+            sorted[key] = obj[key];
+        }
+        return sorted;
+    }
+
+    async sendSuccessEmail(email: string, key: string): Promise<void> {
+        const mailOptions = {
+            from: '<hieu@78544@gmail.com>',
+            to: email,
+            subject: 'Password Reset Request',
+            html: `
+                <p>Active key : ${key}:</p>
+              `,
+        };
+
+        try {
+            await transporter.sendMail(mailOptions);
+        } catch (error) {
+            console.error('Failed to send password reset email:', error);
+            throw new Error('Failed to send password reset email');
+        }
+    }
+
+    // async sendMail(email :string, to: string, subject: string, text: string, key:string): Promise<void> {
+    //     const mailOptions = {
+    //         from: '<hieu@78544@gmail.com>',
+    //         to: email,
+    //         subject: 'Password Reset Request',
+    //         html: `
+    //     <p>Active key : ${key}:</p>
+    //   `,
+    //     };
+
+    //     try {
+    //         await transporter.sendMail(mailOptions);
+    //     } catch (error) {
+    //         console.error('Failed to send password reset email:', error);
+    //         throw new Error('Failed to send password reset email');
+    //     }
+    // }
+    async completePurchase(purchaseKey: string): Promise<Purchase> {
         const purchase = await this.purchaseModel.findOneAndUpdate(
-            { purchaseKey },
-            { paymentStatus: PaymentStatus.COMPLETED },
-            { new: true }
+            { purchaseKey, paymentStatus: PaymentStatus.PENDING },
+            { $set: { paymentStatus: PaymentStatus.COMPLETED } },
+            { new: true },
         );
-
-        if (purchase) {
-            await this.userModel.findByIdAndUpdate(purchase.user, {
-                $push: { activatedCourses: purchase.course },
-            });
+        if (!purchase) {
+            throw new Error('Purchase not found or already completed');
         }
 
         return purchase;
     }
-} 
-
+}

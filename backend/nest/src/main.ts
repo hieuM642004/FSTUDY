@@ -5,6 +5,8 @@ import { ValidationPipe } from './common/pipes/validation.pipe';
 import * as cookieParser from "cookie-parser";
 import { HttpExceptionFilter } from './common/exception-filters/http-exception.filter';
 import { Logger } from '@nestjs/common';
+import { json, urlencoded } from 'express';
+
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -15,6 +17,8 @@ async function bootstrap() {
         origin: '*',
         credentials: true
     })
+    app.use(json());
+    app.use(urlencoded({ extended: true }));
   await app.listen(4000);
   
   if (module.hot) {

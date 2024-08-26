@@ -109,21 +109,23 @@ export class AuthController {
         HttpMessage.SUCCESS,
       );
     } catch (error) {
-      return new ResponseData<User>(null, HttpStatus.ERROR, HttpMessage.ERROR);
+      console.error('Registration error:', error.message);
+      return new ResponseData<User>(
+        null,
+        HttpStatus.ERROR, 
+        error.message || HttpMessage.ERROR, 
+      );
     }
   }
-
+  
 
   @Post('/login')
   async login(
     @Body() loginDto: LoginDto,
-    // @Res() res
   ): Promise<{ accessToken: string; refreshToken: string } | null> {
     try {
       const { accessToken, refreshToken } =
         await this.authService.login(loginDto);
-        // res.cookie('accessToken', accessToken, { httpOnly: true });
-        // res.cookie('refreshToken', refreshToken, { httpOnly: true });
       return { accessToken, refreshToken };
     } catch (error) {
       throw error;
