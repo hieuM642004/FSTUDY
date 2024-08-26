@@ -2,7 +2,7 @@ import { nestApiInstance } from '@/constant/api';
 import { RegisterAndLogin } from '@/types/auth/Auth';
 import { deleteCookie, getCookie, setCookie } from 'cookies-next';
 import { jwtDecode } from 'jwt-decode';
-import { toast } from 'react-toastify';
+
 import Router from 'next/router';
 
 class AuthService {
@@ -16,7 +16,7 @@ class AuthService {
             );
             return response.data.data;
         } catch (error) {
-            toast.error(error.response.data.message);
+          
             console.error('Error fetching register:', error);
         }
     }
@@ -30,7 +30,7 @@ class AuthService {
             );
             return response.data;
         } catch (error) {
-            toast.error(error.response.data.message);
+          
             console.error('Error fetching login:', error);
         }
     }
@@ -69,7 +69,7 @@ class AuthService {
             );
             return response.data;
         } catch (error) {
-            toast.error(error.response.data.message);
+          
             console.error('Error fetching login:', error);
         }
     }
@@ -106,7 +106,7 @@ class AuthService {
             deleteCookie('refreshToken');
             Router.push('/login');
         } catch (error) {
-            toast.error(error.response.data.message);
+          
             console.error('Error fetching login:', error);
         }
     }

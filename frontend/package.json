@@ -15,6 +15,8 @@
         "@ffmpeg/ffmpeg": "^0.12.10",
         "antd": "^5.18.2",
         "axios": "^1.7.2",
+        "cookies-next": "^4.2.1",
+        "jwt-decode": "^4.0.0",
         "lodash": "^4.17.21",
         "next": "14.2.3",
         "react": "^18",

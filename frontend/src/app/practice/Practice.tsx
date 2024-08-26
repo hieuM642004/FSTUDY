@@ -24,6 +24,9 @@ const TakeTheTest: React.FC = () => {
     const [activeKey, setActiveKey] = useState<string>('1');
     const searchParams = useSearchParams();
     const [parts, setParts] = useState<string[]>([]);
+    const [pausedTime, setPausedTime] = useState<number | null>(null);
+    const [pauseTimer, setPauseTimer] = useState<() => void>(() => {});
+    const [resumeTimer, setResumeTimer] = useState<() => void>(() => {});
     const exam = searchParams.get('exam');
     const timeLimit = Number(searchParams.get('time')) || 0;
     const questionRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
@@ -189,6 +192,10 @@ const TakeTheTest: React.FC = () => {
         alert('Time is up!');
     };
 
+    const handlePauseTimer = (time: number) => {
+        setPausedTime(time);
+    };
+    
     return (
         <div className="pt-8">
             <div className="mb-2 flex items-center justify-center">
@@ -232,11 +239,20 @@ const TakeTheTest: React.FC = () => {
                                 Thời gian làm bài
                             </div>
                             <CountDown
-                                timeStart={timeLimit === 0 ? 0 : timeLimit * 60}
-                                onTimeup={handleTimeup}
-                                isIncremental={timeLimit === 0}
-                            />
-                            <Submit />
+                timeStart={timeLimit === 0 ? 0 : timeLimit * 60}
+                onTimeup={handleTimeup}
+                isIncremental={timeLimit === 0}
+                onPause={handlePauseTimer}
+                setPauseTimer={setPauseTimer}  // Truyền hàm pauseTimer ra ngoài
+                setResumeTimer={setResumeTimer}  // Truyền hàm resumeTimer ra ngoài
+            />
+            <Submit 
+                onPause={pauseTimer} 
+                onResume={resumeTimer}  // Truyền hàm resumeTimer cho Submit
+                pausedTime={pausedTime} 
+            />
+
+
                         </div>
                         <RecordingList
                             key={activeKey}

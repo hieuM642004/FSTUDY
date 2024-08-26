@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Modal } from 'antd';
 import { UserOutlined } from '@ant-design/icons';
 import { Form, Input } from 'antd';
-import { toast } from 'react-toastify';
+
 
 import ButtonPrimary from '@/components/shared/ButtonPrimary/ButtonPrimary';
 import AuthService from '@/services/auth/AuthService';
@@ -42,9 +42,9 @@ function ForgotPass() {
             
             form.resetFields();
             if (response !== 400) {
-                toast.success('vui lòng kiểm tra email');
+               
             } else {
-                toast.error('Email không tồn tại');
+               
             }
         } catch (error) {
             console.log('Error:', error);

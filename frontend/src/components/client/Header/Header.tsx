@@ -23,24 +23,24 @@ const menuItems = [
 
 const Header = () => {
     const router = useRouter()
-    const { user, logout, getProfileUser , userInfo}: any = useContext(AuthContext);
+    // const { user, logout, getProfileUser , userInfo}: any = useContext(AuthContext);
     
     const [visible, setVisible] = useState(false);
     const [token, setToken] = useState(false);
     const [dataUser, setDataUser] = useState();
 
-    useEffect(() => {
-        const fetchDataUser = async () => {
-            const data = await getProfileUser();
-            setDataUser(data);
-        };
+    // useEffect(() => {
+    //     const fetchDataUser = async () => {
+    //         const data = await getProfileUser();
+    //         setDataUser(data);
+    //     };
 
-        let checkToken = hasCookie('token');
-        setToken(checkToken);
-        if (checkToken) {
-            fetchDataUser();
-        }
-    }, [user]);
+    //     let checkToken = hasCookie('token');
+    //     setToken(checkToken);
+    //     if (checkToken) {
+    //         fetchDataUser();
+    //     }
+    // }, [user]);
 
     const showDrawer = () => {
         setVisible(true);
@@ -79,7 +79,7 @@ const Header = () => {
             label: (
                 <div
                     onClick={() => {
-                        logout();
+                        // logout();
                     }}
                     className=""
                 >
@@ -143,7 +143,7 @@ const Header = () => {
                 </nav>
                 {token ? (
                     <>
-                        <Dropdowns
+                        {/* <Dropdowns
                             items={itemsdropdown}
                             title={
                                 dataUser?.avatar  ? (
@@ -169,7 +169,7 @@ const Header = () => {
                                 )
                             }
                             stylecss=" text-normal"
-                        />
+                        /> */}
                     </>
                 ) : (
                     <>
