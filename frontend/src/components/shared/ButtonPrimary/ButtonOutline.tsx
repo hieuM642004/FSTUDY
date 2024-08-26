@@ -9,6 +9,7 @@ interface OutlineButtonProps {
     size?: 'large' | 'middle' | 'small';
     className?: string;
     onClick?: () => void;
+    htmlType?: "button" | "reset" | "submit" | undefined;
 }
 const sizeClassMap = {
     large: 'py-4 px-4 w-32 h-10',
@@ -22,11 +23,12 @@ const ButtonOutline: React.FC<OutlineButtonProps> = ({
     size = 'middle',
     className = '' ,
     onClick,
+    htmlType = "button",
 }) => {
     let btnClass = `btn-outline font-semibold ${sizeClassMap[size]} ${className}`;
 
     return (
-        <Button className={btnClass} onClick={onClick} type="default" href={to}>
+        <Button className={btnClass} onClick={onClick} htmlType={htmlType} type="default" href={to}>
             {label}
         </Button>
     );

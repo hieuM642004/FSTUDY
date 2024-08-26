@@ -27,6 +27,8 @@ const ClientLayout = ({ children }: { children: ReactNode }) => {
                 >
                     <SiteElevator />
                     <Provider store={store}>{children}</Provider>
+                    <SiteElevator/>
+                    {children}
                 </div>
             </Content>
             <FooterComponent />

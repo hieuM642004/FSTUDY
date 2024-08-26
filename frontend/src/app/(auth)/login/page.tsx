@@ -2,15 +2,44 @@
 import { LockOutlined, UserOutlined } from '@ant-design/icons';
 import { Form, Input } from 'antd';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { setCookie } from 'cookies-next';
+import { useContext } from 'react';
+import { AuthContext } from '@/context/auth/AuthContext';
 
 import WapperItemCard from '@/components/client/WapperItemCard/WapperItemCard';
 import ButtonOutline from '@/components/shared/ButtonPrimary/ButtonOutline';
 import ButtonPrimary from '@/components/shared/ButtonPrimary/ButtonPrimary';
 import ForgotPass from '../forgotpass/page';
+import AuthService from '@/services/auth/AuthService';
 
 function Login() {
-    const onFinish = (values: any) => {
-        console.log(values);
+    const [form] = Form.useForm();
+    const router = useRouter();
+    const { login }: any = useContext(AuthContext);
+
+    // handler login 
+    const onFinish = async (values: any) => {
+        try {
+            let newdata = {
+                email: values.email,
+                password: values.password,
+            };
+            const response = await AuthService.login(newdata);
+            if (response) {
+                form.resetFields();
+                setCookie('token', response.accessToken);
+                setCookie('refreshToken', response.refreshToken);
+                router.push('/');
+                login({
+                    accessToken: response.accessToken,
+                    refreshToken: response.refreshToken,
+                });
+              
+            }
+        } catch (error) {
+            console.log('Error:', error);
+        }
     };
     return (
         <>
@@ -83,6 +112,11 @@ function Login() {
                     <ButtonOutline
                         size="large"
                         label="Đăng nhập với Google"
+                        htmlType='button'
+                        onClick={()=>{
+                            router.push(`${process.env.baseURL}/auth/google/callback`);
+                       
+                        }}
                         className="w-full  mt-2 text-[#db4a39] hover:bg-black mb-3"
                     />
 
@@ -92,7 +126,7 @@ function Login() {
                     >
                         Bạn chưa là một thành viên? Đăng ký ngay!
                     </Link>
-                    <ForgotPass/>
+                    <ForgotPass />
                 </WapperItemCard>
             </div>
         </>

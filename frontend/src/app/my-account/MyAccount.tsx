@@ -1,6 +1,5 @@
 'use client';
-import React, { useState } from 'react';
-import { useRouter } from 'next/router';
+import React, { useContext, useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { EditOutlined } from '@ant-design/icons';
@@ -9,12 +8,25 @@ import './MyAccount.scss';
 import PageMyCourses from './courses/Courses';
 import PageMyPosts from './posts/Posts';
 import PageMyStatistics from './examstatistics/ExamStatistics';
+import { AuthContext } from '@/context/auth/AuthContext';
 
 const PageMyAccountInfo: React.FC = () => {
+    const { getProfileUser }: any = useContext(AuthContext);
+
     const [activeTab, setActiveTab] = useState('courses');
+    const [dataUser, setDataUser] = useState<any | object>();
+
     const handleChangePage = (pageName: string) => {
         setActiveTab(pageName);
     };
+    useEffect(() => {
+        const fetchDataUser = async () => {
+            const data = await getProfileUser();
+            setDataUser(data);
+        };
+        fetchDataUser();
+    }, []);
+
     return (
         <>
             <div className="account-info mx-auto p-6">
@@ -27,21 +39,36 @@ const PageMyAccountInfo: React.FC = () => {
                         className="h-[7.5rem] rounded-lg"
                     />
                     <div className="proflie-avatar">
-                        <Image
-                            src="https://study4.com/static/img/user_icon.png"
-                            alt="avatar"
-                            width={120}
-                            height={120}
-                            className="rounded-full "
-                        />{' '}
-                        <Link href={'#'}>
+                        {dataUser?.avatar ? (
+                            <>
+                                <Image
+                                    src={dataUser?.avatar}
+                                    alt="avatar"
+                                    width={120}
+                                    height={120}
+                                    className="rounded-full "
+                                />{' '}
+                            </>
+                        ) : (
+                            <>
+                                <Image
+                                    src="https://study4.com/static/img/user_icon.png"
+                                    alt="avatar"
+                                    width={120}
+                                    height={120}
+                                    className="rounded-full "
+                                />{' '}
+                            </>
+                        )}
+
+                        <Link href={'/settings'}>
                             <EditOutlined className="absolute bottom-0 right-0   bg-white rounded-full p-2" />
                         </Link>
                     </div>
 
                     <div className="flex pt-2">
                         <h1 className="text-3xl md:text-2xl sm:text-xl font-bold mt-2">
-                            duynhpc05141
+                            {dataUser?.email}
                         </h1>
                         <Link
                             href={'#'}

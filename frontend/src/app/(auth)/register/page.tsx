@@ -1,10 +1,12 @@
 'use client';
-import { Form, Input, Select, DatePicker } from 'antd';
+import { Form, Input, Select } from 'antd';
 import Link from 'next/link';
+import { toast } from 'react-toastify';
 
 import WapperItemCard from '@/components/client/WapperItemCard/WapperItemCard';
 import ButtonOutline from '@/components/shared/ButtonPrimary/ButtonOutline';
 import ButtonPrimary from '@/components/shared/ButtonPrimary/ButtonPrimary';
+import AuthService from '@/services/auth/AuthService';
 
 const { Option } = Select;
 
@@ -20,8 +22,23 @@ const formItemLayout = {
 function Register() {
     const [form] = Form.useForm();
 
-    const onFinish = (values: any) => {
-        console.log('Received values of form: ', values);
+    const onFinish = async (values: any) => {
+        try {
+                let newdata = {
+                    email: values.email,
+                    password: values.password,
+                    fullname: values.fullname
+                }
+                const response = await AuthService.register(newdata);
+                if(response){
+                    form.resetFields();
+                    toast.success('ĐĂNG KÍ THÀNH CÔNG');
+                }
+        } catch (error) {
+            toast.error('ĐĂNG KÍ THẤT BẠI');
+            console.log('Error:', error);
+        }
+
     };
 
     const prefixSelector = (
@@ -54,6 +71,18 @@ function Register() {
                         scrollToFirstError
                         layout="vertical"
                     >
+                          <Form.Item
+                            name="fullname"
+                            label="Họ và Tên"
+                            rules={[
+                                {
+                                    required: true,
+                                    message: 'Vui lòng  Họ và tên!',
+                                },
+                            ]}
+                        >
+                            <Input placeholder="nhập Họ và tên" />
+                        </Form.Item>
                         <Form.Item
                             name="email"
                             label="Email"
@@ -79,6 +108,10 @@ function Register() {
                                     required: true,
                                     message: 'Vui lòng nhập mật khẩu!',
                                 },
+                                {
+                                    pattern : /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z]{8,}$/ ,
+                                    message: 'Vui lòng có 1 chữ viết hoa, 1 chữ viết thường , có 1 chữ số và trên 8 kí tự',
+                                }
                             ]}
                             hasFeedback
                         >
@@ -115,7 +148,7 @@ function Register() {
                             <Input.Password placeholder="nhập xác nhận mật khẩu" />
                         </Form.Item>
 
-                        <Form.Item
+                        {/* <Form.Item
                             name="phone"
                             label="Số điện thoại"
                             rules={[
@@ -132,7 +165,7 @@ function Register() {
                                 style={{ width: '100%' }}
                                 placeholder="nhập số điện thoại"
                             />
-                        </Form.Item>
+                        </Form.Item> */}
 
                         <ButtonPrimary
                             htmlType="submit"

@@ -135,7 +135,7 @@ export class UserController {
 
     @UsePipes(new ValidationPipe())
     @Get(':id')
-    @UseGuards(AdminGuard)
+    // @UseGuards(AdminGuard)
     async getUserById(@Param('id') id: string): Promise<ResponseData<User>> {
         try {
             const users = await this.userService.findUserById(id);

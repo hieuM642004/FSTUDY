@@ -1,7 +1,11 @@
 'use client';
 import { Form, Input } from 'antd';
+import { getCookie } from 'cookies-next';
+import { useContext, useEffect, useState } from 'react';
 
 import ButtonPrimary from '@/components/shared/ButtonPrimary/ButtonPrimary';
+import UserService from '@/services/user/UserService';
+import { AuthContext } from '@/context/auth/AuthContext';
 
 const formItemLayout = {
     labelCol: {
@@ -14,9 +18,33 @@ const formItemLayout = {
 
 function ChangePass() {
     const [form] = Form.useForm();
+    const { getProfileUser }: any = useContext(AuthContext);
+    const [dataUser, setDataUser] = useState<any | object>();
+    const [checkType, setCheckType] = useState<string | boolean>();
 
-    const onFinish = (values: any) => {
-        console.log('Received values of form: ', values);
+    useEffect(() => {
+        const fetchDataUser = async () => {
+            const data = await getProfileUser();
+            setDataUser(data);
+        };
+        fetchDataUser();
+        setCheckType(getCookie('typeLogin'));
+    }, []);
+
+    const onFinish = async (values: object | any) => {
+        try {
+            const idUser = dataUser?._id;
+            const newData: object = {
+                password: values?.confirm,
+                fullname: dataUser?.fullname,
+            };
+            const res = await UserService.changePassword(newData, idUser);
+            if (res) {
+                form.resetFields();
+            }
+        } catch (error) {
+            console.error('Error changepass user', error);
+        }
     };
     return (
         <>
@@ -34,19 +62,6 @@ function ChangePass() {
                 layout="vertical"
             >
                 <Form.Item
-                    name="passwordold"
-                    label="Mật khẩu cũ"
-                    rules={[
-                        {
-                            required: true,
-                            message: 'Vui lòng nhập mật khẩu!',
-                        },
-                    ]}
-                    hasFeedback
-                >
-                    <Input.Password placeholder="nhập mật khẩu cũ" />
-                </Form.Item>
-                <Form.Item
                     name="password"
                     label="Mật khẩu mới"
                     rules={[
@@ -54,10 +69,16 @@ function ChangePass() {
                             required: true,
                             message: 'Vui lòng nhập mật khẩu!',
                         },
+                        {
+                            pattern:
+                                /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z]{8,}$/,
+                            message:
+                                'Vui lòng có 1 chữ viết hoa, 1 chữ viết thường , có 1 chữ số và trên 8 kí tự',
+                        },
                     ]}
                     hasFeedback
                 >
-                    <Input.Password placeholder="nhập mật khẩu hiện tại" />
+                    <Input.Password placeholder="nhập mật khẩu mới" />
                 </Form.Item>
 
                 <Form.Item
@@ -89,14 +110,20 @@ function ChangePass() {
                 >
                     <Input.Password placeholder="nhập xác nhận mật khẩu" />
                 </Form.Item>
-                <div className="flex justify-end">
-                    <ButtonPrimary
-                        htmlType="submit"
-                        size="small"
-                        label="Đổi mật khẩu"
-                        className="flex justify-center mb-3 "
-                    />
-                </div>
+                {checkType ? (
+                    <> </>
+                ) : (
+                    <>
+                        <div className="flex justify-end">
+                            <ButtonPrimary
+                                htmlType="submit"
+                                size="small"
+                                label="Đổi mật khẩu"
+                                className="flex justify-center mb-3 "
+                            />
+                        </div>
+                    </>
+                )}
             </Form>
         </>
     );

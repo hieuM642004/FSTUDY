@@ -350,7 +350,7 @@ export class AuthService {
         await user.save();
 
         // Send the password reset email
-        const resetUrl = `http://localhost:4000/auth/reset-password?token=${token}`;
+        const resetUrl = `http://localhost:3000/reset-password?token=${token}`;
         const mailOptions = {
             from: '<hieu@78544@gmail.com>',
             to: user.email,

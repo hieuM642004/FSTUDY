@@ -1,13 +1,32 @@
 import React, { useState } from 'react';
 import { Modal } from 'antd';
-import {  UserOutlined } from '@ant-design/icons';
+import { UserOutlined } from '@ant-design/icons';
 import { Form, Input } from 'antd';
-import ButtonPrimary from '@/components/shared/ButtonPrimary/ButtonPrimary';
+import { toast } from 'react-toastify';
 
+import ButtonPrimary from '@/components/shared/ButtonPrimary/ButtonPrimary';
+import AuthService from '@/services/auth/AuthService';
 
 function ForgotPass() {
     const [open, setOpen] = useState(false);
+    const [form] = Form.useForm();
+    const [loadings, setLoadings] = useState<boolean[]>([]);
 
+    const enterLoading = (index: number) => {
+      setLoadings((prevLoadings) => {
+        const newLoadings = [...prevLoadings];
+        newLoadings[index] = true;
+        return newLoadings;
+      });
+  
+      setTimeout(() => {
+        setLoadings((prevLoadings) => {
+          const newLoadings = [...prevLoadings];
+          newLoadings[index] = false;
+          return newLoadings;
+        });
+      }, 3000);
+    };
     const showModal = () => {
         setOpen(true);
     };
@@ -15,8 +34,21 @@ function ForgotPass() {
     const handleCancel = () => {
         setOpen(false);
     };
-    const onFinish = (values: any) => {
-        console.log(values);
+    const onFinish = async (values: string) => {
+        try {
+           
+            const response = await AuthService.forgotPassword(values);
+            console.log('check response',response);
+            
+            form.resetFields();
+            if (response !== 400) {
+                toast.success('vui lòng kiểm tra email');
+            } else {
+                toast.error('Email không tồn tại');
+            }
+        } catch (error) {
+            console.log('Error:', error);
+        }
     };
 
     return (
@@ -33,7 +65,6 @@ function ForgotPass() {
                 onCancel={handleCancel}
                 footer={[]}
                 width={500}
-                
             >
                 <Form
                     name="normal_login"
@@ -63,12 +94,13 @@ function ForgotPass() {
                             placeholder="nhập email"
                         />
                     </Form.Item>
-                  
+
                     <ButtonPrimary
                         htmlType="submit"
                         size="large"
                         label="Xác nhận quên mật khẩu"
                         className="w-full  flex justify-center mb-3"
+                        loading={loadings[0]} onClick={() => enterLoading(0)}
                     />
                 </Form>
             </Modal>
