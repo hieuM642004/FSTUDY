@@ -8,10 +8,9 @@ import Tab from '@/components/client/Tabs/Tabs';
 import WapperItemCard from '@/components/client/WapperItemCard/WapperItemCard';
 import Recording from './Recording/Recording';
 import RecordingList from './RecordingList/RecordingList';
-import CountDown from './CountDown';
 import ExamService from '@/services/ExamsService';
 import ConfirmExit from './ConfirmExit/ConfirmExit';
-import Submit from './Submit/Submit';
+import CountDownWithSubmit from './CountDownWithSubmit/CountDownWithSubmit';
 
 const TakeTheTest: React.FC = () => {
     const [dataselection, setDataselection] = useState<any>({});
@@ -24,9 +23,6 @@ const TakeTheTest: React.FC = () => {
     const [activeKey, setActiveKey] = useState<string>('1');
     const searchParams = useSearchParams();
     const [parts, setParts] = useState<string[]>([]);
-    const [pausedTime, setPausedTime] = useState<number | null>(null);
-    const [pauseTimer, setPauseTimer] = useState<() => void>(() => {});
-    const [resumeTimer, setResumeTimer] = useState<() => void>(() => {});
     const exam = searchParams.get('exam');
     const timeLimit = Number(searchParams.get('time')) || 0;
     const questionRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
@@ -189,12 +185,10 @@ const TakeTheTest: React.FC = () => {
         }
     };
     const handleTimeup = () => {
-        alert('Time is up!');
+        // alert('Time is up!');
     };
 
-    const handlePauseTimer = (time: number) => {
-        setPausedTime(time);
-    };
+
     
     return (
         <div className="pt-8">
@@ -238,19 +232,11 @@ const TakeTheTest: React.FC = () => {
                             <div className=" text-center font-bold">
                                 Thời gian làm bài
                             </div>
-                            <CountDown
-                timeStart={timeLimit === 0 ? 0 : timeLimit * 60}
-                onTimeup={handleTimeup}
-                isIncremental={timeLimit === 0}
-                onPause={handlePauseTimer}
-                setPauseTimer={setPauseTimer}  // Truyền hàm pauseTimer ra ngoài
-                setResumeTimer={setResumeTimer}  // Truyền hàm resumeTimer ra ngoài
-            />
-            <Submit 
-                onPause={pauseTimer} 
-                onResume={resumeTimer}  // Truyền hàm resumeTimer cho Submit
-                pausedTime={pausedTime} 
-            />
+                            <CountDownWithSubmit 
+                    timeStart={timeLimit === 0 ? 0 : timeLimit * 60}  
+                    onTimeup={handleTimeup}
+                    isIncremental={timeLimit === 0}  
+                />
 
 
                         </div>

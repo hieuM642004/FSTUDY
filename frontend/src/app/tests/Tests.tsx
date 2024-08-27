@@ -48,7 +48,7 @@ const Tests: React.FC = () => {
                 activeTab !== 'all' ? `examType=${activeTab}` : '';
             const testsData = await ExamService.getAllExams(examTypeQuery);
 
-            const formattedTests = testsData.data.map((exam: any) => ({
+            const formattedTests = testsData?.data.map((exam: any) => ({
                 title: exam.title,
                 examType: exam.examType,
                 slug: exam.slug,
