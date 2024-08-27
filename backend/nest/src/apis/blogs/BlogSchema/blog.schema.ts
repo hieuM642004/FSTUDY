@@ -9,10 +9,26 @@ export class Topic {
 
     @Prop({ type: String })
     description: string;
+    @Prop({ type: String, unique: true })
+    slug: string;
 }
 
-export const TopicSchema = SchemaFactory.createForClass(Topic);
 
+export const TopicSchema = SchemaFactory.createForClass(Topic);
+TopicSchema.pre('save', function (next) {
+    if (this.isModified('name')) {
+        this.slug = slugify(this.name, { lower: true, strict: true });
+    }
+    next();
+});
+
+TopicSchema.pre('findOneAndUpdate', function (next) {
+    const update = this.getUpdate() as any;
+    if (update.name) {
+        update.slug = slugify(update.name, { lower: true, strict: true });
+    }
+    next();
+});
 @Schema({ timestamps: true })
 export class ChildTopic {
     @Prop({ type: String })
@@ -20,6 +36,8 @@ export class ChildTopic {
 
     @Prop({ type: String })
     description: string;
+    @Prop({ type: String, unique: true })
+    slug: string;
     @Prop([
         {
             type: mongoose.Schema.Types.ObjectId,
@@ -30,7 +48,20 @@ export class ChildTopic {
 }
 
 export const ChildTopicSchema = SchemaFactory.createForClass(ChildTopic);
+ChildTopicSchema.pre('save', function (next) {
+    if (this.isModified('name')) {
+        this.slug = slugify(this.name, { lower: true, strict: true });
+    }
+    next();
+});
 
+ChildTopicSchema.pre('findOneAndUpdate', function (next) {
+    const update = this.getUpdate() as any;
+    if (update.name) {
+        update.slug = slugify(update.name, { lower: true, strict: true });
+    }
+    next();
+});
 @Schema({ timestamps: true })
 export class Blog {
     @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'user' })
@@ -47,6 +78,7 @@ export class Blog {
 
     @Prop({ type: String })
     avatar: string;
+
 
     @Prop({ type: String, default: "1"})
     status: string;

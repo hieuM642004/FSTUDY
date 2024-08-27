@@ -68,19 +68,17 @@ export class AuthService {
             };
         }
     
-        // Extract the user information
         const email = user.emails[0].value;
         const displayName = user.displayName;
-        const userId = user.id; // This should be the ID from your database, not Google
+        const userId = user.id; 
         const avatar = user.photos[0].value;
         const slug = await this.generateSlug(displayName);
     
         let existingUser = await this.userModel.findOne({ email });
     
         if (existingUser) {
-            // User exists in the database
             const accessToken = this.jwtService.sign({
-                id: existingUser._id, // Use the ID from your database
+                id: existingUser._id, 
                 name: displayName,
                 email,
                 avatar,
@@ -92,7 +90,7 @@ export class AuthService {
     
             const refreshToken = this.jwtService.sign(
                 {
-                    id: existingUser._id, // Use the ID from your database
+                    id: existingUser._id, 
                     name: displayName,
                     email,
                     avatar,
@@ -104,7 +102,6 @@ export class AuthService {
                 { expiresIn: '7d' },
             );
     
-            // Update the refreshToken in the database
             existingUser.refreshToken = refreshToken;
             await existingUser.save();
     
@@ -112,7 +109,7 @@ export class AuthService {
         } else {
             // Create a new user in the database
             const newUser = await this.userModel.create({
-                id: userId, // Use the ID from Google or your system as appropriate
+                id: userId, 
                 username: user.fullname,
                 fullname: displayName,
                 email,
@@ -123,7 +120,7 @@ export class AuthService {
             });
     
             const accessToken = this.jwtService.sign({
-                id: newUser._id, // Use the ID from your database
+                id: newUser._id, 
                 username: user.fullname,
                 fullname: displayName,
                 email,
@@ -136,7 +133,7 @@ export class AuthService {
     
             const refreshToken = this.jwtService.sign(
                 {
-                    id: newUser._id, // Use the ID from your database
+                    id: newUser._id, 
                     name: displayName,
                     email,
                     avatar,
@@ -148,7 +145,6 @@ export class AuthService {
                 { expiresIn: '7d' },
             );
     
-            // Save the refreshToken to the user document
             newUser.refreshToken = refreshToken;
             await newUser.save();
     
@@ -286,13 +282,9 @@ export class AuthService {
         await res.save();
         return { accessToken, refreshToken: user.refreshToken };
     }
+    async refreshToken(refreshToken: string): Promise<{ accessToken: string; refreshToken: string }> {
+        const decodedToken = this.jwtService.decode(refreshToken) as { id: string };
 
-    async refreshToken(
-        refreshToken: string,
-    ): Promise<{ accessToken: string; refreshToken: string }> {
-        const decodedToken = this.jwtService.decode(refreshToken) as {
-            id: string;
-        };
         if (!decodedToken || !decodedToken.id) {
             throw new UnauthorizedException('Invalid refresh token');
         }
@@ -305,12 +297,12 @@ export class AuthService {
 
         const payload = { id: user._id, username: user.email, role: user.role };
         const newAccessToken = this.jwtService.sign(payload);
-        const newRefreshToken = this.jwtService.sign(payload, {
-            expiresIn: '7d',
-        });
+        const newRefreshToken = this.jwtService.sign(payload, { expiresIn: '7d' });
 
         return { accessToken: newAccessToken, refreshToken: newRefreshToken };
     }
+
+    
     async logout(refreshToken: string): Promise<void> {
         const decodedToken = this.jwtService.decode(refreshToken) as {
             id: string;

@@ -8,6 +8,7 @@ import {
     Param,
     Post,
     Put,
+    Query,
     UploadedFile,
     UseInterceptors,
 } from '@nestjs/common';
@@ -250,17 +251,20 @@ export class BlogController {
     // Blog Controller
     // Get all blog routes
     @Get()
-    async getAllBlog(): Promise<ResponseData<Blog[]>> {
+    async getAllBlog(
+        @Query('page') page: number = 1,
+        @Query('limit') limit: number = 10,
+    ): Promise<ResponseData<{ blogs: Blog[]; total: number }>> {
         try {
-            const blogs = await this.blogService.findAll();
-            return new ResponseData<Blog[]>(
-                blogs,
+            const result = await this.blogService.findAll(page, limit);
+            return new ResponseData<{ blogs: Blog[]; total: number }>(
+                result,
                 HttpStatus.SUCCESS,
                 HttpMessage.SUCCESS,
             );
         } catch (error) {
-            return new ResponseData<Blog[]>(
-                [],
+            return new ResponseData<{ blogs: Blog[]; total: number }>(
+                { blogs: [], total: 0 },
                 HttpStatus.ERROR,
                 HttpMessage.ERROR,
             );
@@ -296,43 +300,40 @@ export class BlogController {
 
     // Create blog routes
     @Post('/create-blog')
-  @UseInterceptors(FileInterceptor('avatar'))
-  async createBlog(
-    @Body() blogDto: Blog,
-    @UploadedFile() file: Express.Multer.File,
-  ): Promise<ResponseData<Blog>> {
-    try {
-      const NewBlog = new Blog();
-      Object.assign(NewBlog, blogDto);
-      await NewBlog.generateSlug(); // Ensure generateSlug is awaited if it's asynchronous
-
-      const savedBlog = await this.blogService.createBlog(NewBlog, file);
-      return new ResponseData<Blog>(
-        savedBlog,
-        HttpStatus.SUCCESS,
-        'Blog created successfully',
-      );
-    } catch (error) {
-      if (error instanceof NotFoundException) {
-        // Return specific error response for NotFoundException
-        return new ResponseData<Blog>(
-          null,
-          HttpStatus.NOT_FOUND,
-          error.message,
-        );
-      }
-      if (error instanceof HttpException) {
-        // Handle other known HttpExceptions
-        throw error;
-      }
-      // Handle unexpected errors
-      return new ResponseData<Blog>(
-        null,
-        HttpStatus.ERROR,
-        'An unexpected error occurred while creating the blog',
-      );
+    @UseInterceptors(FileInterceptor('avatar'))
+    async createBlog(
+        @Body() blogDto: Blog,
+        @UploadedFile() file: Express.Multer.File,
+    ): Promise<ResponseData<Blog>> {
+        try {
+            const NewBlog = new Blog();
+            Object.assign(NewBlog, blogDto);
+            await NewBlog.generateSlug();
+            const savedBlog = await this.blogService.createBlog(NewBlog, file);
+            return new ResponseData<Blog>(
+                savedBlog,
+                HttpStatus.SUCCESS,
+                'Blog created successfully',
+            );
+        } catch (error) {
+            if (error instanceof NotFoundException) {
+                return new ResponseData<Blog>(
+                    null,
+                    HttpStatus.NOT_FOUND,
+                    error.message,
+                );
+            }
+            if (error instanceof HttpException) {
+                throw error;
+            }
+            // Handle unexpected errors
+            return new ResponseData<Blog>(
+                null,
+                HttpStatus.ERROR,
+                'An unexpected error occurred while creating the blog',
+            );
+        }
     }
-  }
 
     // Update blog routes
     @Put('/update-blog/:id')
@@ -346,6 +347,7 @@ export class BlogController {
             const updateBlogData = new Blog();
             Object.assign(updateBlogData, blog);
             updateBlogData.generateSlug();
+
             const BlogData = await this.blogService.updateBlog(
                 updateBlogData,
                 file,
@@ -391,13 +393,34 @@ export class BlogController {
             );
         }
     }
+    // get child topic by topic slug
+    @Get('filter-by-topic-slug/:slug')
+    async findChildTopicsByTopicSlug(
+        @Param('slug') topicSlug: string,
+    ): Promise<ResponseData<ChildTopic[]>> {
+        try {
+            const childTopics =
+                await this.blogService.findChildTopicsByTopicSlug(topicSlug);
+            return new ResponseData<ChildTopic[]>(
+                childTopics,
+                HttpStatus.SUCCESS,
+                HttpMessage.SUCCESS,
+            );
+        } catch (error) {
+            return new ResponseData<ChildTopic[]>(
+                [],
+                HttpStatus.ERROR,
+                HttpMessage.ERROR,
+            );
+        }
+    }
     // Search Blog by name route
-    @Post('search')
+    @Get('search/:slug')
     async searchUserByName(
-        @Body('key') title: string,
+        @Param('slug') slug: string,
     ): Promise<ResponseData<Blog[]>> {
         try {
-            const blogs = await this.blogService.searchBlogByName(title);
+            const blogs = await this.blogService.searchBlogByName(slug);
             return new ResponseData<Blog[]>(
                 blogs,
                 HttpStatus.SUCCESS,
@@ -433,6 +456,30 @@ export class BlogController {
         }
     }
 
+    // filter blog by child topic slug
+
+    @Get('childTopic/filterSlug/:slug')
+    async findByChildTopicSlug(
+        @Param('slug') slug: string,
+        @Query('page') page: number = 1,
+        @Query('limit') limit: number = 10
+    ): Promise<ResponseData<{ blogs: Blog[], total: number }>> {
+        try {
+            const result = await this.blogService.findByChildTopicSlug(slug, page, limit);
+            return new ResponseData<{ blogs: Blog[], total: number }>(
+                result,
+                HttpStatus.SUCCESS,
+                HttpMessage.SUCCESS,
+            );
+        } catch (error) {
+            return new ResponseData<{ blogs: Blog[], total: number }>(
+                { blogs: [], total: 0 },
+                HttpStatus.ERROR,
+                HttpMessage.ERROR,
+            );
+        }
+    }
+    
     // filter blog by topic id
     @Get('topic/filter/:topicId')
     async findByTopicId(
@@ -440,6 +487,26 @@ export class BlogController {
     ): Promise<ResponseData<Blog[]>> {
         try {
             const blogs = await this.blogService.findByTopicId(topicId);
+            return new ResponseData<Blog[]>(
+                blogs,
+                HttpStatus.SUCCESS,
+                HttpMessage.SUCCESS,
+            );
+        } catch (error) {
+            return new ResponseData<Blog[]>(
+                [],
+                HttpStatus.ERROR,
+                HttpMessage.ERROR,
+            );
+        }
+    }
+
+    @Get('topic/filterSlug/:slug')
+    async findByTopicBySlug(
+        @Param('slug') slug: string,
+    ): Promise<ResponseData<Blog[]>> {
+        try {
+            const blogs = await this.blogService.findByTopicSlug(slug);
             return new ResponseData<Blog[]>(
                 blogs,
                 HttpStatus.SUCCESS,

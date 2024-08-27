@@ -133,24 +133,31 @@ export class BlogService {
    
 
     // Find all blogs
-    async findAll(): Promise<Blog[]> {
+    async findAll(page: number = 1, limit: number = 10): Promise<{ blogs: Blog[], total: number }> {
+        const skip = (page - 1) * limit;
+    
         const blogs = await this.blogModel
             .find()
             .populate({
-                path: 'user', 
-                model: 'User' 
+                path: 'user',
+                model: 'User'
             })
             .populate({
                 path: 'childTopics',
                 populate: {
                     path: 'topic',
-                    model: 'Topic' 
+                    model: 'Topic'
                 }
             })
-            .populate('likes')         
-            .populate('comments')      
+            .populate('likes')
+            .populate('comments')
+            .skip(skip)
+            .limit(limit)
             .exec();
-        return blogs;
+    
+        const total = await this.blogModel.countDocuments();
+    
+        return { blogs, total };
     }
 
     // Find Blog by Id
@@ -208,7 +215,7 @@ export class BlogService {
         } catch (error) {
           console.error('Error creating blog:', error);
           if (error instanceof NotFoundException) {
-            throw error; // Rethrow NotFoundException to be caught by the controller
+            throw error; 
           }
           throw new InternalServerErrorException('Error creating blog');
         }
@@ -222,22 +229,28 @@ export class BlogService {
     ): Promise<Blog> {
         try {
             const blogUpdate = { ...blog };
-            const fileStream = Readable.from(file.buffer);
-            const fileId = await this.googleDriveUploader.uploadImage(
-                fileStream,
-                file.originalname,
-                '1eHh70ah2l2JuqHQlA1riebJZiRS9L20q',
-            );
-            const ImageUrl = this.googleDriveUploader.getThumbnailUrl(fileId);
-            const blogData = { ...blogUpdate, avatar: ImageUrl };
-
-            const res = await this.blogModel.findByIdAndUpdate(id, blogData);
+            if (file) {
+                const fileStream = Readable.from(file.buffer);
+                const fileId = await this.googleDriveUploader.uploadImage(
+                    fileStream,
+                    file.originalname,
+                    '1eHh70ah2l2JuqHQlA1riebJZiRS9L20q',
+                );
+                const ImageUrl = this.googleDriveUploader.getThumbnailUrl(fileId);
+                blogUpdate.avatar = ImageUrl; 
+            } else {
+                const existingBlog = await this.blogModel.findById(id).exec();
+                blogUpdate.avatar = existingBlog.avatar;
+            }
+    
+            const res = await this.blogModel.findByIdAndUpdate(id, blogUpdate, { new: true });
             return res;
         } catch (error) {
-            console.error('Error create blog:', error);
+            console.error('Error updating blog:', error);
             throw error;
         }
     }
+    
 
     // delete Blog by Id
     async deleteBlogById(id: string): Promise<Blog> {
@@ -251,7 +264,10 @@ export class BlogService {
     }
 
     async searchBlogByName(key: string): Promise<Blog[]> {
-        const blogs = await this.blogModel.find({ title: key });
+        const blogs = await this.blogModel.find({ slug: key }).populate({
+            path: 'user', 
+            model: 'User'  
+        });
         return blogs;
     }
 
@@ -263,7 +279,47 @@ export class BlogService {
         }
         return blogs;
     }
-
+    async findChildTopicsByTopicSlug(topicSlug: string): Promise<ChildTopic[]> {
+        const topic = await this.topicModel.findOne({ slug: topicSlug }).exec();
+    
+        if (!topic) {
+            return [];
+        }
+    
+        const childTopics = await this.childTopicModel.find({ topic: topic._id }).exec();
+    
+        return childTopics;
+    }
+    
+    async findByChildTopicSlug(slug: string, page: number = 1, limit: number = 10): Promise<{ blogs: Blog[], total: number }> {
+        const skip = (page - 1) * limit;
+    
+        const blogs = await this.blogModel
+            .find()
+            .populate({
+                path: 'childTopics',
+                match: { slug: slug },
+            }).populate({
+                path: 'user', 
+                model: 'User'  
+            })
+            .skip(skip)
+            .limit(limit).populate({
+            path: 'user', 
+            model: 'User'  
+        })
+            .exec();
+    
+        const total = await this.blogModel
+            .countDocuments()
+            .populate({
+                path: 'childTopics',
+                match: { slug: slug },
+            });
+    
+        return { blogs: blogs.filter(blog => blog.childTopics.length > 0), total };
+    }
+    
     async findByTopicId(topicId: string): Promise<Blog[]> {
         const childTopics = await this.childTopicModel.find({ topic: topicId }).exec();
 
@@ -271,8 +327,31 @@ export class BlogService {
           return [];
         }
         const childTopicIds = childTopics.map(childTopic => childTopic._id);
-        const blogs = await this.blogModel.find({ childTopics: { $in: childTopicIds } }).exec();
+        const blogs = await this.blogModel.find({ childTopics: { $in: childTopicIds } }).populate({
+            path: 'user',  
+            model: 'User'  
+        }).exec();
         
         return blogs;
       }
+
+      async findByTopicSlug(topicSlug: string): Promise<Blog[]> {
+        const topic = await this.topicModel.findOne({ slug: topicSlug }).exec();
+        if (!topic) {
+            return [];
+        }
+        const childTopics = await this.childTopicModel.find({ topic: topic._id }).exec();
+            if (!childTopics || childTopics.length === 0) {
+            return [];
+        }
+        const childTopicIds = childTopics.map(childTopic => childTopic._id);
+        const blogs = await this.blogModel.find({ childTopics: { $in: childTopicIds } })
+        .populate({
+            path: 'user', 
+            model: 'User'  
+        })
+        .exec();
+        return blogs;
+    }
+    
 }
