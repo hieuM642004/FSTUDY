@@ -1,26 +1,32 @@
 'use client';
 
-import { useRouter } from 'next/navigation'; 
+import { useRouter } from 'next/navigation';
 import ExamService from '@/services/ExamsService';
-import { ClockCircleOutlined, CommentOutlined, EyeOutlined } from '@ant-design/icons';
+import {
+    ClockCircleOutlined,
+    CommentOutlined,
+    EyeOutlined,
+} from '@ant-design/icons';
 import { useState, useEffect } from 'react';
 import { Avatar, List, Checkbox, Select, Row, Col } from 'antd';
 import type { CheckboxProps } from 'antd';
 import ButtonPrimary from '@/components/shared/ButtonPrimary/ButtonPrimary';
 import Target from '@/components/client/Target/Target';
+import ExamResults from '@/components/client/ExamResult/ExamResult';
 
 const onChange: CheckboxProps['onChange'] = (e) => {
     console.log(`checked = ${e.target.checked}`);
 };
 
-
 function Test({ slug }: { slug: string }) {
-    const router = useRouter();  
+    const router = useRouter();
     const [exam, setExam] = useState<any>();
-    const [selectedSessionSlugs, setSelectedSessionSlugs] = useState<string[]>([]);
+    const [selectedSessionSlugs, setSelectedSessionSlugs] = useState<string[]>(
+        [],
+    );
     const [limit, setLimit] = useState<number>(0);
     const [errors, setErrors] = useState<string>('');
-
+    const examId = exam?._id;
     useEffect(() => {
         const getExam = async () => {
             const exam = await ExamService.getAllExamById(slug);
@@ -33,25 +39,29 @@ function Test({ slug }: { slug: string }) {
         if (checked) {
             setSelectedSessionSlugs((prev) => [...prev, sessionSlug]);
         } else {
-            setSelectedSessionSlugs((prev) => prev.filter((slug) => slug !== sessionSlug));
+            setSelectedSessionSlugs((prev) =>
+                prev.filter((slug) => slug !== sessionSlug),
+            );
         }
     };
     const handleChange = (value: string) => {
-       setLimit(Number(value))
+        setLimit(Number(value));
     };
-    
+
     const handleTakeTest = () => {
         if (selectedSessionSlugs.length === 0) {
-            setErrors('Bạn phải chọn ít nhất một phần thi để luyện tập!')
+            setErrors('Bạn phải chọn ít nhất một phần thi để luyện tập!');
             return;
         }
         setErrors('');
 
-        const query = selectedSessionSlugs.map(slug => `part=${slug}`).join('&');
+        const query = selectedSessionSlugs
+            .map((slug) => `part=${slug}`)
+            .join('&');
         const url = `/practice?exam=${exam?.slug}&${query}&time=${limit}`;
 
-        console.log("Luyện tập với các phần thi:", selectedSessionSlugs);
-        router.push(url);  
+        console.log('Luyện tập với các phần thi:', selectedSessionSlugs);
+        router.push(url);
     };
 
     return (
@@ -76,26 +86,46 @@ function Test({ slug }: { slug: string }) {
                         thang điểm 990 cho TOEIC hoặc 9.0 cho IELTS), vui lòng
                         chọn chế độ làm FULL TEST.
                     </p>
+                    <div className="mb-1">
+                        <p className="font-bold">Kết quả làm bài của bạn: </p>
+                        <div>
+                            {examId ? (
+                                <ExamResults id={examId} />
+                            ) : (
+                                <p>Đang tải...</p>
+                            )}
+                        </div>
+                    </div>
                     <p>Chọn phần thi bạn muốn làm</p>
-                    
+
                     <List
                         itemLayout="horizontal"
                         dataSource={exam?.idSession}
                         renderItem={(item: any) => (
                             <List.Item>
                                 <List.Item.Meta
-                                    avatar={<Checkbox onChange={(e) => onCheckboxChange(item.slug, e.target.checked)} />}
+                                    avatar={
+                                        <Checkbox
+                                            onChange={(e) =>
+                                                onCheckboxChange(
+                                                    item.slug,
+                                                    e.target.checked,
+                                                )
+                                            }
+                                        />
+                                    }
                                     title={<p>{item.title}</p>}
                                     description={
                                         <div>
-                                            {item?.idQuestionGroups?.length} câu hỏi
+                                            {item?.idQuestionGroups?.length} câu
+                                            hỏi
                                         </div>
                                     }
                                 />
                             </List.Item>
                         )}
                     />
-                    <p className='text-red-500'>{errors}</p>
+                    <p className="text-red-500">{errors}</p>
                     <div className="flex flex-col space-y-3 mt-4">
                         <label htmlFor="select">
                             Giới hạn thời gian (Để trống để làm bài không giới
@@ -106,7 +136,10 @@ function Test({ slug }: { slug: string }) {
                             className="w-3/5"
                             onChange={handleChange}
                             options={[
-                                { value: 0, label: 'Chọn thời gian',disabled: true },
+                                {
+                                    value: 0,
+                                    label: 'Chọn thời gian (mặc định sẽ không giới hạn)',
+                                },
                                 { value: 5, label: '5 phút' },
                                 { value: 10, label: '10 phút' },
                                 { value: 15, label: '15 phút' },
@@ -121,7 +154,10 @@ function Test({ slug }: { slug: string }) {
                             ]}
                         />
                         <div>
-                            <ButtonPrimary label="Luyện tập"  onClick={handleTakeTest}/>
+                            <ButtonPrimary
+                                label="Luyện tập"
+                                onClick={handleTakeTest}
+                            />
                         </div>
                     </div>
                 </Col>

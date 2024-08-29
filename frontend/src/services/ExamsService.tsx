@@ -96,6 +96,42 @@ class ExamService {
             throw error;
         }
     }
+    static async submitExam(answers: any) {
+        try {
+            const result = await nestApiInstance.post(
+                'exam-result/create-exam-result',
+                answers,
+            );
+            return result.data.data;
+        } catch (error) {
+            throw error;
+        }
+    }
+    static async getResultExamById(id: any) {
+        try {
+            const result = await nestApiInstance.get(`exam-result/exam/${id}`);
+            return result.data.data;
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    static async getResultById(id: any) {
+        try {
+            const result = await nestApiInstance.get(`exam-result/${id}`);
+            return result.data.data;
+        } catch (error) {
+            throw error;
+        }
+    }
+    static async getResultByGroupQuestions(id: any) {
+        try {
+            const result = await nestApiInstance.get(`exam-result/group-question/${id}`);
+            return result.data.data;
+        } catch (error) {
+            throw error;
+        }
+    }
 }
 
 export default ExamService;

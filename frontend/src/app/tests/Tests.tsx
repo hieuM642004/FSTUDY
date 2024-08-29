@@ -131,16 +131,6 @@ const Tests: React.FC = () => {
                         >
                             Tất cả
                         </button>
-                        <button
-                            onClick={() => setActiveTab('short')}
-                            className={`pb-2 ${
-                                activeTab === 'short'
-                                    ? 'text-blue-600 border-b-2 border-blue-600'
-                                    : 'text-gray-500'
-                            }`}
-                        >
-                            Đề rút gọn
-                        </button>
                     </div>
                 </div>
                 <div className="flex flex-col md:flex-row md:space-x-4 mt-4 gap-8">

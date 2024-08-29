@@ -1,20 +1,28 @@
 'use client';
 
 import { useState, useEffect, useRef, memo } from 'react';
-import ButtonPrimary from "@/components/shared/ButtonPrimary/ButtonPrimary";
-import ConfirmModal from "@/components/shared/ModalComfirm/ModalComfirm";
 
-const CountDownWithSubmit = ({ timeStart, onTimeup, isIncremental }: any) => {
+import ButtonPrimary from '@/components/shared/ButtonPrimary/ButtonPrimary';
+import ConfirmModal from '@/components/shared/ModalComfirm/ModalComfirm';
+import ExamService from '@/services/ExamsService';
+
+
+const CountDownWithSubmit = ({
+    timeStart,
+    onTimeup,
+    isIncremental,
+    listAnswer,
+}: any) => {
     const [count, setCount] = useState(timeStart);
     const [isModalVisible, setIsModalVisible] = useState(false);
     const requestRef = useRef<number | null>(null);
     const startTimeRef = useRef(Date.now());
-    const pausedTimeRef = useRef<number | null>(null); 
+    const pausedTimeRef = useRef<number | null>(null);
 
     const updateCount = () => {
         setCount((prevCount: any) => {
             const elapsedTime = Math.floor(
-                (Date.now() - startTimeRef.current) / 1000
+                (Date.now() - startTimeRef.current) / 1000,
             );
             if (isIncremental) {
                 return timeStart + elapsedTime;
@@ -41,35 +49,118 @@ const CountDownWithSubmit = ({ timeStart, onTimeup, isIncremental }: any) => {
         if (requestRef.current) {
             cancelAnimationFrame(requestRef.current);
             requestRef.current = null;
-            pausedTimeRef.current = count;  
+            pausedTimeRef.current = count;
         }
     };
-    
+
     const resumeTimer = () => {
         if (pausedTimeRef.current !== null) {
-          
-            startTimeRef.current = Date.now() - (timeStart - pausedTimeRef.current) * 1000;
+            startTimeRef.current =
+                Date.now() -
+                (pausedTimeRef.current - (isIncremental ? timeStart : 0)) *
+                    1000;
         } else {
-           
             startTimeRef.current = Date.now() - count * 1000;
         }
         requestRef.current = requestAnimationFrame(updateCount);
     };
 
     const handleShowModal = () => {
-        pauseTimer(); 
+        pauseTimer();
         setIsModalVisible(true);
     };
 
     const handleConfirm = () => {
-        console.log("Thời gian dừng lại:", pausedTimeRef.current);
-        
+        handleSubmitExam();
         setIsModalVisible(false);
     };
 
+    const handleSubmitExam = async () => {
+        const answers = await filterListAnswer();
+    
+        const data = {
+            examSessionId: answers.session, 
+            correctAnswers: answers.correctAnswers,
+            incorrectAnswers: answers.incorrectAnswers,
+            skippedAnswers: answers.skippedAnswers,
+            completionTime: answers.pausedTimeFormatted,
+            idUser: '66bdcb8597823b03cefd32ed',  
+        };
+    
+        const result = await ExamService.submitExam(data);
+        console.log(result);
+    };
+    
+    const filterListAnswer = async () => {
+        const pausedTimeFormatted = toMMSS(pausedTimeRef.current || 0);
+        const userAnswers = JSON.parse(localStorage.getItem('answerList') || '[]');
+    
+        const answerList = listAnswer;
+    
+        const correctAnswers: any[] = [];
+        const incorrectAnswers: any[] = [];
+        const skippedAnswers: any[] = [];
+        let session: any = [];
+    
+        Object.keys(answerList).forEach((sessionId) => {
+            session.push(sessionId);
+            answerList[sessionId].forEach((item: any) => {
+                item.questions.forEach((question: any) => {
+                    const userAnswer = userAnswers.find(
+                        (ans: any) => ans.order === question.order,
+                    );
+    
+                    if (userAnswer) {
+                        let isCorrect = false;
+                        let selectedOptions: string[] = [];
+    
+                        if (question.questionType === 'multiple-choice') {
+                            selectedOptions = [question.options[userAnswer.value - 1]];
+                            isCorrect = question.correctAnswer.includes(selectedOptions[0]);
+                        } else if (question.questionType === 'fill-in-the-blank') {
+                            selectedOptions = [userAnswer.value];
+                            isCorrect = question.correctAnswer.some(
+                                (correct: any) =>
+                                    correct.toString().trim().toLowerCase() ===
+                                    userAnswer.value.toString().trim().toLowerCase(),
+                            );
+                        }
+    
+                        const answer = {
+                            questionId: question._id, 
+                            selectedOptions,
+                            isCorrect,
+                        };
+    
+                        if (isCorrect) {
+                            correctAnswers.push(answer);
+                        } else {
+                            incorrectAnswers.push(answer);
+                        }
+                    } else {
+                        const skippedAnswer = {
+                            questionId: question._id,
+                            selectedOptions: [],
+                            isCorrect: false,
+                        };
+                        skippedAnswers.push(skippedAnswer);
+                    }
+                });
+            });
+        });
+    
+        return {
+            session,
+            pausedTimeFormatted,
+            correctAnswers,
+            incorrectAnswers,
+            skippedAnswers,
+        };
+    };
+    
     const handleCancel = () => {
         setIsModalVisible(false);
-        resumeTimer();  
+        resumeTimer();
     };
 
     const toMMSS = (secs: number) => {
@@ -80,7 +171,11 @@ const CountDownWithSubmit = ({ timeStart, onTimeup, isIncremental }: any) => {
 
     return (
         <>
-            <div className={`font-bold ${count <= 5 ? 'text-red-600' : 'text-black'}`}>
+            <div
+                className={`font-bold ${
+                    count <= 5 ? 'text-red-600' : 'text-black'
+                }`}
+            >
                 {toMMSS(count)}
             </div>
             <ButtonPrimary
