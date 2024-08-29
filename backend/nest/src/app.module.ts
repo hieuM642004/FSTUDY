@@ -13,6 +13,7 @@ import { CourseModule } from './apis/Course/course.module';
 import { FlashCardModule } from './apis/flashCards/flashCard.module';
 import { CommentModule1 } from './apis/socket/comments/comment.module';
 import { ExamModule } from './apis/exams/exam.module';
+import { ExamResultModule } from './apis/exams/examResult/examResult.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { ExamModule } from './apis/exams/exam.module';
     FlashCardModule,
     CommentModule1,
     ExamModule,
+    ExamResultModule,
     ConfigModule.forRoot({ envFilePath: '.env', isGlobal: true }),
     MongooseModule.forRoot(process.env.MONGODB_URI),
   ],

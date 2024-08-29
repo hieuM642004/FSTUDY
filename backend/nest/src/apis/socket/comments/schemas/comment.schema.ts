@@ -9,16 +9,16 @@ import { User } from 'src/apis/users/userSchema/user.schema';
 })
 export class Comment extends Document {
     @Prop({ type: SchemaTypes.ObjectId, ref: 'User', required: true })
-    idUser: User;
+    idUser: string;
 
     @Prop({ type: SchemaTypes.ObjectId, ref: 'Blog'})
-    idBlog: Blog;
+    idBlog: string;
 
     @Prop({ type: SchemaTypes.ObjectId, ref: 'Course'})
-    idCourse: Course;
+    idCourse: string;
 
     @Prop({ type: SchemaTypes.ObjectId, ref: 'Comment', default: null })
-    parentId: Comment;
+    parentId: string;
 
     @Prop({ required: true })
     content: string;
@@ -27,7 +27,7 @@ export class Comment extends Document {
         type: [{ type: SchemaTypes.ObjectId, ref: 'Comment' }],
         default: [],
     })
-    replies: Comment[];
+    replies: string[];
 }
 
 export const CommentSchema = SchemaFactory.createForClass(Comment);
