@@ -4,7 +4,6 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Input, Radio, Space, Row, Col } from 'antd';
 import type { RadioChangeEvent } from 'antd';
 
-import { updateSelection } from '@/lib/redux/features/recording/recordingSlice';
 import { RecordingProps, Question } from '@/types/Exams';
 
 const Recording: React.FC<RecordingProps> = React.memo(

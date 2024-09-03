@@ -21,6 +21,7 @@ import { User } from './userSchema/user.schema';
 import { HttpMessage, HttpStatus } from 'src/global/globalEnum';
 import { AdminGuard } from 'src/auth/guards/authorization.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('users')
 export class UserController {
@@ -102,7 +103,7 @@ export class UserController {
 
     @Put('/update-user/:id')
     @UseInterceptors(FileInterceptor('avatar'))
-    @UseGuards(AdminGuard)
+    @UseGuards(AuthGuard('jwt'))
     async updateAdmin(
         @Param('id') id: string,
         @Body() user: User,
@@ -133,7 +134,7 @@ export class UserController {
 
       // Router get user by id
 
-    @UsePipes(new ValidationPipe())
+    // @UsePipes(new ValidationPipe())
     @Get(':id')
     // @UseGuards(AdminGuard)
     async getUserById(@Param('id') id: string): Promise<ResponseData<User>> {

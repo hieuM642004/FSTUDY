@@ -37,9 +37,7 @@ function ForgotPass() {
     const onFinish = async (values: string) => {
         try {
            
-            const response = await AuthService.forgotPassword(values);
-            console.log('check response',response);
-            
+            const response = await AuthService.forgotPassword(values);       
             form.resetFields();
             if (response !== 400) {
                

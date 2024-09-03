@@ -4,6 +4,7 @@ import { FlashCard, FlashCardSchema } from './FlashCardSchema/FlashCard.schema';
 import { FlashCardController } from './flashCard.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import { FlashCardService } from './flashCard.service';
+import { JwtStrategy } from 'src/auth/JWT/jwt.strategy';
 
 @Module({
     imports: [

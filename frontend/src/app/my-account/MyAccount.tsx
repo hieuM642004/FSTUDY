@@ -1,31 +1,31 @@
 'use client';
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { EditOutlined } from '@ant-design/icons';
+import { useAppDispatch } from '@/hooks/useAppDispatch';
+import { RootState } from '@/lib/redux/store';
+import { fetchUserData } from '@/lib/redux/features/user/userSlice';
 
 import './MyAccount.scss';
 import PageMyCourses from './courses/Courses';
 import PageMyPosts from './posts/Posts';
 import PageMyStatistics from './examstatistics/ExamStatistics';
-import { AuthContext } from '@/context/auth/AuthContext';
+import { useTypedSelector } from '@/hooks/useTypedSelector';
 
 const PageMyAccountInfo: React.FC = () => {
-    const { getProfileUser }: any = useContext(AuthContext);
-
     const [activeTab, setActiveTab] = useState('courses');
-    const [dataUser, setDataUser] = useState<any | object>();
+    const dispatch = useAppDispatch();
+
+    const dataUser = useTypedSelector((state: RootState) => state.user);
+
+    useEffect(() => {
+        dispatch(fetchUserData());
+    }, [dispatch]);
 
     const handleChangePage = (pageName: string) => {
         setActiveTab(pageName);
     };
-    useEffect(() => {
-        const fetchDataUser = async () => {
-            const data = await getProfileUser();
-            setDataUser(data);
-        };
-        fetchDataUser();
-    }, []);
 
     return (
         <>
@@ -61,7 +61,7 @@ const PageMyAccountInfo: React.FC = () => {
                             </>
                         )}
 
-                        <Link href={'/settings'}>
+                        <Link href={'/my-account/settings'}>
                             <EditOutlined className="absolute bottom-0 right-0   bg-white rounded-full p-2" />
                         </Link>
                     </div>

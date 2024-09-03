@@ -5,7 +5,11 @@ import { useState, useEffect, useRef, memo } from 'react';
 import ButtonPrimary from '@/components/shared/ButtonPrimary/ButtonPrimary';
 import ConfirmModal from '@/components/shared/ModalComfirm/ModalComfirm';
 import ExamService from '@/services/ExamsService';
-
+import { getUserIdFromToken } from '@/utils/authUtils';
+import { useRouter } from 'next/navigation';
+import { useTypedSelector } from '@/hooks/useTypedSelector';
+import { useAppDispatch } from '@/hooks/useAppDispatch';
+import { useAuth } from '@/hooks/useAuth';
 
 const CountDownWithSubmit = ({
     timeStart,
@@ -18,7 +22,9 @@ const CountDownWithSubmit = ({
     const requestRef = useRef<number | null>(null);
     const startTimeRef = useRef(Date.now());
     const pausedTimeRef = useRef<number | null>(null);
-
+const router=useRouter();
+    const dispatch = useAppDispatch();
+    const {userId}=useAuth()
     const updateCount = () => {
         setCount((prevCount: any) => {
             const elapsedTime = Math.floor(
@@ -84,11 +90,13 @@ const CountDownWithSubmit = ({
             incorrectAnswers: answers.incorrectAnswers,
             skippedAnswers: answers.skippedAnswers,
             completionTime: answers.pausedTimeFormatted,
-            idUser: '66bdcb8597823b03cefd32ed',  
+            idUser: userId,  
         };
     
         const result = await ExamService.submitExam(data);
-        console.log(result);
+        if(result){
+            router.push(`/tests/result/${result._id}`);
+        }
     };
     
     const filterListAnswer = async () => {

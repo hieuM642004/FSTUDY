@@ -1,13 +1,14 @@
 'use client';
-
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { UnorderedListOutlined } from '@ant-design/icons';
 import { Drawer, MenuProps } from 'antd';
-import {  hasCookie } from 'cookies-next';
-import { AuthContext } from '@/context/auth/AuthContext';
+import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation'
+import { useTypedSelector } from '@/hooks/useTypedSelector';
+import { useAppDispatch } from '@/hooks/useAppDispatch';
+import { clearUser, fetchUserData } from '@/lib/redux/features/user/userSlice';
+import { deleteCookie } from 'cookies-next';
 
 import './Header.scss';
 import ButtonPrimary from '../../shared/ButtonPrimary/ButtonPrimary';
@@ -22,25 +23,15 @@ const menuItems = [
 ];
 
 const Header = () => {
-    const router = useRouter()
-    // const { user, logout, getProfileUser , userInfo}: any = useContext(AuthContext);
-    
+    const router = useRouter();
     const [visible, setVisible] = useState(false);
-    const [token, setToken] = useState(false);
-    const [dataUser, setDataUser] = useState();
 
-    // useEffect(() => {
-    //     const fetchDataUser = async () => {
-    //         const data = await getProfileUser();
-    //         setDataUser(data);
-    //     };
+    const user = useTypedSelector((state) => state.user);
+    const dispatch = useAppDispatch();
 
-    //     let checkToken = hasCookie('token');
-    //     setToken(checkToken);
-    //     if (checkToken) {
-    //         fetchDataUser();
-    //     }
-    // }, [user]);
+    useEffect(() => {
+        dispatch(fetchUserData()); 
+    }, [dispatch]);
 
     const showDrawer = () => {
         setVisible(true);
@@ -49,9 +40,22 @@ const Header = () => {
     const onClose = () => {
         setVisible(false);
     };
+
+    const handleLogout = () => {
+      
+        deleteCookie('token');
+        deleteCookie('refreshToken');
+        
+       
+        dispatch(clearUser());
+
+        
+        router.push('/login');
+    };
+
     const itemsdropdown: MenuProps['items'] = [
         {
-            label: <div onClick={() => {}}>tất cả</div>,
+            label: <div onClick={() => {}}>Tất cả</div>,
             key: '0',
         },
         {
@@ -59,17 +63,12 @@ const Header = () => {
         },
         {
             label: (
-                <div onClick={() => {}} className="">
-                    Lịch học của tôi
-                </div>
-            ),
-            key: '1',
-        },
-        {
-            label: (
-                <div onClick={() => {
-                    router.push('/myaccount')
-                }} className="">
+                <div
+                    onClick={() => {
+                        router.push('/my-account');
+                    }}
+                    className=""
+                >
                     Trang cá nhân
                 </div>
             ),
@@ -78,9 +77,7 @@ const Header = () => {
         {
             label: (
                 <div
-                    onClick={() => {
-                        // logout();
-                    }}
+                    onClick={handleLogout}
                     className=""
                 >
                     Đăng xuất
@@ -88,7 +85,8 @@ const Header = () => {
             ),
             key: '2',
         },
-    ];    
+    ];
+
     return (
         <header className="lg:px-16 bg-white flex flex-wrap items-center shadow-md z-50 fixed w-full top-0">
             <div className="flex-1 flex justify-between items-center p-1">
@@ -120,7 +118,7 @@ const Header = () => {
                                 </Link>
                             </li>
                         ))}
-                        <ButtonPrimary label="Đăng nhập" />
+                        {!user.isLoggedIn && <ButtonPrimary label="Đăng nhập" />}
                     </ul>
                 </nav>
             </Drawer>
@@ -141,35 +139,31 @@ const Header = () => {
                         ))}
                     </ul>
                 </nav>
-                {token ? (
+                {user.isLoggedIn ? (
                     <>
-                        {/* <Dropdowns
+                        <Dropdowns
                             items={itemsdropdown}
                             title={
-                                dataUser?.avatar  ? (
-                                    <>
-                                        <Image
-                                            src={dataUser?.avatar}
-                                            width={30}
-                                            height={30}
-                                            alt="Picture of the author"
-                                            className="mr-2 rounded-full"
-                                        />
-                                    </>
+                                user?.avatar ? (
+                                    <Image
+                                        src={user.avatar}
+                                        width={30}
+                                        height={30}
+                                        alt="User Avatar"
+                                        className="mr-2 rounded-full"
+                                    />
                                 ) : (
-                                    <>
-                                        <Image
-                                            src="https://study4.com/static/img/user_icon.png"
-                                            width={30}
-                                            height={30}
-                                            alt="Picture of the author"
-                                            className="mr-2"
-                                        />
-                                    </>
+                                    <Image
+                                        src="https://study4.com/static/img/user_icon.png"
+                                        width={30}
+                                        height={30}
+                                        alt="Default Avatar"
+                                        className="mr-2 rounded-full"
+                                    />
                                 )
                             }
                             stylecss=" text-normal"
-                        /> */}
+                        />
                     </>
                 ) : (
                     <>

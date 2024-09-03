@@ -3,18 +3,19 @@ import React, { useState, useEffect, memo } from 'react';
 import { Table, Card } from 'antd';
 import Link from 'next/link';
 import ExamService from '@/services/ExamsService';
+import { useAuth } from '@/hooks/useAuth';
 
 const ExamResults: React.FC<{ id?: string }> = ({ id }) => {
     
     const [result, setResult] = useState([]);
-    
+    const {isLoggedIn,userId}=useAuth();
     useEffect(() => {
         const getResultExam = async () => {
             try {
                 const data = await ExamService.getResultExamById(id);
-               console.log(data);
-               
-                const formattedResults = data.map((item: any, index: number) => ({
+                const userResults = data.filter((item: any) => item?.idUser?._id === userId);
+
+                const formattedResults = userResults.map((item: any, index: number) => ({
                     key: index + 1,
                     id: item._id,
                     date: new Date(item.createdAt).toLocaleDateString(),
@@ -62,14 +63,21 @@ const ExamResults: React.FC<{ id?: string }> = ({ id }) => {
     ];
 
     return (
-        <div className="mb-4">
-            <Table
-                dataSource={result}
-                columns={columns}
-                pagination={false}
-                bordered
-            />
-        </div>
+        <>
+            {
+                isLoggedIn && (
+                  <div className="mb-4">
+                <Table
+                    dataSource={result}
+                    columns={columns}
+                    pagination={false}
+                    bordered
+                />
+            </div>  
+                )
+            }
+        </>
+        
     );
 };
 

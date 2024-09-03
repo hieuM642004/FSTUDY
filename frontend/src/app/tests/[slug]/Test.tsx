@@ -13,7 +13,8 @@ import type { CheckboxProps } from 'antd';
 import ButtonPrimary from '@/components/shared/ButtonPrimary/ButtonPrimary';
 import Target from '@/components/client/Target/Target';
 import ExamResults from '@/components/client/ExamResult/ExamResult';
-
+import { useAuth } from '@/hooks/useAuth';
+import { useAppDispatch } from '@/hooks/useAppDispatch';
 const onChange: CheckboxProps['onChange'] = (e) => {
     console.log(`checked = ${e.target.checked}`);
 };
@@ -26,7 +27,8 @@ function Test({ slug }: { slug: string }) {
     );
     const [limit, setLimit] = useState<number>(0);
     const [errors, setErrors] = useState<string>('');
-    const examId = exam?._id;
+    const{isLoggedIn,userId}=useAuth()
+    const examId = exam?._id ;
     useEffect(() => {
         const getExam = async () => {
             const exam = await ExamService.getAllExamById(slug);
@@ -49,6 +51,9 @@ function Test({ slug }: { slug: string }) {
     };
 
     const handleTakeTest = () => {
+        if(!isLoggedIn){
+            router.push('/login')
+        }
         if (selectedSessionSlugs.length === 0) {
             setErrors('Bạn phải chọn ít nhất một phần thi để luyện tập!');
             return;

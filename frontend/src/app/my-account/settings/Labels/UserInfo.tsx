@@ -1,16 +1,18 @@
 'use client';
-import { Form, Input, Upload, DatePicker } from 'antd';
-import { useContext, useEffect, useState } from 'react';
+import { Form, Input, DatePicker } from 'antd';
+import { useEffect, useState } from 'react';
 import moment from 'moment';
 import { getCookie } from 'cookies-next';
 
 import ButtonPrimary from '@/components/shared/ButtonPrimary/ButtonPrimary';
-import { AuthContext } from '@/context/auth/AuthContext';
+import { useAppDispatch } from '@/hooks/useAppDispatch';
+import { fetchUserData } from '@/lib/redux/features/user/userSlice';
 import UserService from '@/services/user/UserService';
+import { useTypedSelector } from '@/hooks/useTypedSelector';
 
 function UserInfo() {
-    const { getProfileUser }: any = useContext(AuthContext);
-    const [dataUser, setDataUser] = useState<any | object>();
+    const dispatch = useAppDispatch();
+    const dataUser = useTypedSelector((state) => state.user);
     const [form] = Form.useForm();
     const [file, setFile] = useState<File | null>(null);
     const [checkType, setCheckType] = useState<string | boolean>();
@@ -20,23 +22,24 @@ function UserInfo() {
             setFile(e.target.files[0]);
         }
     };
+
     useEffect(() => {
-        const fetchDataUser = async () => {
-            const data = await getProfileUser();
-            setDataUser(data);
-            form.setFieldsValue({
-                fullname: data?.fullname,
-                phone: data?.phone,
-                birthday: data?.birthday ? moment(data.birthday) : null,
-                avatar: data?.upload,
-            });
-        };
-        fetchDataUser();
+        dispatch(fetchUserData());
         setCheckType(getCookie('typeLogin'));
-    }, [form]);
+    }, [dispatch]);
+
+    useEffect(() => {
+        console.log("User data updated:", dataUser); 
+        form.setFieldsValue({
+            fullname: dataUser?.name,
+            phone: dataUser?.phone ? dataUser?.phone : null,
+            birthday: dataUser?.birthday ? moment(dataUser.birthday) : null,
+            avatar: dataUser?.avatar,
+        });
+    }, [dataUser, form]);
 
     const onFinish = async (values: any) => {
-        const iduser = dataUser?._id;
+        const iduser = dataUser?.id;
         const infoDataUser: any = new FormData();
         infoDataUser.append('fullname', values.fullname);
         infoDataUser.append('phone', values.phone);
@@ -47,10 +50,10 @@ function UserInfo() {
             infoDataUser.append('avatar', file);
         }
         try {
-            const res = await UserService.updateUser(infoDataUser, iduser);
+            const res = await UserService.updateUser(infoDataUser, iduser as string);
             if (res) {
                 console.log('User updated successfully', res);
-                await getProfileUser();
+                await dispatch(fetchUserData()); 
             }
         } catch (error) {
             console.error('Error updating user', error);

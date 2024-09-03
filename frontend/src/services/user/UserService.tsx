@@ -1,8 +1,9 @@
 import { nestApiInstance } from '@/constant/api';
-import { toast } from 'react-toastify';
+import withTokenRefresh from '@/decorator/withAuth';
 import { UpdateUser } from '@/types/user/User';
 
 class UserService {
+    @withTokenRefresh
     static async updateUser(
         dataUpdate: UpdateUser, id : string 
     ): Promise<UpdateUser | undefined> {
@@ -12,11 +13,10 @@ class UserService {
                 dataUpdate,
             );
             if(response.status === 200){                
-                toast.success('CẬP NHẬT THÀNH CÔNG');
                 return response.data.data;
             }
         } catch (error) {
-            toast.error('CẬP NHẬT THẤT BẠI');
+          
             console.error('Error fetching register:', error);
         }
     }
@@ -29,11 +29,11 @@ class UserService {
                 PasswordandFullname
             );
             if(response.status === 200){                
-                toast.success('CẬP NHẬT THÀNH CÔNG');
+              
                 return response.data.data;
             }
         } catch (error) {
-            toast.error('CẬP NHẬT THẤT BẠI');
+          
             console.error('Error fetching register:', error);
         }
     }
