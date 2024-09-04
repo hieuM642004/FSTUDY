@@ -8,6 +8,7 @@ import { Avatar, List, Checkbox, Select, Row, Col } from 'antd';
 import type { CheckboxProps } from 'antd';
 import ButtonPrimary from '@/components/shared/ButtonPrimary/ButtonPrimary';
 import Target from '@/components/client/Target/Target';
+import Comment from '@/components/client/Comment/Comment';
 
 const onChange: CheckboxProps['onChange'] = (e) => {
     console.log(`checked = ${e.target.checked}`);
@@ -130,6 +131,9 @@ function Test({ slug }: { slug: string }) {
                     <Target />
                 </Col>
             </Row>
+            <div className="my-7">
+                    <Comment idCourse={exam?._id} />
+            </div>
         </div>
     );
 }

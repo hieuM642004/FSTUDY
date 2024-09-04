@@ -6,10 +6,10 @@ import { User } from 'src/apis/users/userSchema/user.schema';
 
 export class CreateCommentDto {
   readonly _id?: string;
-  readonly idUser: User;
-  readonly idBlog: Blog;
-  readonly idCourse: Course;
-  readonly parentId: Comment;
+  readonly idUser: string;
+  readonly idBlog: string;
+  readonly idCourse: string;
+  readonly parentId: string;
   readonly content: string;
-  readonly replies: Comment[];
+  readonly replies: string[];
 }
