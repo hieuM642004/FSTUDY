@@ -34,16 +34,25 @@ export class CommentGateway
   handleDisconnect(client: Socket) {
     console.log('Client disconnected:', client.id);
   }
-
+  @SubscribeMessage('joinRoom')
+  handleJoinRoom(client: Socket, { idBlog, idCourse }: { idBlog?: string, idCourse?: string }) {
+  const room = idBlog || idCourse;
+  if (room) {
+    client.join(room);
+  }
+}
   @SubscribeMessage('requestComments')
   async handleRequestComments(client: Socket, { idBlog, idCourse }: { idBlog?: string, idCourse?: string }) {
-    try {
+    try {      
       const query: any = {};
       if (idBlog) query.idBlog = idBlog;
       if (idCourse) query.idCourse = idCourse;
-
       const comments = await this.commentModel.find(query).populate('idUser').exec();
-      this.server.emit('comments', comments);
+      const room = idBlog || idCourse;
+      if (room) {
+        this.server.to(room).emit('comments', comments);
+      }
+       
     } catch (error) {
       console.error('Error fetching comments:', error);
       throw error;
@@ -70,10 +79,15 @@ export class CommentGateway
           await parentComment.save();
         }
       }
+      const query: any = {};
+      if (commentDto.idBlog) query.idBlog = commentDto.idBlog;
+      if (commentDto.idCourse) query.idCourse = commentDto.idCourse;
 
-      const populatedComment = await this.commentModel.findById(savedComment._id).populate('idUser');
-      this.server.emit('comment', populatedComment);
-      return populatedComment;
+      const comments = await this.commentModel.find(query).populate('idUser').exec();
+      const room = commentDto.idBlog || commentDto.idCourse;
+      if (room) {
+        this.server.to(room).emit('comments', comments);
+      }
     } catch (error) {
       console.error('Error creating comment:', error);
       throw error;
@@ -81,16 +95,25 @@ export class CommentGateway
   }
 
   @SubscribeMessage('updateComment')
-  async handleUpdateComment(@MessageBody() { _id, content }: UpdateCommentDto) {
-    try {
+  async handleUpdateComment(@MessageBody() { _id, content ,  idBlog , idCourse}: UpdateCommentDto) {
+    try {      
       const updatedComment = await this.commentModel.findByIdAndUpdate(
         _id,
         { content },
         { new: true, runValidators: true }
       ).populate('idUser');
-      
-      this.server.emit('updateCommentSuccess', updatedComment);
-      return updatedComment;
+      const query: any = {};
+      if (updatedComment.idBlog) {
+          query.idBlog = updatedComment.idBlog;
+      }
+      if (updatedComment.idCourse) {
+        query.idCourse = updatedComment.idCourse;
+      }
+      const comments = await this.commentModel.find(query).populate('idUser').exec();
+      const room = idBlog || idCourse;
+      if (room) {
+        this.server.to(room).emit('comments', comments);
+      }
     } catch (error) {
       console.error('Error updating comment:', error);
       throw error;
@@ -98,11 +121,24 @@ export class CommentGateway
   }
 
   @SubscribeMessage('deleteComment')
-  async handleDeleteComment(client: Socket, commentId: string) {
+  async handleDeleteComment(client: Socket, commentId: string ) {
     try {
-      const deletedComment = await this.commentModel.findByIdAndDelete(commentId);
-      this.server.emit('deleteCommentSuccess', deletedComment);
-      return deletedComment;
+      const idBlog = commentId[1]
+      const idCourse = commentId[2]
+      const deletedComment = await this.commentModel.findByIdAndDelete(commentId[0]);
+      const query: any = {};
+      if (deletedComment.idBlog) {
+          query.idBlog = deletedComment.idBlog;
+      }
+      if (deletedComment.idCourse) {
+        query.idCourse = deletedComment.idCourse;
+    }
+      const comments = await this.commentModel.find(query).populate('idUser').exec();
+      const room = idBlog || idCourse;
+      
+      if (room) {
+        this.server.to(room).emit('comments', comments);
+      }
     } catch (error) {
       console.error('Error deleting comment:', error);
       throw error;

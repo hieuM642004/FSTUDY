@@ -15,6 +15,8 @@ import Target from '@/components/client/Target/Target';
 import ExamResults from '@/components/client/ExamResult/ExamResult';
 import { useAuth } from '@/hooks/useAuth';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
+import Comment from '@/components/client/Comment/Comment';
+
 const onChange: CheckboxProps['onChange'] = (e) => {
     console.log(`checked = ${e.target.checked}`);
 };
@@ -177,6 +179,9 @@ function Test({ slug }: { slug: string }) {
                     <Target />
                 </Col>
             </Row>
+            <div className="my-7">
+                    <Comment idCourse={exam?._id} />
+            </div>
         </div>
     );
 }
