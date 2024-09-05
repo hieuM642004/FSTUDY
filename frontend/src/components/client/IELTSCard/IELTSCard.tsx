@@ -15,7 +15,7 @@ const IELTSCard = ({ title, idSession, durition,slug,examType }: Exams) => {
                     {title}
                 </h3>
                 <p className="text-sm">
-                    <ClockCircleOutlined /> 40 phút | <EyeOutlined /> {10} |{' '}
+                    <ClockCircleOutlined /> {durition} phút | <EyeOutlined /> {10} |{' '}
                     <CommentOutlined /> {10}
                 </p>
                 <p className="text-sm">{idSession.length} phần thi | 40 câu hỏi</p>

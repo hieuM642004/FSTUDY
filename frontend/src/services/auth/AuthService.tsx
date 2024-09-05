@@ -1,4 +1,5 @@
 import { nestApiInstance } from '@/constant/api';
+import withAuth from '@/decorator/withAuth';
 import { RegisterAndLogin } from '@/types/auth/Auth';
 import { deleteCookie, getCookie, setCookie } from 'cookies-next';
 import { jwtDecode } from 'jwt-decode';
@@ -53,7 +54,7 @@ class AuthService {
                 dataEmail,
             );
             return response.data;
-        } catch (error) {
+        } catch (error ) {
             console.error('Error fetching login:', error);
             return error.response.status;
         }
@@ -73,19 +74,17 @@ class AuthService {
             console.error('Error fetching login:', error);
         }
     }
-    static isTokenExpired = async (token: string) => {
+    static isTokenExpired = (token: string): boolean => {
         try {
             const decodedToken: any = jwtDecode(token);
-            if (decodedToken.exp * 1000 < new Date().getTime()) {
-                await this.handleRefreshToken();
-            }
+            return decodedToken.exp * 1000 < new Date().getTime();
         } catch (error) {
-            console.error('Error fetching login:', error);
+            console.error('Error checking token expiration:', error);
+            return true; // Có thể mặc định là expired nếu gặp lỗi trong việc decode token.
         }
     };
-    static async handleRefreshToken(
-        originalConfig?: any,
-    ): Promise<undefined | any[]> {
+    
+    static async handleRefreshToken(): Promise<any | null> {
         try {
             const RefreshToken = getCookie('refreshToken');
             const response = await nestApiInstance.post(`/auth/refresh-token`, {
@@ -95,21 +94,26 @@ class AuthService {
             const refreshToken = response.data.refreshToken;
             setCookie('token', accessToken);
             setCookie('refreshToken', refreshToken);
-            return nestApiInstance(originalConfig);
-        } catch (error) {
-            console.error('Error fetching login:', error);
-        }
-    }
-    static handleTokenExpired() {
-        try {
-            deleteCookie('token');
-            deleteCookie('refreshToken');
-            Router.push('/login');
-        } catch (error) {
+    
           
-            console.error('Error fetching login:', error);
+            return { accessToken, refreshToken }; 
+        } catch (error) {
+            console.error('Error refreshing token:', error);
+            return null;
         }
     }
+    
+    
+    // static handleTokenExpired(): void {
+    //     try {
+    //         deleteCookie('token');
+    //         deleteCookie('refreshToken');
+    //         Router.push('/login');
+    //     } catch (error) {
+    //         console.error('Error handling token expiration:', error);
+    //     }
+    // }
+    
     static async getByIdUser(id: string): Promise<string | any> {
         try {
             const response = await nestApiInstance.get(`users/${id}`);

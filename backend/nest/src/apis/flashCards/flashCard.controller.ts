@@ -6,6 +6,7 @@ import {
     Param,
     Delete,
     Put,
+    UseGuards,
 } from '@nestjs/common';
 import { FlashCardService } from './flashCard.service';
 import { ResponseData } from 'src/global/globalClass';
@@ -13,11 +14,13 @@ import { CreateFlashCardDto, WordDto } from './dto/CreateFlashCard.dto';
 import { HttpMessage, HttpStatus } from 'src/global/globalEnum';
 import { FlashCard } from './FlashCardSchema/FlashCard.schema';
 import { UpdateFlashCardDto } from './dto/UpdateFlashCard.dto';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('flashcards')
 export class FlashCardController {
     constructor(private flashCardService: FlashCardService) {}
     @Get()
+    @UseGuards(AuthGuard('jwt'))
     async getFlashCards(): Promise<ResponseData<FlashCard[]>> {
         try {
             const flashCards = await this.flashCardService.getFlashCards();

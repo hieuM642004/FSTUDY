@@ -1,9 +1,8 @@
 import { combineReducers } from '@reduxjs/toolkit';
-import recordingReducer from '../features/recording/recordingSlice';
+import userReducer from '../features/user/userSlice'; 
 
 const rootReducer = combineReducers({
-    recording: recordingReducer,
-    
+    user: userReducer,
 });
 
 export default rootReducer;

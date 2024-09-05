@@ -93,11 +93,11 @@ export class GoogleDriveUploader {
                 name: fileName,
                 parents: [folderId],
             };
-
+            
             const response = await this.drive.files.create({
                 requestBody: audioMetadata,
                 media: {
-                    mimeType: 'audio/*',
+                    mimeType: 'audio/mpeg',
                     body: fileStream,
                 },
                 fields: 'id',
@@ -126,8 +126,9 @@ export class GoogleDriveUploader {
     }
 
     getAudioUrl(fileId: string): string {
-        return `https://drive.google.com/file/d/${fileId}/view`;
+        return `https://drive.google.com/uc?export=download&id=${fileId}`;
     }
+    
 
     async delete(fileId: string): Promise<void> {
         try {

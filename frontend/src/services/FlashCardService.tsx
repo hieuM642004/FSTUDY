@@ -1,6 +1,8 @@
 import { nestApiInstance, pythonApiInstance } from '@/constant/api';
+import withTokenRefresh from '@/decorator/withAuth';
 import FlashCard from '@/types/FlashCard';
 class FlashCardService {
+    @withTokenRefresh
     static async getAllFlashCards() {
         try {
             const response = await nestApiInstance.get('/flashcards');
@@ -9,6 +11,7 @@ class FlashCardService {
             console.error('Error fetching flashcards:', error);
         }
     }
+    
     static async getAllFlashCardById(id: string) {
         try {
             const response = await nestApiInstance.get(`/flashcards/${id}`);

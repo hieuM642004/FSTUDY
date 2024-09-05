@@ -1,39 +1,36 @@
 'use client';
-import React from 'react';
+import React, { useState, useEffect, memo } from 'react';
 import { Table, Card } from 'antd';
 import Link from 'next/link';
+import ExamService from '@/services/ExamsService';
+import { useAuth } from '@/hooks/useAuth';
 
-const ExamResults: React.FC = () => {
-    const listCoursesResults = [
-        {
-            key: 1,
-            date: '17/07/2024',
-            courses: 'IELTS Simulation Listening test 10',
-            results: '10/10',
-            time: '0:05',
-        },
-        {
-            key: 2,
-            date: '17/07/2024',
-            courses: 'IELTS Simulation Listening test 10',
-            results: '10/10',
-            time: '0:05',
-        },
-        {
-            key: 3,
-            date: '17/07/2024',
-            courses: 'IELTS Simulation Listening test 10',
-            results: '10/10',
-            time: '0:05',
-        },
-        {
-            key: 4,
-            date: '17/07/2024',
-            courses: 'IELTS Simulation Listening test 10',
-            results: '10/10',
-            time: '0:05',
-        },
-    ];
+const ExamResults: React.FC<{ id?: string }> = ({ id }) => {
+    
+    const [result, setResult] = useState([]);
+    const {isLoggedIn,userId}=useAuth();
+    useEffect(() => {
+        const getResultExam = async () => {
+            try {
+                const data = await ExamService.getResultExamById(id);
+                const userResults = data.filter((item: any) => item?.idUser?._id === userId);
+
+                const formattedResults = userResults.map((item: any, index: number) => ({
+                    key: index + 1,
+                    id: item._id,
+                    date: new Date(item.createdAt).toLocaleDateString(),
+                    courses: item.examSessionId?.map((session: any) => session?.title).join(', ') || 'N/A',
+                    results: `${item.correctAnswers.length}/${item.correctAnswers.length + item.incorrectAnswers.length + item.skippedAnswers.length}`,
+                    time: item.completionTime ? `${item.completionTime}` : 'N/A',
+                }));
+                
+                setResult(formattedResults);
+            } catch (error) {
+                console.log(error);
+            }
+        };
+        getResultExam();
+    }, [id]);
 
     const columns = [
         {
@@ -42,7 +39,7 @@ const ExamResults: React.FC = () => {
             key: 'date',
         },
         {
-            title: 'Đề thi',
+            title: 'Phần thi',
             dataIndex: 'courses',
             key: 'courses',
         },
@@ -60,21 +57,28 @@ const ExamResults: React.FC = () => {
             title: '',
             key: 'action',
             render: (text: any, record: any) => (
-                <Link href="#">Xem chi tiết</Link>
+                <Link href={`/tests/result/${record.id}`}>Xem chi tiết</Link>
             ),
         },
     ];
 
     return (
-        <Card className="mb-4">
-            <Table
-                dataSource={listCoursesResults}
-                columns={columns}
-                pagination={false}
-                bordered
-            />
-        </Card>
+        <>
+            {
+                isLoggedIn && (
+                  <div className="mb-4">
+                <Table
+                    dataSource={result}
+                    columns={columns}
+                    pagination={false}
+                    bordered
+                />
+            </div>  
+                )
+            }
+        </>
+        
     );
 };
 
-export default ExamResults;
+export default memo(ExamResults);

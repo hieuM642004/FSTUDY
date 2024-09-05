@@ -214,7 +214,8 @@ export class Purchase {
 
     @Prop({ required: true, unique: true })
     purchaseKey: string;
-
+    @Prop({ required: true })
+    paymentMethod: string;
     @Prop({ required: true, default: Date.now })
     purchaseDate: Date;
 

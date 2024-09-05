@@ -1,11 +1,13 @@
 'use client';
 import { Form, Input } from 'antd';
 import { getCookie } from 'cookies-next';
-import { useContext, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import ButtonPrimary from '@/components/shared/ButtonPrimary/ButtonPrimary';
 import UserService from '@/services/user/UserService';
-import { AuthContext } from '@/context/auth/AuthContext';
+import { useAppDispatch } from '@/hooks/useAppDispatch';
+import { fetchUserData } from '@/lib/redux/features/user/userSlice';
+import { useTypedSelector } from '@/hooks/useTypedSelector';
 
 const formItemLayout = {
     labelCol: {
@@ -18,27 +20,23 @@ const formItemLayout = {
 
 function ChangePass() {
     const [form] = Form.useForm();
-    const { getProfileUser }: any = useContext(AuthContext);
-    const [dataUser, setDataUser] = useState<any | object>();
+    const dispatch = useAppDispatch();
+    const dataUser = useTypedSelector((state) => state.user);
     const [checkType, setCheckType] = useState<string | boolean>();
 
     useEffect(() => {
-        const fetchDataUser = async () => {
-            const data = await getProfileUser();
-            setDataUser(data);
-        };
-        fetchDataUser();
+        dispatch(fetchUserData());
         setCheckType(getCookie('typeLogin'));
-    }, []);
+    }, [dispatch]);
 
     const onFinish = async (values: object | any) => {
         try {
-            const idUser = dataUser?._id;
+            const idUser = dataUser?.id;
             const newData: object = {
                 password: values?.confirm,
-                fullname: dataUser?.fullname,
+                fullname: dataUser?.name,
             };
-            const res = await UserService.changePassword(newData, idUser);
+            const res = await UserService.changePassword(newData, idUser as string);
             if (res) {
                 form.resetFields();
             }
@@ -46,9 +44,12 @@ function ChangePass() {
             console.error('Error changepass user', error);
         }
     };
+
     return (
         <>
-            <Form
+        {
+            checkType === "google" ? "Đây là tài khoản google bạn không thể thay đổi mật khẩu" : (
+                <Form
                 {...formItemLayout}
                 form={form}
                 name="register"
@@ -110,9 +111,9 @@ function ChangePass() {
                 >
                     <Input.Password placeholder="nhập xác nhận mật khẩu" />
                 </Form.Item>
-                {checkType ? (
-                    <> </>
-                ) : (
+              
+                  
+               
                     <>
                         <div className="flex justify-end">
                             <ButtonPrimary
@@ -123,8 +124,11 @@ function ChangePass() {
                             />
                         </div>
                     </>
-                )}
+              
             </Form>
+            )
+        }
+           
         </>
     );
 }

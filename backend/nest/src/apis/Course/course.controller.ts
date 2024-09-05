@@ -24,6 +24,7 @@ import {
     Course,
     CourseType,
     Lesson,
+    Purchase,
     Quiz,
     Video,
     WordMatching,
@@ -394,25 +395,42 @@ export class CourseController {
     }
 
     @Get()
-    findAllCourse(): Promise<Course[]> {
-        return this.courseService.findAllCourse();
+    findAllCourse(@Query('page') page: number = 1, @Query('limit') limit: number = 10): Promise<Course[]> {
+        return this.courseService.findAllCourse(page, limit);
     }
+    
 
     @Get(':id')
-    findOneCourse(@Param('id') id: string): Promise<Course> {
+    findOneCourse(@Param('slug') id: string): Promise<Course> {
         return this.courseService.findOneCourse(id);
     }
-
+    @Get('search/:slug')
+    findOneCourseBySlug(@Param('slug') slug: string): Promise<Course> {
+        return this.courseService.findOneCourseBySlug(slug);
+    }
     @Put(':id')
     @UseInterceptors(FileInterceptor('thumbnail'))
-    updateCourse(
+    async updateCourse(
         @Param('id') id: string,
         @Body() updateCourseDto: UpdateCourseDto,
         @UploadedFile() file: Express.Multer.File,
-    ): Promise<Course> {
-        return this.courseService.updateCourse(id, updateCourseDto, file);
+    ): Promise<ResponseData<Course>> {
+        try {
+            const updatedCourse = await this.courseService.updateCourse(id, updateCourseDto, file);
+            return new ResponseData<Course>(
+                updatedCourse,
+                HttpStatus.SUCCESS,
+                'Course updated successfully',
+            );
+        } catch (error) {
+            console.error('Error updating course:', error);
+            return new ResponseData<Course>(
+                null,
+                HttpStatus.ERROR,
+                'Failed to update course',
+            );
+        }
     }
-
     @Delete(':id')
     removeCourse(@Param('id') id: string) {
         return this.courseService.removeCourse(id);
@@ -491,7 +509,11 @@ export class CourseController {
     
         return res.status(204).json(req.body);
     }
-
+    @Get('purchase/:userId')
+    async getPurchasesByUserId(@Param('userId') userId: string): Promise<Purchase[]> {
+        const objectId = new Types.ObjectId(userId);
+        return this.courseService.getPurchasesByUserId(objectId);
+    }
     @Post('/check-status-transaction')
     async checkStatusTransaction(
       @Body() checkStatusTransactionDto,

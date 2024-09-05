@@ -1,7 +1,6 @@
 'use client';
 import { Form, Input, Select } from 'antd';
 import Link from 'next/link';
-import { toast } from 'react-toastify';
 
 import WapperItemCard from '@/components/client/WapperItemCard/WapperItemCard';
 import ButtonOutline from '@/components/shared/ButtonPrimary/ButtonOutline';
@@ -32,10 +31,10 @@ function Register() {
                 const response = await AuthService.register(newdata);
                 if(response){
                     form.resetFields();
-                    toast.success('ĐĂNG KÍ THÀNH CÔNG');
+                   
                 }
         } catch (error) {
-            toast.error('ĐĂNG KÍ THẤT BẠI');
+        
             console.log('Error:', error);
         }
 

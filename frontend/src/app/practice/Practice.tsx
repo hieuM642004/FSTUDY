@@ -143,9 +143,11 @@ const TakeTheTest: React.FC = () => {
             {},
         );
     };
-
+const [d, setD] = useState({})
     const createItemsFromGroups = (groups: { [sessionId: string]: any[] }) => {
+        setD(groups)
         return Object.entries(groups).map(([sessionId, questions], index) => ({
+           
             key: `${index + 1}`,
             label: `Recording ${index + 1}`,
             children: (
@@ -197,7 +199,7 @@ const TakeTheTest: React.FC = () => {
                     {exam?.replace(/-/g, ' ')}
                 </h4>
 
-                {/* <ConfirmExit />  */}
+                <ConfirmExit /> 
             </div>
             <Row>
                 <Col xs={24} sm={24} md={20} lg={20} xl={20}>
@@ -236,6 +238,7 @@ const TakeTheTest: React.FC = () => {
                     timeStart={timeLimit === 0 ? 0 : timeLimit * 60}  
                     onTimeup={handleTimeup}
                     isIncremental={timeLimit === 0}  
+                    listAnswer={d}
                 />
 
 

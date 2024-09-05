@@ -1,8 +1,12 @@
 'use client';
 
-import { useRouter } from 'next/navigation'; 
+import { useRouter } from 'next/navigation';
 import ExamService from '@/services/ExamsService';
-import { ClockCircleOutlined, CommentOutlined, EyeOutlined } from '@ant-design/icons';
+import {
+    ClockCircleOutlined,
+    CommentOutlined,
+    EyeOutlined,
+} from '@ant-design/icons';
 import { useState, useEffect } from 'react';
 import { Avatar, List, Checkbox, Select, Row, Col } from 'antd';
 import type { CheckboxProps } from 'antd';
@@ -10,22 +14,33 @@ import ButtonPrimary from '@/components/shared/ButtonPrimary/ButtonPrimary';
 import Target from '@/components/client/Target/Target';
 import Comment from '@/components/client/Comment/Comment';
 
+import ExamResults from '@/components/client/ExamResult/ExamResult';
+import { useAuth } from '@/hooks/useAuth';
+import { useAppDispatch } from '@/hooks/useAppDispatch';
 const onChange: CheckboxProps['onChange'] = (e) => {
     console.log(`checked = ${e.target.checked}`);
 };
 
-
 function Test({ slug }: { slug: string }) {
-    const router = useRouter();  
+    const router = useRouter();
     const [exam, setExam] = useState<any>();
-    const [selectedSessionSlugs, setSelectedSessionSlugs] = useState<string[]>([]);
+    const [selectedSessionSlugs, setSelectedSessionSlugs] = useState<string[]>(
+        [],
+    );
+    const [totalQuestions, setTotalQuestions] = useState<number>(0);
     const [limit, setLimit] = useState<number>(0);
     const [errors, setErrors] = useState<string>('');
-
+    const{isLoggedIn,userId}=useAuth()
+    const examId = exam?._id ;
     useEffect(() => {
         const getExam = async () => {
             const exam = await ExamService.getAllExamById(slug);
             setExam(exam);
+            const totalQuestions = exam.idSession.reduce((sum: any, session :any) => {
+                return sum + (session.idQuestionGroups?.length || 0);
+            }, 0);
+              setTotalQuestions(totalQuestions);
+            
         };
         getExam();
     }, [slug]);
@@ -34,25 +49,32 @@ function Test({ slug }: { slug: string }) {
         if (checked) {
             setSelectedSessionSlugs((prev) => [...prev, sessionSlug]);
         } else {
-            setSelectedSessionSlugs((prev) => prev.filter((slug) => slug !== sessionSlug));
+            setSelectedSessionSlugs((prev) =>
+                prev.filter((slug) => slug !== sessionSlug),
+            );
         }
     };
     const handleChange = (value: string) => {
-       setLimit(Number(value))
+        setLimit(Number(value));
     };
-    
+
     const handleTakeTest = () => {
+        if(!isLoggedIn){
+            router.push('/login')
+        }
         if (selectedSessionSlugs.length === 0) {
-            setErrors('Bạn phải chọn ít nhất một phần thi để luyện tập!')
+            setErrors('Bạn phải chọn ít nhất một phần thi để luyện tập!');
             return;
         }
         setErrors('');
 
-        const query = selectedSessionSlugs.map(slug => `part=${slug}`).join('&');
+        const query = selectedSessionSlugs
+            .map((slug) => `part=${slug}`)
+            .join('&');
         const url = `/practice?exam=${exam?.slug}&${query}&time=${limit}`;
 
-        console.log("Luyện tập với các phần thi:", selectedSessionSlugs);
-        router.push(url);  
+        console.log('Luyện tập với các phần thi:', selectedSessionSlugs);
+        router.push(url);
     };
 
     return (
@@ -66,37 +88,57 @@ function Test({ slug }: { slug: string }) {
                         {exam && exam?.title}
                     </h2>
                     <p className="text-sm">
-                        <ClockCircleOutlined /> 40 phút | <EyeOutlined /> {10} |{' '}
+                        <ClockCircleOutlined /> {exam?.duration} phút | <EyeOutlined /> {10} |{' '}
                         <CommentOutlined /> {10}
                     </p>
                     <p className="text-sm">
-                        {exam?.idSession?.length || 0} phần thi | 40 câu hỏi
+                        {exam?.idSession?.length || 0} phần thi | {totalQuestions} câu hỏi
                     </p>
                     <p className="italic text-red-500 mb-6">
                         Chú ý: để được quy đổi sang scaled score (ví dụ trên
                         thang điểm 990 cho TOEIC hoặc 9.0 cho IELTS), vui lòng
                         chọn chế độ làm FULL TEST.
                     </p>
+                    <div className="mb-1">
+                        <p className="font-bold">Kết quả làm bài của bạn: </p>
+                        <div>
+                            {examId ? (
+                                <ExamResults id={examId} />
+                            ) : (
+                                <p>Đang tải...</p>
+                            )}
+                        </div>
+                    </div>
                     <p>Chọn phần thi bạn muốn làm</p>
-                    
+
                     <List
                         itemLayout="horizontal"
                         dataSource={exam?.idSession}
                         renderItem={(item: any) => (
                             <List.Item>
                                 <List.Item.Meta
-                                    avatar={<Checkbox onChange={(e) => onCheckboxChange(item.slug, e.target.checked)} />}
+                                    avatar={
+                                        <Checkbox
+                                            onChange={(e) =>
+                                                onCheckboxChange(
+                                                    item.slug,
+                                                    e.target.checked,
+                                                )
+                                            }
+                                        />
+                                    }
                                     title={<p>{item.title}</p>}
                                     description={
                                         <div>
-                                            {item?.idQuestionGroups?.length} câu hỏi
+                                            {item?.idQuestionGroups?.length} câu
+                                            hỏi
                                         </div>
                                     }
                                 />
                             </List.Item>
                         )}
                     />
-                    <p className='text-red-500'>{errors}</p>
+                    <p className="text-red-500">{errors}</p>
                     <div className="flex flex-col space-y-3 mt-4">
                         <label htmlFor="select">
                             Giới hạn thời gian (Để trống để làm bài không giới
@@ -107,7 +149,10 @@ function Test({ slug }: { slug: string }) {
                             className="w-3/5"
                             onChange={handleChange}
                             options={[
-                                { value: 0, label: 'Chọn thời gian',disabled: true },
+                                {
+                                    value: 0,
+                                    label: 'Chọn thời gian (mặc định sẽ không giới hạn)',
+                                },
                                 { value: 5, label: '5 phút' },
                                 { value: 10, label: '10 phút' },
                                 { value: 15, label: '15 phút' },
@@ -122,7 +167,10 @@ function Test({ slug }: { slug: string }) {
                             ]}
                         />
                         <div>
-                            <ButtonPrimary label="Luyện tập"  onClick={handleTakeTest}/>
+                            <ButtonPrimary
+                                label="Luyện tập"
+                                onClick={handleTakeTest}
+                            />
                         </div>
                     </div>
                 </Col>

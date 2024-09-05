@@ -130,18 +130,24 @@ export class AuthController {
       throw error;
     }
   }
+  
   @Post('/refresh-token')
   async refreshToken(
-    @Body() { refresh_token },
+      @Body('refresh_token') refresh_token: string ,
   ): Promise<{ accessToken: string; refreshToken: string } | null> {
-    try {
-      const { accessToken, refreshToken } =
-        await this.authService.refreshToken(refresh_token);
-      return { accessToken, refreshToken };
-    } catch (error) {
-      console.error('Error refreshing token:', error);
-      return null;
-    }
+    
+      if (!refresh_token) {
+          console.error('Refresh token is missing');
+          throw new UnauthorizedException('Refresh token is required');
+      }
+  
+      try {
+          const { accessToken, refreshToken } = await this.authService.refreshToken(refresh_token);
+          return { accessToken, refreshToken };
+      } catch (error) {
+          console.error('Error refreshing token:', error);
+          throw new UnauthorizedException('Invalid refresh token');
+      }
   }
   @Post('/logout')
   async logout(
