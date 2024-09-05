@@ -277,13 +277,13 @@ export class ExamService {
 
             if (audio) {
                 const fileStream = Readable.from(audio.buffer);
-                const audioId = await this.googleDriveUploader.uploadVideo(
+                const audioId = await this.googleDriveUploader.uploadAudio(
                     fileStream,
                     audio.originalname,
                     '1dBsbu_CDHGOY_9Jsq_wBwB5_gqAWNMvu',
                 );
                 createQuestionGroupDto.audioUrl =
-                    this.googleDriveUploader.getVideoUrl(audioId);
+                this.googleDriveUploader.getAudioUrl(audioId);
             }
             const questionGroup = await this.questionGroupModel.create(
                 createQuestionGroupDto,

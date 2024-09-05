@@ -145,9 +145,9 @@ const Recording: React.FC<RecordingProps> = React.memo(
                                     </p>
                                 )}
                                 {group?.questions.length === 1 &&
-                                    group?.questions[0]?.audioUrl && (
+                                    group?.audioUrl && (
                                         <audio
-                                            src={group?.questions[0].audioUrl}
+                                            src="https://www.soundjay.com/button/sounds/button-4.mp3"
                                             controls
                                             className="w-full mt-2"
                                         />
@@ -180,6 +180,7 @@ const Recording: React.FC<RecordingProps> = React.memo(
 
                     {group?.questions.length === 1 && (
                         <Row gutter={[16, 16]} className="mb-6">
+                            
                             <Col span={12}>
                                 <div className="flex items-center">
                                     <button className="rounded-full bg-[#e8f2ff] p-1 text-[#35509a] text-xl font-semibold w-10 h-10 flex items-center justify-center">

@@ -25,6 +25,7 @@ function Test({ slug }: { slug: string }) {
     const [selectedSessionSlugs, setSelectedSessionSlugs] = useState<string[]>(
         [],
     );
+    const [totalQuestions, setTotalQuestions] = useState<number>(0);
     const [limit, setLimit] = useState<number>(0);
     const [errors, setErrors] = useState<string>('');
     const{isLoggedIn,userId}=useAuth()
@@ -33,6 +34,11 @@ function Test({ slug }: { slug: string }) {
         const getExam = async () => {
             const exam = await ExamService.getAllExamById(slug);
             setExam(exam);
+            const totalQuestions = exam.idSession.reduce((sum: any, session :any) => {
+                return sum + (session.idQuestionGroups?.length || 0);
+            }, 0);
+              setTotalQuestions(totalQuestions);
+            
         };
         getExam();
     }, [slug]);
@@ -80,11 +86,11 @@ function Test({ slug }: { slug: string }) {
                         {exam && exam?.title}
                     </h2>
                     <p className="text-sm">
-                        <ClockCircleOutlined /> 40 phút | <EyeOutlined /> {10} |{' '}
+                        <ClockCircleOutlined /> {exam?.duration} phút | <EyeOutlined /> {10} |{' '}
                         <CommentOutlined /> {10}
                     </p>
                     <p className="text-sm">
-                        {exam?.idSession?.length || 0} phần thi | 40 câu hỏi
+                        {exam?.idSession?.length || 0} phần thi | {totalQuestions} câu hỏi
                     </p>
                     <p className="italic text-red-500 mb-6">
                         Chú ý: để được quy đổi sang scaled score (ví dụ trên
