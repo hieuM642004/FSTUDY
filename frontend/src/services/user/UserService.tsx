@@ -20,6 +20,7 @@ class UserService {
             console.error('Error fetching register:', error);
         }
     }
+    @withTokenRefresh
     static async changePassword(
         PasswordandFullname: object, id : string 
     ): Promise<UpdateUser | undefined> {
