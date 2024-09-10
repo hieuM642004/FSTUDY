@@ -81,15 +81,6 @@ const FlashCardList = () => {
         setSelectedCardId(null);
     };
 
-    useEffect(() => {
-        if (messageProps) {
-            const timer = setTimeout(() => {
-                setMessageProps(null);
-            }, 3000);
-
-            return () => clearTimeout(timer);
-        }
-    }, [messageProps]);
 
     return (
         <>

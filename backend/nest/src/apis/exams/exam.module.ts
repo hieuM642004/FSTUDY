@@ -13,6 +13,7 @@ import {
 import { ExamController } from './exam.controller';
 import { ExamService } from './exam.service';
 import { GoogleDriveUploader } from 'src/providers/storage/drive/drive.upload';
+import FirebaseService from 'src/providers/storage/firebase/firebase.service';
 
 @Module({
     imports: [
@@ -24,6 +25,6 @@ import { GoogleDriveUploader } from 'src/providers/storage/drive/drive.upload';
         ]),
     ],
     controllers: [ExamController],
-    providers: [ExamService,GoogleDriveUploader],
+    providers: [ExamService,GoogleDriveUploader,FirebaseService],
 })
 export class ExamModule {}

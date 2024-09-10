@@ -4,7 +4,8 @@ import {
   ref as sRef,
   uploadBytesResumable,
   getDownloadURL,
-  uploadBytes
+  uploadBytes,
+  deleteObject
 } from "firebase/storage";
 import {
   getAuth,
@@ -87,7 +88,16 @@ class FirebaseService {
     }
   }
   
-
+  async deleteFileFromFirebase(fileUrl: string): Promise<void> {
+    try {
+      const storage = getStorage(this.appInstance);
+      const fileRef = sRef(storage, fileUrl);
+      await deleteObject(fileRef); 
+    } catch (error) {
+      console.error('Error deleting file from Firebase:', error);
+      throw error;
+    }
+  }
 
 }
 

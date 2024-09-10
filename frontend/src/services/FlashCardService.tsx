@@ -14,7 +14,7 @@ class FlashCardService {
     
     static async getAllFlashCardById(id: string) {
         try {
-            const response = await nestApiInstance.get(`/flashcards/${id}`);
+            const response = await nestApiInstance.get(`/flashcards/flashcard/${id}`);
             return response.data.data[0];
         } catch (error) {
             console.error('Error fetching flashcards:', error);
@@ -79,6 +79,56 @@ class FlashCardService {
             throw error;
         }
     }
+    static async searchVideo(word:string) {
+        try {
+            const response = await pythonApiInstance.get(
+                `/search_video?word=${word}`, 
+               
+            );
+            return response;
+        } catch (error) {
+            console.error('Error in getMeasuringProficiency:', error);
+            throw error;
+        }
+    }
+
+static async startConversation(topic: string) {
+    try {
+        const formData = new FormData();
+        formData.append('topic', topic);
+
+      
+        const response = await pythonApiInstance.post(`/start-conversation`, formData);
+        return response;
+    } catch (error) {
+        console.error('Error in startConversation:', error);
+        throw error;
+    }
+}
+
+    
+    static async speaking(data:any) {
+        try {
+            const response = await pythonApiInstance.post(
+                `/conversation`, 
+               data
+            );
+            return response;
+        } catch (error) {
+            console.error('Error in getMeasuringProficiency:', error);
+            throw error;
+        }
+    }
+    static async getTopicInConversation() {
+        try {
+            const response = await pythonApiInstance.get(`/get-topics`);
+            return response.data; 
+        } catch (error) {
+            console.error('Error in getTopicInConversation:', error);
+            throw error;
+        }
+    }
+    
     
 }
 

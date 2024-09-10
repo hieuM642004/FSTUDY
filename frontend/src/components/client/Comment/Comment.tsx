@@ -92,7 +92,7 @@ function Comment({ idBlog = null, idCourse = null }: string | any) {
         if (!repliesArr || repliesArr.length === 0) {
             return null;
         }
-        const result = message.filter((item1, index) => {
+        const result = message.filter((item1:any, index) => {
             return repliesArr.some((item2) => item2 === item1._id);
         });
 

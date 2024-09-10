@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "nest-app-421201",
+  "private_key_id": "5f98b59c4cdc9f453a1c48f4099a1a5a3743082e",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQCPLAs3tjN7JYCr\nTvPG/7sA+h85d58Uq9M5coyCQXzA5Wl1MLFNNz1WKf9ftWpxOZelpSffPi7BVm9q\nUWq9DnFRtv6NnIzSN3ebybLVRIcJoUvuAn7sPZTdxT63ECi44Ee3YcVp4Tg1o1Z3\nEDN7F72OSj0iUqrWK4tcYqiiYEXHayuo6qk5aHHHvz5gnXp0dFnuWGPEX4M/Kp3z\neQKlVEpo8Dai230fPqu2Xf5/mZ/etzQwE2dD1rro3cKMnBgf1uTarhSk2O4KeKLh\nV5VvYYAIk0BFQtwpLY7ERF3wY95IKe98v7CnExh3R+iuWfeZ9U0S6dkqKEi6/4pA\n3KHpu9dDAgMBAAECggEAFF7LX8tcKsbMtlL+607iYAK2Y5pJ94p0/KT4KeZAZj+d\n0A80Asz7vKEwFQF+Wgq8MVS8xg4WX+q44nMgETMXW22CbUqbXKOIsJEzkRV1cyDQ\naVZQkbM3VZBlWm2BpcA/Y++Uw3pIYZVSTZFwCbD4huC4LwR9CwjaBLSC0suI0hUO\nf8NODiLKGKmXKZAeOC2NSsG44SnL5nYlkXpPwbmGz4tPb1Z23JQbaG2M1UIU9+b4\nx9KpVS9vgry5vYO+oILDWzCGxMiPgK0QzXM4rlr+QJtzzdcKHkKoz74SxnagqHmg\nJ1bMuZwzdej+LoMI601g5pNJ7CUM/GxXwseiGzH43QKBgQDBAIjfFrPqva1BlcaZ\nIRTRoYwCfm9kTejfelpWPNzIpaeo82O0jmzHI5mfZO3dNDiVuIUgyGaXVlh+yzen\nMgFDbXCENnyQdQGEFKSRrr8xm5xlyIPh+VSol0Lg0lLDoEDWijuHMToj39yZndwX\nD5rkjNbBpW9TpzrB/YuIH9o3lwKBgQC956gJfRN8hotJWFwjB6/vFNT0rgpysv0U\nUfIKJpFvzjwFYhqOWN5NfWwclkmTowPPTPKom+VLv1Hl1y2OOtHxC9W+9UNxVLY9\nKfY0wbo3X/H4D8F2jDzqAicExPc5kSES4X7nE+RDx/XJf3UC3PSrfJV1uwdBDvSB\nyKOXUMbzNQKBgB8vE+5fv7A093J6Xb1OMAvy+ylH/n2JbQ/2t/PpH4833NAai0iY\nHpFKej7b0ucD0gS27KOwXYskQ2YxNYvJM5UOcLicCSJaFWWe5Dw5rOC6ENoNPOnd\nHEWlMwQaV48OLIu9iAK+/HLhb8ZOUEpVliRJcUWWkldE1OSVL99Nrjd/AoGAXaic\nxWE8dRPeKiQ7/MLT0DQT+0DCwmLoUlc/6iWvYNbz3yvNMRs/ODR9V3P/gaLKRDkN\nDH8mjT8kYxjGzPjRhfJyTqWjx4ciAfRqCwboklrteYw7u/3aJQc+uylxTKD5ENjJ\nv6md0JgT7na//NOAj/r3s4K0Ry/bAw8zL3OVS2kCgYAzOsIfCGPjGR2W4xmj3ZRr\nL2H1JjtsmGp0bNcFfjKRfsPn5DepZS3vrOQmbn0FpoPCwSnFYzZ1vbSfFVFmsy/j\nOaa/blPZj//wlzRu8YbFFs4lkQ9xp2erLyjc1bSdAeD83O5uOfXGZdbdOwWbu27z\n9lvziU8nP/cexuSAv5d7UA==\n-----END PRIVATE KEY-----\n",
+  "client_email": "fstudy@nest-app-421201.iam.gserviceaccount.com",
+  "client_id": "117982758496350260886",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/fstudy%40nest-app-421201.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}

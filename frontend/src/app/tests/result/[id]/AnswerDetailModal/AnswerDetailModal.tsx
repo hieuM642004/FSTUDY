@@ -83,7 +83,7 @@ const AnswerDetailModal = ({ question, isVisible, onCancel }: any) => {
                                     : 'text-red-600'
                             }`}
                         >
-                            {String.fromCharCode(65 + index)}. {option}
+                             {option}
                             {isCorrectAnswer(option) && <span> (Đúng)</span>}
                         </div>
                     ),

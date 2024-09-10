@@ -6,6 +6,7 @@ import './FlashCard.scss';
 import ButtonPrimary from '@/components/shared/ButtonPrimary/ButtonPrimary';
 import FlashCardService from '@/services/FlashCardService';
 import FlashCardInterface from '@/types/FlashCard';
+import Link from 'next/link';
 
 function FlashCard({ id }:{id: string}) {
     const [isFlipped, setIsFlipped] = useState(false);
@@ -38,7 +39,7 @@ function FlashCard({ id }:{id: string}) {
 
     return (
         <>
-            <div className="pt-7 flex justify-around">
+            <div className="pt-7 flex justify-around ">
                 <span>
                     <h2 className="text-start text-3xl font-bold">
                         FlashCard:{' '}
@@ -46,7 +47,8 @@ function FlashCard({ id }:{id: string}) {
                     </h2>
                 </span>
                 <div className="flex justify-center">
-                    <ButtonPrimary to={`/flashcard/${flashCard?._id}/multiple-choice`} label="Kiểm tra" />
+                    <ButtonPrimary to={`/flashcard/${flashCard?._id}/video`} label="Học qua video" />
+                    <ButtonPrimary to={`/flashcard/${flashCard?._id}/multiple-choice`} className="ml-4"  label="Kiểm tra" />
                     <ButtonPrimary to={`/flashcard/${flashCard?._id}/practice-reading`} className="ml-4" label="Luyện đọc" />
                 </div>
             </div>
@@ -65,11 +67,13 @@ function FlashCard({ id }:{id: string}) {
                                 }`}
                                 onClick={() => handleCardClick(word.audioUrl)}
                             >
+                             
                                 <div
                                     className={`absolute inset-0 flex items-center justify-center p-4 backface-hidden ${
                                         isFlipped ? 'opacity-0' : 'opacity-100'
                                     }`}
                                 >
+                                   
                                     <p className="text-lg font-semibold front">
                                         {word.word}
                                     </p>

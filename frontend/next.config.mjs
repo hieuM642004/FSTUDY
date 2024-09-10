@@ -16,6 +16,7 @@ const nextConfig = {
             'scontent.fsgn5-10.fna.fbcdn.net',
             'drive.google.com',
             'lh3.googleusercontent.com',
+            'yt3.ggpht.com'
         ],
     },
 };

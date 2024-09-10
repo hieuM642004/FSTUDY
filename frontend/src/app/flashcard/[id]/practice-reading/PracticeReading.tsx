@@ -82,39 +82,38 @@ function PracticeReading({ id }: { id: string }) {
         }
     };
 
-    const onStop = async (
-        recordedData: ReactMicStopEvent,
-        word: string,
-        audioUrl: string,
-        index: number,
-    ) => {
+    const onStop = async (recordedData:any, word:any, index:any) => {
         const audioBlob = recordedData.blob;
-
+    
         // Tạo file từ blob
         const file = new File([audioBlob], `${word}_user.mp3`, {
             type: 'audio/mp3',
         });
-
+    
         // Tạo FormData và thêm các trường cần thiết
         const formData = new FormData();
         formData.append('user_audio', file);
         formData.append('word', word);
-        formData.append('reference_audio_url', audioUrl);
-
+    
         try {
             console.log('Form data:', formData);
-
-            const response = await FlashCardService.getMeasuringProficiency(
-                formData,
-            );
-            console.log('Proficiency:', response);
+    
+            const response = await fetch('http://localhost:5000/check_pronunciation', {
+                method: 'POST',
+                body: formData,
+            });
+    
+            const responseData = await response.json();
+            console.log('Proficiency:', responseData);
+    
+            // Xử lý kết quả và hiển thị độ chính xác
             setWordRecordingStates((prevStates) =>
                 prevStates.map((state, i) =>
                     i === index
                         ? {
                               ...state,
                               recordedBlob: audioBlob,
-                              proficiency: response,
+                              proficiency: responseData.accuracy,
                           }
                         : state,
                 ),
@@ -123,7 +122,7 @@ function PracticeReading({ id }: { id: string }) {
             console.error('Error measuring proficiency:', error);
         }
     };
-
+    
     const stopRecording = (index: number) => {
         setWordRecordingStates((prevStates) =>
             prevStates.map((state, i) => ({
@@ -189,7 +188,7 @@ function PracticeReading({ id }: { id: string }) {
                                         onStop(
                                             recordedData,
                                             word.word,
-                                            word.audioUrl,
+                                            
                                             index,
                                         )
                                     }
