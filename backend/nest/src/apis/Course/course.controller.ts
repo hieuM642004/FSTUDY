@@ -395,7 +395,7 @@ export class CourseController {
     
 
     @Get(':id')
-    findOneCourse(@Param('slug') id: string): Promise<Course> {
+    findOneCourse(@Param('id') id: string): Promise<Course> {
         return this.courseService.findOneCourse(id);
     }
     @Get('search/:slug')
