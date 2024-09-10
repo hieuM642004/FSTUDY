@@ -74,7 +74,10 @@ export class CourseService {
     // Quiz Service
     // Create a new quiz service
     async createQuizz(createQuizDto: CreateQuizDto): Promise<Quiz> {
-        const createdQuiz = new this.quizModel(createQuizDto);
+        const createdQuiz = new this.quizModel({
+            ...createQuizDto,
+            content_type: ContentType.QUIZ, 
+        });
         return createdQuiz.save();
     }
     // Find all quizs service
@@ -134,19 +137,12 @@ export class CourseService {
 
     // Fill The Blank Service Service
 
-    async createFill(
-        createFillInTheBlankDto: CreateFillInTheBlankDto,
-    ): Promise<FillInTheBlank> {
-        try {
-            const createdFillInTheBlankDto = { ...createFillInTheBlankDto };
-            const res = await this.fillInTheBlankModel.create(
-                createdFillInTheBlankDto,
-            );
-            return res;
-        } catch (error) {
-            console.error('Error create question:', error);
-            throw error;
-        }
+    async createFill(createFillInTheBlankDto: CreateFillInTheBlankDto): Promise<FillInTheBlank> {
+        const createdFillInTheBlank = new this.fillInTheBlankModel({
+            ...createFillInTheBlankDto,
+            content_type: ContentType.FILL_IN_THE_BLANK, // Automatically set the content_type
+        });
+        return createdFillInTheBlank.save();
     }
 
     async findAllFill(): Promise<FillInTheBlank[]> {
@@ -207,12 +203,11 @@ export class CourseService {
 
     // Word Matching Service Service
 
-    async createWordMatching(
-        createWordMatchingDto: CreateWordMatchingDto,
-    ): Promise<WordMatching> {
-        const createdWordMatching = new this.wordMatchingModel(
-            createWordMatchingDto,
-        );
+    async createWordMatching(createWordMatchingDto: CreateWordMatchingDto): Promise<WordMatching> {
+        const createdWordMatching = new this.wordMatchingModel({
+            ...createWordMatchingDto,
+            content_type: ContentType.WORD_MATCHING, // Automatically set the content_type
+        });
         return createdWordMatching.save();
     }
 
@@ -277,23 +272,32 @@ export class CourseService {
         file: Express.Multer.File,
     ): Promise<Video> {
         try {
+            // Create a readable stream from the file buffer
             const fileStream = Readable.from(file.buffer);
 
+            // Upload the video file to Google Drive
             const fileId = await this.googleDriveUploader.uploadVideo(
                 fileStream,
                 file.originalname,
                 '1eHh70ah2l2JuqHQlA1riebJZiRS9L20q',
             );
+
+            // Get the video URL from Google Drive
             const videoUrl = this.googleDriveUploader.getVideoUrl(fileId);
-            const userWithAvatar = {
+
+            // Create the video document
+            const createdVideo = new this.videoModel({
                 ...createVideoDto,
                 videoUrl: videoUrl,
-            };
+                content_type: ContentType.VIDEO, // Ensure content_type is set
+            });
 
-            const createdVideo = new this.videoModel(userWithAvatar);
+            // Save the video document to the database
             return await createdVideo.save();
         } catch (error) {
-            throw error;
+            // Handle and log the error
+            console.error('Error creating video:', error);
+            throw new Error('Failed to create video');
         }
     }
 
@@ -433,72 +437,55 @@ export class CourseService {
     }
     async addDataToContent(
         contentId: string,
-        contentType: ContentType,
         dataId: string,
     ): Promise<Content> {
-        if (!Types.ObjectId.isValid(dataId)) {
-            throw new Error('Invalid data ID format');
+        if (!Types.ObjectId.isValid(contentId) || !Types.ObjectId.isValid(dataId)) {
+            throw new Error('Invalid ID format');
         }
-        await this.checkDataIdExists(contentType, dataId);
-
+    
+        // Determine content type
+        const contentType = await this.inferContentType(dataId);
+    
+        if (!contentType) {
+            throw new Error('Content type could not be determined');
+        }
+    
         const arrayFieldName = this.getArrayFieldName(contentType);
-
+    
         if (!arrayFieldName) {
             throw new Error('Invalid content type');
         }
+    
+        // Update content with the determined content type
         const updatedContent = await this.contentModel.findByIdAndUpdate(
             contentId,
             { $addToSet: { [arrayFieldName]: dataId } },
-            { new: true },
+            { new: true }
         );
-
+    
         if (!updatedContent) {
             throw new Error('Content not found');
         }
-
+    
         return updatedContent;
     }
-
-    private async checkDataIdExists(
-        contentType: ContentType,
-        dataId: string,
-    ): Promise<void> {
-        switch (contentType) {
-            case ContentType.QUIZ:
-                const quizExists = await this.quizModel.findById(dataId).exec();
-                if (!quizExists) {
-                    throw new Error('Quiz not found');
-                }
-                break;
-            case ContentType.FILL_IN_THE_BLANK:
-                const fillInTheBlankExists = await this.fillInTheBlankModel
-                    .findById(dataId)
-                    .exec();
-                if (!fillInTheBlankExists) {
-                    throw new Error('Fill-in-the-blank not found');
-                }
-                break;
-            case ContentType.WORD_MATCHING:
-                const wordMatchingExists = await this.wordMatchingModel
-                    .findById(dataId)
-                    .exec();
-                if (!wordMatchingExists) {
-                    throw new Error('Word-matching not found');
-                }
-                break;
-            case ContentType.VIDEO:
-                const videoExists = await this.videoModel
-                    .findById(dataId)
-                    .exec();
-                if (!videoExists) {
-                    throw new Error('Video not found');
-                }
-                break;
-            default:
-                throw new Error('Invalid content type');
+    
+    private async inferContentType(dataId: string): Promise<ContentType | null> {
+        if (await this.quizModel.exists({ _id: dataId })) {
+            return ContentType.QUIZ;
         }
+        if (await this.fillInTheBlankModel.exists({ _id: dataId })) {
+            return ContentType.FILL_IN_THE_BLANK;
+        }
+        if (await this.wordMatchingModel.exists({ _id: dataId })) {
+            return ContentType.WORD_MATCHING;
+        }
+        if (await this.videoModel.exists({ _id: dataId })) {
+            return ContentType.VIDEO;
+        }
+        return null;
     }
-
+    
     private getArrayFieldName(contentType: ContentType): string | null {
         switch (contentType) {
             case ContentType.QUIZ:
@@ -513,6 +500,8 @@ export class CourseService {
                 return null;
         }
     }
+    
+    
 
     async removeContent(id: string): Promise<ResponseData<Content>> {
         try {

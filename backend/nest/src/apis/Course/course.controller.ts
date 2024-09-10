@@ -260,24 +260,18 @@ export class CourseController {
     ) {
         return this.courseService.addContentToLesson(lessonId, contentId);
     }
-
     @Patch('content/add/:id')
     async addData(
         @Param('id') contentId: string,
-        @Body() body: { contentType: ContentType; dataId: string },
+        @Body('dataId') dataId: string,
     ): Promise<Content> {
-        const { contentType, dataId } = body;
-
-        if (!Object.values(ContentType).includes(contentType)) {
-            throw new error('Invalid content type');
+        if (!Types.ObjectId.isValid(contentId) || !Types.ObjectId.isValid(dataId)) {
+            throw new Error('Invalid ID format');
         }
-
-        return this.courseService.addDataToContent(
-            contentId,
-            contentType,
-            dataId,
-        );
+    
+        return this.courseService.addDataToContent(contentId, dataId);
     }
+    
     /**
      * Course Type
      *  */
