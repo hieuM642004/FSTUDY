@@ -1,39 +1,114 @@
 'use client';
+import Image from 'next/image';
+import {
+    EditOutlined,
+    BookOutlined,
+    UsergroupAddOutlined,
+    FieldTimeOutlined,
+} from '@ant-design/icons';
 import { Anchor } from 'antd';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { UserOutlined, CommentOutlined, StarFilled } from '@ant-design/icons';
+import { useParams } from 'next/navigation';
 
 import Evaluate from '../Evaluates/Evaluate';
-import SideBar from './SideBar';
 import WapperItemCard from '../../../components/client/WapperItemCard/WapperItemCard';
+import { nestApiInstance } from '../../../constant/api';
+import RegisterNow from '../Modals/RegisterNow';
+import FreeLessons from '../Modals/FreeLessons';
 
 function NavBar() {
-    const [isSticky, setSticky] = useState(false);
-    const handleScroll = () => {
-        if (window.scrollY > 400) {
-            setSticky(true);
-        } else {
-            setSticky(false);
+    const [courseDetail, setCourseDetail] = useState<any>([]);
+    const [courses, setCourses] = useState<any[]>([]);
+    const { id } = useParams();
+    const fetchCourseDetail = async () => {
+        try {
+            const response = await nestApiInstance.get(`/course/${id}`);
+            setCourseDetail(response.data);
+        } catch (error) {
+            console.error('Error fetching course detail:', error);
         }
     };
+
+    const fetchCourses = async () => {
+        try {
+            const response = await nestApiInstance.get(`/course`);
+            setCourses(response.data);
+        } catch (error) {
+            console.error('Error fetching blogs:', error);
+        }
+    };
+
+    const formatPrice = (price: number | undefined) => {
+        return price?.toLocaleString('vi-VN', {
+            style: 'currency',
+            currency: 'VND',
+        });
+    };
+
     useEffect(() => {
-        window.addEventListener('scroll', handleScroll);
-        return () => {
-            window.removeEventListener('scroll', handleScroll);
-        };
-    }, []);
+        fetchCourseDetail();
+        fetchCourses();
+    }, [id]);
+
+    const detailTitle = courseDetail?.detail_title || '';
+    const lines = detailTitle.trim().split('.');
+    const matchingCourses = courses.filter(
+        (item) => item.typeCourse?._id == courseDetail.typeCourse?._id,
+    );
+
     return (
         <>
+            <div className="contentHeader bg-cover ">
+                <div className="banner md:text">
+                    <div className="overlay"> </div>{' '}
+                    <div className="ContainerHeader lg:px-3 lg:pt-10 text-white">
+                        <div className="flex">
+                            <div className="flex-[1.5]  lg:w-64 ...">
+                                {' '}
+                                <h2 className="lg:text-xl font-bold ">
+                                    {courseDetail?.title}
+                                </h2>
+                                <div className="course-tags mt-3">
+                                    <span className="bg-[#f0f8ff]  py-1 px-[0.625rem]  rounded-xl text-[#35509a]">
+                                        #Khóa học online
+                                    </span>
+                                </div>
+                                <div className="course-rating mt-2">
+                                    <span className="average text-xl font-bold text-[#ffad3b] ml-[2px]">
+                                        4.9
+                                    </span>
+                                    <StarFilled className="text-[1.25rem]  text-[#ffad3b] ml-[2px]" />
+                                    <StarFilled className="text-[1.25rem]  text-[#ffad3b] ml-[2px]" />
+                                    <StarFilled className="text-[1.25rem]  text-[#ffad3b] ml-[2px]" />
+                                    <StarFilled className="text-[1.25rem]  text-[#ffad3b] ml-[2px]" />
+                                    <StarFilled className="text-[1.25rem]  text-[#ffad3b] ml-[2px]" />
+                                    <span className="ml-1">(892 Đánh giá)</span>
+                                    <span className="ml-1">
+                                        123,668 Học viên
+                                    </span>
+                                </div>
+                                <div className="course-overview  lg:mt-2 text-[1rem]">
+                                    <div>
+                                        {lines.map((line: any, index: any) => (
+                                            <div key={index}>✅ {line}</div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="lg:flex-1 lg:w-7 ... "></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
             {/* nav bar */}
             <div
-                className={`MainNavBar lg:w-full border-b-[1] ${
-                    isSticky ? 'fixed top-12 left-0 right-0  ' : ''
-                }`}
+                className={`MainNavBar lg:w-full border-b-[1] fixed top-12 left-0 right-0`}
             >
                 <Anchor
-                    className={`lg:h-16 pb-1 mt-4 ${
-                        isSticky ? 'lg:ml-10 lg:pl-10' : ''
-                    }`}
+                    className={`lg:h-16 pb-1 mt-4 `}
                     direction="horizontal"
                     items={[
                         {
@@ -60,63 +135,119 @@ function NavBar() {
                 />
             </div>
             {/* sidebar  */}
-
-            <SideBar />
+            <div
+                className={`MainSideBar fixed  shadow-2xl  md:w-[21.25rem] duration-150 ease-in-out top-[4rem] right-[5.625rem] `}
+            >
+                <div>
+                    <div>
+                        <Image
+                            className="rounded-lg "
+                            src={courseDetail.thumbnail}
+                            width={500}
+                            height={500}
+                            alt="Picture of the author"
+                        />
+                    </div>
+                    <div className="">
+                        <div className="p-4">
+                            <div className="mb-2 font-bold text-[1.15rem]">
+                                Ưu đãi đặc biệt tháng 6/2024:
+                            </div>
+                            <div className="flex mb-2">
+                                <div className="text-[#3cb46e] text-[1.85rem] font-bold">
+                                    {formatPrice(
+                                        courseDetail.price -
+                                            courseDetail.discount,
+                                    )}
+                                </div>
+                                <div className="flex flex-col ml-1">
+                                    <span className="line-through text-[#677788] text-[.86rem]">
+                                        {formatPrice(courseDetail.price)}
+                                    </span>
+                                    <span className="text-[#e43a45] text-[0.86rem] font-bold">
+                                        {Math.round(
+                                            (courseDetail.discount /
+                                                courseDetail.price) *
+                                                100,
+                                        )}
+                                        %
+                                    </span>
+                                </div>
+                            </div>
+                            <RegisterNow />
+                            <FreeLessons data={courseDetail} />
+                            <div className="border-b-[0.6px] border-gray-500 my-5"></div>
+                            <div>
+                                <div className="flex mb-[.35rem] text-[0.75rem] items-center">
+                                    <div>
+                                        <UsergroupAddOutlined className="w-10 text-[1.25rem] text-[#455ea2] inline-flex justify-start items-center" />
+                                    </div>
+                                    <div>98,671 học viên đã đăng ký</div>
+                                </div>
+                                <div className="flex mb-[.35rem] text-[0.75rem] items-center">
+                                    <div>
+                                        <BookOutlined className="w-10 text-[1.25rem] text-[#455ea2] inline-flex justify-start items-center" />
+                                    </div>
+                                    <div>86 chủ đề, 900 bài học</div>
+                                </div>
+                                <div className="flex mb-[.35rem] text-[0.75rem] items-center">
+                                    <div>
+                                        <EditOutlined className="w-10 text-[1.25rem] text-[#455ea2] inline-flex justify-start items-center" />
+                                    </div>
+                                    <div>2,099 bài tập thực hành</div>
+                                </div>
+                                <div className="flex mb-[.35rem] text-[0.75rem] items-center">
+                                    <div>
+                                        <UsergroupAddOutlined className="w-10 text-[1.25rem] text-[#455ea2] inline-flex justify-start items-center" />
+                                    </div>
+                                    <div>
+                                        Combo 4 khoá học có giá trị 12 tháng
+                                    </div>
+                                </div>
+                                <div className="flex mb-[.35rem] text-[0.75rem] items-center">
+                                    <div>
+                                        <FieldTimeOutlined className="w-10 text-[1.25rem] text-[#455ea2] inline-flex justify-start items-center" />
+                                    </div>
+                                    <div>98,671 học viên đã đăng ký</div>
+                                </div>
+                            </div>
+                            <div className="border-b-[0.6px] border-gray-500 my-3"></div>
+                            <div className="text-[0.75rem]">
+                                Chưa chắc chắn khoá học này dành cho bạn?
+                                <a
+                                    href=""
+                                    className="text-[#455ea2]  underline"
+                                >
+                                    Liên hệ để nhận tư vấn miễn phí!
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {/* sideBar */}
             {/* content */}
             <div className="lg:px-3 lg:pt-8 lg:pb-12">
                 <div className="bg-[#f8f9fa!important]">
                     {/* combo học khóa học */}
-                    <WapperItemCard>
-                        <div className="CourseSeries ">
-                            <h5 className="font-bold mb-4 text-xl">
-                                Combo này bao gồm:
-                            </h5>
-                            <ol className="text-base pl-10">
-                                <li>
-                                    <a href="#course-syllabus">
-                                        [IELTS Fundamentals] Từ vựng và ngữ pháp
-                                        cơ bản IELTS
-                                    </a>
-                                </li>
-
-                                <li>
-                                    <a href="#course-syllabus">
-                                        [IELTS Intensive Listening] Chiến lược
-                                        làm bài - Chữa đề - Luyện nghe IELTS
-                                        Listening theo phương pháp Dictation
-                                    </a>
-                                </li>
-
-                                <li>
-                                    <a href="#course-syllabus">
-                                        [IELTS Intensive Reading] Chiến lược làm
-                                        bài - Chữa đề - Từ vựng IELTS Reading
-                                    </a>
-                                </li>
-
-                                <li>
-                                    <a href="#course-syllabus">
-                                        [IELTS Intensive Speaking] Thực hành
-                                        luyện tập IELTS Speaking
-                                    </a>
-                                </li>
-
-                                <li>
-                                    <a href="#course-syllabus">
-                                        [IELTS Intensive Writing] Thực hành
-                                        luyện tập IELTS Writing
-                                    </a>
-                                </li>
-
-                                <li>
-                                    <a href="#course-syllabus">
-                                        [Khóa chấm chữa] Advanced IELTS Writing
-                                        &amp; Speaking (Target 6.5+)
-                                    </a>
-                                </li>
-                            </ol>
-                        </div>
-                    </WapperItemCard>
+                    {matchingCourses && (
+                        <WapperItemCard>
+                            <div className="CourseSeries">
+                                <h5 className="font-bold mb-4 text-xl">
+                                    Combo này bao gồm:
+                                </h5>
+                                <ol className="text-base pl-10">
+                                    {matchingCourses.map((course, index) => (
+                                        <li key={course._id}>
+                                            <Link href="#">
+                                                {index + 1}.{course.title}
+                                            </Link>
+                                        </li>
+                                    ))}
+                                </ol>
+                            </div>
+                        </WapperItemCard>
+                    )}
                     {/* sau khóa học */}
                     <WapperItemCard>
                         <div
@@ -130,38 +261,8 @@ function NavBar() {
                                 <h2 className="font-bold text-2xl">
                                     Bạn sẽ đạt được gì sau khoá học?
                                 </h2>
-
                                 <div>
-                                    1️⃣ Có nền tảng ngữ pháp trung cấp B1-B2
-                                </div>
-
-                                <div>
-                                    2️⃣ Xây dựng vốn từ vựng học thuật,
-                                    làm&nbsp;nền móng để đọc/nghe hiểu&nbsp;các
-                                    chủ điểm chắc chắn sẽ xuất hiện trong 2 phần
-                                    thi Listening và Reading
-                                </div>
-
-                                <div>
-                                    3️⃣ Làm chủ tốc độ và các ngữ điệu&nbsp;khác
-                                    nhau trong phần thi IELTS Listening
-                                </div>
-
-                                <div>
-                                    4️⃣ Nắm trọn 4000 từ vựng 99% sẽ xuất hiện
-                                    trong IELTS
-                                </div>
-
-                                <div>
-                                    5️⃣&nbsp;Nắm chắc chiến thuật và phương
-                                    pháp&nbsp;làm các dạng câu hỏi trong IELTS
-                                    Listening và Reading
-                                </div>
-
-                                <div>
-                                    6️⃣&nbsp;Luyện tập phát âm, từ vựng, ngữ pháp
-                                    và thực hành luyện nói các chủ đề thường gặp
-                                    và forecast trong&nbsp;IELTS Speaking
+                                    {courseDetail.detail_short_description}
                                 </div>
                             </div>
                         </div>
@@ -185,7 +286,7 @@ function NavBar() {
                                     </em>
                                 </p>
 
-                                <ul className="pl-10 mv mb-4 mb-4">
+                                <ul className="pl-10 mv mb-4 ">
                                     <li>
                                         <em>
                                             Ms. Phuong Nguyen, Macalester
@@ -206,393 +307,7 @@ function NavBar() {
                                 <h3 id="bạn-sẽ-học-những-gì?">
                                     <strong>Bạn sẽ học những gì?</strong>
                                 </h3>
-
-                                <p>
-                                    <strong>
-                                        1. Từ vựng và ngữ pháp cơ bản cho IELTS
-                                    </strong>
-                                </p>
-
-                                <p>
-                                    Khóa học IELTS Fundamentals: Grammar and
-                                    Vocabulary for IELTS hướng đến đối tượng các
-                                    bạn đang ở trình độ sơ cấp (tương đương
-                                    A1-A2) và có mong muốn thi IELTS trong tương
-                                    lai. Mục tiêu khóa học là xây dựng cho các
-                                    bạn nền móng từ vựng và ngữ pháp để đạt điểm
-                                    tối thiểu 4.0 sau 3-4 tháng học đúng lộ
-                                    trình.
-                                </p>
-
-                                <p>
-                                    Phần Từ vựng gồm hơn 1.800 từ&nbsp;được chia
-                                    thành 20 chủ đề khác nhau như nghệ thuật,
-                                    văn học, lịch sử, khảo cổ, khoa học, đời
-                                    sống ... là những chủ điểm chắc chắn sẽ xuất
-                                    hiện khi đi thi. Mỗi chủ đề bao gồm bô
-                                    flashcards gồm đầy đủ nghĩa Anh-Việt/
-                                    Anh-Anh&nbsp;hình ảnh, phiên âm, phát âm,
-                                    câu ví dụ. Phần ôn tập flashcards của STUDY4
-                                    được thiết kế theo phương pháp Spaced
-                                    repetition (học lặp lại ngắt quãng) giúp bạn
-                                    tối ưu hóa thời gian và hiệu quả ôn tập: chỉ
-                                    ôn những từ sắp quên và bỏ qua những từ đã
-                                    nhớ. Giúp bạn hoàn toàn có thể học trọn
-                                    1.800 từ này trong 2.5-3 tháng (~75 ngày).
-                                    Ngoài ra, khóa học cung cấp rất nhiều các
-                                    dạng bài tập mini-game&nbsp;khác nhau để bạn
-                                    luyện tập từ vựng như tìm cặp, nghe điền từ,
-                                    nghe chọn từ đúng, chính tả, trắc nghiệm.
-                                </p>
-
-                                <p>
-                                    Phần Ngữ pháp gồm 29 chủ điểm ngữ pháp quan
-                                    trọng nhất trong kỳ thi IELTS.&nbsp;Mỗi chủ
-                                    điểm bao gồm 1 video dài 10-15 phút giảng
-                                    dạy chi tiết từ giáo viên có chuyên môn cao
-                                    của STUDY4, slide để bạn take note khi học
-                                    và phần nội dung dạng text&nbsp;để đọc kỹ
-                                    hơn. Bên cạnh đó, khóa học cung câp thêm các
-                                    dạng bài tập luyện chuyên sâu ngữ pháp kết
-                                    hợp các kỹ năng như nghe, đọc, viết giúp bạn
-                                    thực hành hàng ngày ngữ pháp hiệu quả.
-                                </p>
-
-                                <p>
-                                    <strong>
-                                        2. Chiến lược làm tất cả các dạng câu
-                                        hỏi IELTS Reading và Listening
-                                    </strong>
-                                </p>
-
-                                <p>
-                                    Khóa học IELTS Intensive Listening và
-                                    Intensive Reading cung cấp video bài giảng
-                                    hướng dẫn chi tiết cách làm tất cả các dạng
-                                    câu hỏi, tips làm nhanh &amp; chính
-                                    xác&nbsp;và chiến lược kiểm soát thời gian
-                                    hiệu quả.
-                                </p>
-
-                                <p>
-                                    <strong>3. Video chữa đề chi tiết</strong>
-                                </p>
-
-                                <p>
-                                    Khóa học IELTS Intensive cung cấp hơn 400h
-                                    clip chữa chi tiết rất nhiều bộ đề quan
-                                    trọng. Mỗi bài chữa đều bao gồm phương pháp
-                                    đọc câu hỏi, tìm keywords, cách tìm đáp án
-                                    đúng hay lựa chọn câu trả lời phù hợp.
-                                </p>
-
-                                <p>
-                                    <strong>
-                                        4. Phương pháp luyện nghe và chép chính
-                                        tả cực hiệu quả:
-                                    </strong>
-                                </p>
-
-                                <p>
-                                    Khoá học IELTS Intensive Listening - luyện
-                                    nghe bằng phương pháp Dictation gồm hơn 200
-                                    bài nghe từ đề thi thật. Phương pháp
-                                    dictation là một&nbsp;phương pháp học ngôn
-                                    ngữ bằng cách nghe hội thoại hoặc văn
-                                    bản,&nbsp;và sau đó&nbsp;viết ra những gì
-                                    bạn nghe được.&nbsp;STUDY4 có 3 chế độ luyện
-                                    tập: dễ, trung bình và nâng cao; tăng
-                                    dần&nbsp;tương ứng với số lượng ô trống bạn
-                                    cần điền trong 1 câu.
-                                </p>
-
-                                <ul>
-                                    <li>
-                                        <strong>Nghe âm thanh</strong>
-
-                                        <ul>
-                                            <li>
-                                                <em>
-                                                    Thông qua các bài tập, bạn
-                                                    sẽ phải nghe rất nhiều, đó
-                                                    là chìa khóa để cải thiện kỹ
-                                                    năng nghe IELTS của bạn
-                                                </em>
-                                            </li>
-                                        </ul>
-                                    </li>
-                                    <li>
-                                        <strong>
-                                            Nhập những gì bạn nghe thấy
-                                        </strong>
-                                        <ul>
-                                            <li>
-                                                <em>
-                                                    Việc gõ những gì bạn nghe
-                                                    được buộc bạn phải tập trung
-                                                    vào từng chi tiết giúp bạn
-                                                    trở nên tốt hơn trong việc
-                                                    phát âm, đánh vần và viết.
-                                                </em>
-                                            </li>
-                                        </ul>
-                                    </li>
-                                    <li>
-                                        <strong>Kiểm tra và sửa chữa</strong>
-                                        <ul>
-                                            <li>
-                                                <em>
-                                                    Việc sửa lỗi rất quan trọng
-                                                    đối với độ chính xác khi
-                                                    nghe và khả năng đọc hiểu
-                                                    của bạn, tốt nhất là bạn nên
-                                                    highlight và lưu lại những
-                                                    lỗi sai mình mắc phải
-                                                </em>
-                                            </li>
-                                        </ul>
-                                    </li>
-                                </ul>
-
-                                <p>
-                                    <strong>
-                                        5. Bộ từ vựng có xác&nbsp;suất&nbsp;99%
-                                        sẽ xuất hiện trong phần thi&nbsp;IELTS
-                                        Reading và Listening
-                                    </strong>
-                                </p>
-
-                                <p>
-                                    Theo thống kê của trung tâm luyện thi New
-                                    Oriental, bộ đề Cam&nbsp;có đủ lượng từ
-                                    vựng&nbsp;bạn cần để có thể i.e đạt được
-                                    band 9&nbsp;trong&nbsp;phần thi IELTS
-                                    Reading và Listening. Vì vậy, bên cạnh việc
-                                    luyện đề, học từ mới trong bộ đề này là một
-                                    việc cực kỳ quan trọng nếu bạn muốn đạt điểm
-                                    cao trong 2 phần thi trên. Với mục đích giúp
-                                    các bạn học viên tiết kiệm thời gian tra từ,
-                                    đánh dấu cũng như có phương tiện ôn từ hiệu
-                                    quả nhất,&nbsp;STUDY4 đã tổng hợp từ
-                                    vựng&nbsp;trong bộ đề này thành khoá học duy
-                                    nhất gồm flashcards, highlights từ vựng
-                                    trong bài, và các bài tập thực hành dễ dùng
-                                    dễ học.
-                                </p>
-
-                                <p>
-                                    <strong>
-                                        6. Hệ thống bài luyện tập dưới dạng game
-                                        lý thú
-                                    </strong>
-                                </p>
-
-                                <p>
-                                    Với mỗi list từ vựng, thay vì phải làm những
-                                    bài tập khô khan, bạn sẽ “phải” chơi hàng
-                                    loạt trò chơi. Việc này vừa giúp việc học
-                                    không hề nhàm chán, căng thẳng mà việc tiếp
-                                    xúc cả hình ảnh, màu sắc, âm thanh liên quan
-                                    đền từ vựng sẽ kích thích não bộ ghi nhớ
-                                    nhanh hơn và lâu hơn.&nbsp;
-                                </p>
-
-                                <p>
-                                    4000 từ vựng tưởng như nhiều nhưng với
-                                    phương pháp học mà chơi, chơi mà học, việc
-                                    phá đảo khối lượng từ khủng như vậy hoàn
-                                    toàn nằm trong lòng bàn tay bạn.&nbsp;
-                                </p>
-
-                                <p>
-                                    <strong>
-                                        7. Nắm trọn cách trả lời các dạng câu
-                                        hỏi Task 1 và chủ đề thông dụng Task 2
-                                        phần thi IELTS Writing
-                                    </strong>
-                                </p>
-
-                                <p>
-                                    Trong khóa học IELTS Intensive
-                                    Writing,&nbsp;bạn sẽ:
-                                </p>
-
-                                <ul>
-                                    <li>
-                                        Hiểu cấu trúc của phần thi IELTS Writing
-                                    </li>
-                                    <li>
-                                        Học cách viết câu trả lời cho&nbsp;bất
-                                        kỳ&nbsp;câu hỏi Writing Task 1 và Task 2
-                                        nào sau khi học cách nhận dạng các loại
-                                        câu hỏi khác nhau
-                                    </li>
-                                    <li>
-                                        Học cách tạo trong bài luận của bạn để
-                                        bạn có thể bắt đầu viết như người bản xứ
-                                        bằng từ/cụm từ liên kết (cohesive
-                                        devices)
-                                    </li>
-                                    <li>
-                                        Tăng lượng từ vựng của bạn một cách
-                                        nhanh chóng và hiệu quả
-                                    </li>
-                                    <li>
-                                        Thực hành nhận dạng và sửa những lỗi ngữ
-                                        pháp, chính tả thường gặp khi viết (mạo
-                                        từ, dấu câu, mệnh đề quan hệ ...)
-                                    </li>
-                                    <li>
-                                        bắt đầu cảm thấy tự tin, yên tâm và ngày
-                                        càng chuẩn bị tốt hơn cho phần thi viết
-                                        trong kỳ thi IELTS tiếp theo
-                                    </li>
-                                </ul>
-
-                                <p>
-                                    Mỗi bài học là 1 bài luận được viết bởi một
-                                    cựu giám khảo IELTS. STUDY4 đã tạo ra các
-                                    bài tập tương ứng giúp bạn học được tối đa
-                                    mỗi bài luận, bao gồm:
-                                </p>
-
-                                <ul>
-                                    <li>Học từ mới trong bài</li>
-                                    <li>
-                                        Học từ, cụm từ liên kết các câu, ý nổi
-                                        bật được sử dụng trong bài
-                                    </li>
-                                    <li>Luyện tập tìm và sửa lỗi ngữ pháp</li>
-                                    <li>
-                                        Học vai trò từng câu trong bài văn và
-                                        luyện tập viết lại câu
-                                    </li>
-                                </ul>
-
-                                <p>
-                                    <strong>
-                                        8. Thực hành luyện tập các&nbsp;chủ đề
-                                        thường gặp cũng như forecast mới
-                                        nhất&nbsp;Part 1, 2, 3 phần thi IELTS
-                                        Speaking
-                                    </strong>
-                                </p>
-
-                                <p>
-                                    Trong khóa học IELTS Intensive
-                                    Speaking&nbsp;này, bạn sẽ:
-                                </p>
-
-                                <ul>
-                                    <li>
-                                        Nắm lòng cách phát âm IPA và những yếu
-                                        tố quan trọng khi nói tiếng Anh như
-                                        intonation, stress, thought groups, cách
-                                        trả lời các dạng câu hỏi (Wh- hay
-                                        yes/no)
-                                    </li>
-                                    <li>
-                                        Hiểu cấu trúc của phần thi IELTS
-                                        Speaking
-                                    </li>
-                                    <li>
-                                        Học cách&nbsp;trả lời cho các chủ đề
-                                        part 1, 2, và 3&nbsp;thường gặp và các
-                                        chủ đề mới nhất được update theo các quý
-                                    </li>
-                                    <li>
-                                        Tăng lượng từ vựng của bạn một cách
-                                        nhanh chóng và hiệu quả
-                                    </li>
-                                    <li>
-                                        Thực hành nhận dạng và sửa những lỗi ngữ
-                                        pháp, chính tả thường gặp khi nói
-                                    </li>
-                                    <li>
-                                        bắt đầu cảm thấy tự tin, yên tâm và ngày
-                                        càng chuẩn bị tốt hơn cho phần thi nói
-                                        trong kỳ thi IELTS tiếp theo
-                                    </li>
-                                </ul>
-
-                                <p>
-                                    Mỗi bài speaking sample được viết bởi một
-                                    cựu giám khảo IELTS. STUDY4 đã tạo ra các
-                                    bài tập tương ứng giúp bạn học được tối đa
-                                    mỗi bài, bao gồm:
-                                </p>
-
-                                <ul>
-                                    <li>Học từ mới trong bài</li>
-                                    <li>Luyện tập tìm và sửa lỗi ngữ pháp</li>
-                                    <li>
-                                        Thực hành luyện nói theo phương pháp
-                                        shadowing
-                                    </li>
-                                    <li>
-                                        Lưu lại bài nói trên cộng đồng học tập
-                                        để học hỏi từ các bạn học viên khác
-                                    </li>
-                                </ul>
-
-                                <p>
-                                    <strong>
-                                        9. Chấm chữa chi tiết bài làm IELTS
-                                        Speaking và Writing bởi giáo viên bản
-                                        ngữ
-                                    </strong>
-                                </p>
-
-                                <p>
-                                    Để đạt được điểm số cao trong hai phần
-                                    thi&nbsp;IELTS Speaking và Writing
-                                    là&nbsp;rất khó.&nbsp;Bất chấp mọi nỗ lực
-                                    của bạn, bạn vẫn đạt được không thể vượt qua
-                                    band 6.5!&nbsp;😩 Bạn cố gắng học thật chăm
-                                    chỉ, tập viết và nói thật nhiều&nbsp;nhưng
-                                    điểm số của bạn vẫn vậy.&nbsp;Dường như
-                                    không có gì có thể đẩy bạn lên đến band 7 và
-                                    8. Tại sao?
-                                </p>
-
-                                <p>
-                                    Sau khi làm bài, bạn cần phải được chấm chữa
-                                    và nhận xét để&nbsp;biết lỗi sai của mình ở
-                                    đâu và cách khắc phục chuẩn xác. Có như vậy
-                                    bạn mới có thể cải thiện được trình độ.
-                                </p>
-
-                                <p>
-                                    Khóa học chấm chữa&nbsp;IELTS Writing &amp;
-                                    Speaking được xây dựng nhằm giúp các bạn
-                                    hiểu rõ cách làm, khắc phục điểm yếu, học
-                                    cách hành văn và cải thiện nhanh chóng hai
-                                    kỹ năng khó nhằn nhất trong kỳ thi IELTS.
-                                    Tất cả các bài làm (gồm bài luận&nbsp;và thu
-                                    âm bài nói) đều được&nbsp;chấm chữa và cho
-                                    điểm chi tiết bởi đội ngũ giáo viên giàu
-                                    kinh nghiệm và trình độ chuyên môn cao của
-                                    STUDY4. Khi đăng ký khóa học, bạn sẽ được:
-                                </p>
-
-                                <ul>
-                                    <li>
-                                        Chấm chữa đầy đủ từ vựng, ngữ pháp, liên
-                                        kết, nội dung
-                                    </li>
-                                    <li>
-                                        Phân tích chi tiết và lời khuyên để cải
-                                        thiện
-                                    </li>
-                                    <li>
-                                        Phiếu nhận xét&nbsp;và chấm điểm chuẩn
-                                        form&nbsp;IELTS
-                                    </li>
-                                    <li>
-                                        Nhận điểm từ 1-3 ngày&nbsp;sau khi nộp
-                                        (trừ cuối tuần và ngày nghỉ lễ)
-                                    </li>
-                                </ul>
+                                <div>{courseDetail.detail_content}</div>
                             </div>
                         </div>
                     </WapperItemCard>
@@ -605,79 +320,52 @@ function NavBar() {
                         <h2 className="mb-4 font-bold text-[1.25rem]">
                             Chương trình học
                         </h2>
-                        <>
-                            <div className="SeriesSyllabusCourse mt-6 lg:flex block">
-                                <div className="SeriesSyllabusCourse-number lg:w-[100px]">
-                                    Khoá học
-                                    <span className="SeriesSyllabusCourse-number-index lg:block inline-block">
-                                        1
-                                    </span>
-                                </div>
-                                <div className="series-syllabus-course-content pb-8 border-b-2">
-                                    <h3
-                                        className="series-syllabus-course-title"
-                                        id="[ielts-fundamentals]-từ-vựng-và-ngữ-pháp-cơ-bản-ielts"
-                                    >
-                                        <a
-                                            href="/courses/26/ielts-fundamentals/"
-                                            className="text-[#213261] font-bold"
+                        {matchingCourses.length > 0 &&
+                            matchingCourses.map((item, index) => (
+                                <div
+                                    key={item.id}
+                                    className="SeriesSyllabusCourse mt-6 lg:flex block"
+                                >
+                                    <div className="SeriesSyllabusCourse-number lg:w-[100px]">
+                                        Khoá học
+                                        <span className="SeriesSyllabusCourse-number-index lg:block inline-block">
+                                            {index + 1}
+                                        </span>
+                                    </div>
+                                    <div className="series-syllabus-course-content pb-8 border-b-2">
+                                        <h3
+                                            className="series-syllabus-course-title"
+                                            id={`[ielts-fundamentals]-từ-vựng-và-ngữ-pháp-cơ-bản-ielts-${item.id}`}
                                         >
-                                            [IELTS Fundamentals] Từ vựng và ngữ
-                                            pháp cơ bản IELTS
-                                        </a>
-                                    </h3>
-
-                                    <div className="course-rating mb-2">
-                                        <span className="average text-xl font-bold text-[#ffad3b] ml-[2px]">
-                                            5.0
-                                        </span>
-
-                                        <StarFilled className="text-[20px] text-xl text-[#ffad3b] ml-[2px]" />
-                                        <StarFilled className="text-[20px] text-xl text-[#ffad3b] ml-[2px]" />
-                                        <StarFilled className="text-[20px] text-xl text-[#ffad3b] ml-[2px]" />
-                                        <StarFilled className="text-[20px] text-xl text-[#ffad3b] ml-[2px]" />
-                                        <StarFilled className="text-[20px] text-xl text-[#ffad3b] ml-[2px]" />
-
-                                        <span className="ml-2">
-                                            (211 Đánh giá)
-                                        </span>
-                                        <span className="ml-2">
-                                            16,335 Học viên
-                                        </span>
-                                    </div>
-
-                                    <div className="series-syllabus-course-overview">
-                                        <p>
-                                            ✅ Dành cho các bạn chưa vững nền
-                                            tảng tiếng Anh hoặc đang&nbsp;ở mức
-                                            sơ cấp&nbsp;(~A1-A2) - hướng tới mục
-                                            tiêu đầu ra band 4.0+
-                                        </p>
-
-                                        <p>
-                                            ✅ Gồm 15 giờ học video giảng dạy kỹ
-                                            29&nbsp;chủ điểm&nbsp;ngữ pháp tiếng
-                                            Anh quan trọng trong kỳ thi IELTS
-                                        </p>
-
-                                        <p>
-                                            ✅&nbsp;Nắm trọn hơn 1.800 từ
-                                            vựng&nbsp;chia thành 20 chủ đề như
-                                            nghệ thuật, khoa học, thiết kế, khảo
-                                            cổ học, lịch sử, văn học ... Đây là
-                                            20 chủ đề sẽ xuất hiện trong IELTS
-                                            Reading và Listening
-                                        </p>
-
-                                        <p>
-                                            ✅ Gần 200 bài tập ngữ pháp và từ
-                                            vựng, kết hợp&nbsp;luyện kỹ năng
-                                            đọc, nghe và viết
-                                        </p>
+                                            <a
+                                                href={`/courses/${item.id}`}
+                                                className="text-[#213261] font-bold"
+                                            >
+                                                {item.title}
+                                            </a>
+                                        </h3>
+                                        <div className="course-rating mb-2">
+                                            <span className="average text-xl font-bold text-[#ffad3b] ml-[2px]">
+                                                5.0
+                                            </span>
+                                            <StarFilled className="text-[20px] text-xl text-[#ffad3b] ml-[2px]" />
+                                            <StarFilled className="text-[20px] text-xl text-[#ffad3b] ml-[2px]" />
+                                            <StarFilled className="text-[20px] text-xl text-[#ffad3b] ml-[2px]" />
+                                            <StarFilled className="text-[20px] text-xl text-[#ffad3b] ml-[2px]" />
+                                            <StarFilled className="text-[20px] text-xl text-[#ffad3b] ml-[2px]" />
+                                            <span className="ml-2">
+                                                (211 Đánh giá)
+                                            </span>
+                                            <span className="ml-2">
+                                                16,335 Học viên
+                                            </span>
+                                        </div>
+                                        <div className="series-syllabus-course-overview">
+                                            {item.detail_title}
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        </>
+                            ))}
                     </div>
                     {/* đánh giá  */}
                     <div
@@ -734,7 +422,6 @@ function NavBar() {
                             <Evaluate />
                         </WapperItemCard>
                     </div>
-                  
                 </div>
             </div>
         </>

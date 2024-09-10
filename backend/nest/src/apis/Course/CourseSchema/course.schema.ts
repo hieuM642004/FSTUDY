@@ -16,6 +16,9 @@ export class Quiz {
 
     @Prop()
     explanation: string;
+
+    @Prop({ required: true, enum: ContentType, default: ContentType.QUIZ })
+    content_type: ContentType;
 }
 
 export const QuizSchema = SchemaFactory.createForClass(Quiz);
@@ -24,12 +27,15 @@ export const QuizSchema = SchemaFactory.createForClass(Quiz);
 export class FillInTheBlank {
     @Prop({ required: true })
     sentence: string;
+
     @Prop({ required: true })
     correctAnswers: string[];
+
+    @Prop({ required: true, enum: ContentType, default: ContentType.FILL_IN_THE_BLANK })
+    content_type: ContentType;
 }
 
-export const FillInTheBlankSchema =
-    SchemaFactory.createForClass(FillInTheBlank);
+export const FillInTheBlankSchema = SchemaFactory.createForClass(FillInTheBlank);
 
 @Schema({ timestamps: true })
 export class WordMatching {
@@ -38,6 +44,9 @@ export class WordMatching {
 
     @Prop({ required: true })
     matches: string[];
+
+    @Prop({ required: true, enum: ContentType, default: ContentType.WORD_MATCHING })
+    content_type: ContentType;
 }
 
 export const WordMatchingSchema = SchemaFactory.createForClass(WordMatching);
@@ -48,23 +57,22 @@ export class Video {
     videoUrl: string;
 
     @Prop({ required: true })
+    slug: string;
+
+    @Prop({ required: true })
     title: string;
+
     @Prop({ required: true })
     description: string;
+
+    @Prop({ required: true, enum: ContentType, default: ContentType.VIDEO })
+    content_type: ContentType;
 }
 
 export const VideoSchema = SchemaFactory.createForClass(Video);
 
 @Schema({ timestamps: true })
 export class Content {
-    @Prop({
-        required: true,
-        enum: ContentType,
-    })
-    content_type: ContentType;
-    @Prop({ required: true })
-    slug: string;
-
     @Prop([{ type: SchemaTypes.ObjectId, ref: 'Quiz' }])
     quiz?: Types.ObjectId[];
 
@@ -214,7 +222,8 @@ export class Purchase {
 
     @Prop({ required: true, unique: true })
     purchaseKey: string;
-
+    @Prop({ required: true })
+    paymentMethod: string;
     @Prop({ required: true, default: Date.now })
     purchaseDate: Date;
 
