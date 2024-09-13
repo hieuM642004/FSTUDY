@@ -26,6 +26,7 @@ export class GoogleDriveUploader {
                 parents: [folderId],
             };
             
+            // Upload video
             const response = await this.drive.files.create({
                 requestBody: videoMetadata,
                 media: {
@@ -34,20 +35,31 @@ export class GoogleDriveUploader {
                 },
                 fields: 'id',
             });
-
+    
             const fileId = response.data.id;
-
+    
+            // Đổi tên file thành ID
             await this.drive.files.update({
                 fileId: fileId,
                 requestBody: { name: fileId },
             });
-
+    
+            // Cấp quyền công khai
+            await this.drive.permissions.create({
+                fileId: fileId,
+                requestBody: {
+                    role: 'reader',
+                    type: 'anyone',
+                },
+            });
+    
             return fileId;
         } catch (error) {
             console.error('Error uploading video to Google Drive:', error);
             throw error;
         }
     }
+    
 
     async uploadImage(
         fileStream: Readable,
@@ -122,7 +134,9 @@ export class GoogleDriveUploader {
     }
 
     getVideoUrl(fileId: string): string {
-        return `https://drive.google.com/file/d/${fileId}/view`;
+        // https://drive.google.com/file/d/1TtYUj7IPr0td3dnTOxua_XSS6Vs7lK9D/preview
+        // return `https://lh3.googleusercontent.com/d/${fileId}?authuser=0`;
+        return `https://drive.google.com/file/d/${fileId}/preview`;
     }
 
     getAudioUrl(fileId: string): string {

@@ -69,6 +69,25 @@ class FirebaseService {
       throw error;
     }
   }
+  async uploadVideoToFirebase(videoBuffer: Buffer, videoName: string, folderName: string): Promise<string> {
+    try {
+        const ext = videoName.split('.').pop()?.toLowerCase();
+        const mimeType = ext ? `video/${ext}` : 'video/mp4'; // Default to mp4 if extension is not found
+
+        const storage = getStorage(this.appInstance);
+        const storageRef = sRef(storage, `${folderName}/${videoName}`);
+
+        await uploadBytes(storageRef, videoBuffer, { contentType: mimeType });
+
+        const downloadURL = await getDownloadURL(storageRef);
+
+        return downloadURL;
+    } catch (error) {
+        console.error('Error uploading video to Firebase:', error);
+        throw error;
+    }
+}
+
   async uploadAudioToFirebase(audioBuffer: Buffer, audioName: string, folderName: string): Promise<string> {
     try {
       const ext = audioName.split('.').pop()?.toLowerCase();

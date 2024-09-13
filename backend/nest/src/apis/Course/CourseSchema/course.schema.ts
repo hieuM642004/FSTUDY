@@ -87,7 +87,22 @@ export class Content {
 }
 
 export const ContentSchema = SchemaFactory.createForClass(Content);
+@Schema({ timestamps: true })
+export class VideoProgress {
+  @Prop({ type: Types.ObjectId, ref: 'User', required: true })
+  userId: string;
 
+  @Prop({ type: Types.ObjectId, ref: 'Video', required: true })
+  videoId: string;
+
+  @Prop({ required: true, default: 0 })
+  progress: number; 
+
+  @Prop({ required: true, default: false })
+  completed: boolean; 
+}
+
+export const VideoProgressSchema = SchemaFactory.createForClass(VideoProgress);
 @Schema({ timestamps: true })
 export class Lesson {
     @Prop({ required: true })
@@ -169,7 +184,7 @@ export class Course {
     @Prop({ required: true })
     price: number;
 
-    @Prop({ required: true })
+    @Prop({ required: true , default: 0 })
     discount: number;
 
     @Prop({ required: true, default: Date.now })
