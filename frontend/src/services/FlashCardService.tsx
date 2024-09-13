@@ -11,6 +11,15 @@ class FlashCardService {
             console.error('Error fetching flashcards:', error);
         }
     }
+
+    static async getAllFlashCardsOfUser(idUser: string) {
+        try {
+            const response = await nestApiInstance.get(`/flashcards/flashcard-of-user/${idUser}`);
+            return response.data.data;
+        } catch (error) {
+            console.error('Error fetching flashcards:', error);
+        }
+    }
     
     static async getAllFlashCardById(id: string) {
         try {
@@ -129,7 +138,28 @@ static async startConversation(topic: string) {
         }
     }
     
-    
+    static async updateWordReview(
+        flashCardId: string,
+        wordIndex: number,
+        reviewData: {
+            reviewCount: number;
+            reviewInterval: number;
+            lastReviewed: Date;
+            nextReviewDate: Date;
+        }
+    ): Promise<boolean> {
+        console.log(reviewData);
+        try {
+            const response = await nestApiInstance.put(
+                `/flashcards/update-word-review/${flashCardId}/${wordIndex}`,
+                reviewData,
+            );
+            return response.data; 
+        } catch (error) {
+            console.error('Error updating word review:', error);
+            return false;
+        }
+    }
 }
 
 export default FlashCardService;

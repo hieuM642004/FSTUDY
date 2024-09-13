@@ -4,11 +4,22 @@ import { MenuOutlined, DeleteOutlined } from '@ant-design/icons';
 import { Row, Col, Button, Image, Input } from 'antd';
 import { useEffect, useState } from 'react';
 import './FormFlashCard.scss';
+
 import ButtonPrimary from '@/components/shared/ButtonPrimary/ButtonPrimary';
 import FlashCard from '@/types/FlashCard';
 import FlashCardService from '@/services/FlashCardService';
+import Message from '@/components/shared/Message/Message';
+import { useRouter } from 'next/navigation';
+import { useTypedSelector } from '@/hooks/useTypedSelector';
+import { useAuth } from '@/hooks/useAuth';
 
-function FormFlashCard({ id }: { id?: string }) {
+function FormFlashCard({
+    id,
+    selectedText,
+}: {
+    id?: string;
+    selectedText?: string;
+}) {
     const [loading, setLoading] = useState(false);
     const [nameCard, setNameCard] = useState('');
     const [cards, setCards] = useState<FlashCard[]>([]);
@@ -18,7 +29,15 @@ function FormFlashCard({ id }: { id?: string }) {
             translatedExample?: string;
         };
     }>({});
-
+    const [isWordValid, setIsWordValid] = useState<{
+        [index: number]: boolean;
+    }>({});
+const {isLoggedIn,userId}=useAuth()
+    const [messageProps, setMessageProps] = useState<{
+        type: 'success' | 'error' | 'warning';
+        content: string;
+    } | null>(null);
+    const router = useRouter();
     useEffect(() => {
         if (id) {
             const fetchCardData = async () => {
@@ -49,6 +68,23 @@ function FormFlashCard({ id }: { id?: string }) {
             setCards(cardsData);
         }
     }, [id]);
+    useEffect(() => {
+        if (selectedText && cards.length > 0) {
+            const updatedCards = [...cards];
+            const firstCard = updatedCards[0];
+
+            if (!firstCard.words.some((word) => word.word === selectedText)) {
+                firstCard.words.push({
+                    word: selectedText,
+                    definition: '',
+                    audioUrl: '',
+                    image: '',
+                });
+                firstCard.wordCount += 1;
+                setCards(updatedCards);
+            }
+        }
+    }, [selectedText, cards]);
 
     useEffect(() => {
         if (!id) {
@@ -119,7 +155,7 @@ function FormFlashCard({ id }: { id?: string }) {
         return '';
     };
 
-    const handleTermChange = (
+    const handleTermChange = async (
         newTerm: string,
         cardIndex: number,
         wordIndex: number,
@@ -135,8 +171,31 @@ function FormFlashCard({ id }: { id?: string }) {
                 : card,
         );
         setCards(updatedCards);
-        if (!id) {
-            saveToLocalStorage(updatedCards);
+
+        try {
+            const response = await fetch(
+                `https://api.dictionaryapi.dev/api/v2/entries/en/${newTerm}`,
+            );
+            if (response.ok) {
+                const updatedWordValid = {
+                    ...isWordValid,
+                    [`${cardIndex}-${wordIndex}`]: true,
+                };
+                setIsWordValid(updatedWordValid);
+            } else {
+                const updatedWordValid = {
+                    ...isWordValid,
+                    [`${cardIndex}-${wordIndex}`]: false,
+                };
+                setIsWordValid(updatedWordValid);
+            }
+        } catch (error) {
+            console.error('Error fetching word validity:', error);
+            const updatedWordValid = {
+                ...isWordValid,
+                [`${cardIndex}-${wordIndex}`]: false,
+            };
+            setIsWordValid(updatedWordValid);
         }
     };
 
@@ -299,6 +358,7 @@ function FormFlashCard({ id }: { id?: string }) {
             words: [],
             wordCount: 0,
             isPublic: false,
+            userId:userId
         };
 
         if (!cards || cards.length === 0) {
@@ -348,11 +408,21 @@ function FormFlashCard({ id }: { id?: string }) {
                     id,
                     flashCardData,
                 );
+                setMessageProps({
+                    type: 'success',
+                    content: 'Flashcard updated successfully!',
+                });
+                router.push('/flashcard');
                 console.log('Update success:', response);
             } else {
                 const response = await FlashCardService.addFlashCard(
                     flashCardData,
                 );
+                setMessageProps({
+                    type: 'success',
+                    content: 'Flashcard add successfully!',
+                });
+                router.push('/flashcard');
                 console.log('Add success:', response);
             }
         } catch (error) {
@@ -453,7 +523,18 @@ function FormFlashCard({ id }: { id?: string }) {
                                                                 wordIndex,
                                                             )
                                                         }
-                                                        className="text-gray-400 hover:text-blue-500"
+                                                        disabled={
+                                                            !isWordValid[
+                                                                `${cardIndex}-${wordIndex}`
+                                                            ]
+                                                        }
+                                                        className={`text-gray-400 hover:text-blue-500 ${
+                                                            !isWordValid[
+                                                                `${cardIndex}-${wordIndex}`
+                                                            ]
+                                                                ? 'opacity-50 cursor-not-allowed'
+                                                                : ''
+                                                        }`}
                                                     >
                                                         Tạo ví dụ
                                                     </button>
@@ -521,7 +602,18 @@ function FormFlashCard({ id }: { id?: string }) {
                                                                     wordIndex,
                                                                 )
                                                             }
-                                                            className="absolute inset-0 flex items-center justify-center bg-gray-200 rounded"
+                                                            disabled={
+                                                                !isWordValid[
+                                                                    `${cardIndex}-${wordIndex}`
+                                                                ]
+                                                            } // Disable nếu từ không hợp lệ
+                                                            className={`absolute inset-0 flex items-center justify-center bg-gray-200 rounded ${
+                                                                !isWordValid[
+                                                                    `${cardIndex}-${wordIndex}`
+                                                                ]
+                                                                    ? 'opacity-50 cursor-not-allowed'
+                                                                    : ''
+                                                            }`}
                                                         >
                                                             Tạo ảnh
                                                         </button>
@@ -547,6 +639,12 @@ function FormFlashCard({ id }: { id?: string }) {
                     onClick={handleSubmit}
                 />
             </div>
+            {messageProps && (
+                <Message
+                    type={messageProps.type}
+                    content={messageProps.content}
+                />
+            )}
         </section>
     );
 }

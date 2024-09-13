@@ -2,7 +2,7 @@ import moment from 'moment';
 import Image from 'next/image';
 import React, { useEffect, useRef, useState } from 'react';
 import io from 'socket.io-client';
-import { Button, Popover } from 'antd';
+import { Button, Popover,Input } from 'antd';
 import { EllipsisOutlined } from '@ant-design/icons';
 
 import HandleComment from './HandleComment';
@@ -10,6 +10,7 @@ import HandleComment from './HandleComment';
 const SOCKET_SERVER_URL = 'http://localhost:3002';
 
 moment.locale('vi');
+const {TextArea }=Input
 const ContentEdit = ({ onRemove, idMySelf, socketRef, idBlog  , idCourse , editContent}: any) => {
     return (
         <div>
@@ -185,15 +186,15 @@ function Comment({ idBlog = null, idCourse = null }: string | any) {
         <>
             <h3 className="font-bold text-xl mb-3">Bình Luận</h3>
             <div className="flex mb-4">
-                <textarea
+                <TextArea
                     name="content"
                     rows={1}
-                    className="py-[6px] pl-6 pr-3 w-[100%] border rounded-l-xl"
+                    className="py-[6px] pl-6 pr-3 w-[100%] border rounded-l-lg"
                     placeholder="Chia sẻ cảm nghĩ của bạn ..."
                     value={content}
                     onChange={handleContentChange}
-                ></textarea>
-                <div className="rounded-r-xl">
+                ></TextArea>
+                <div className="rounded-r-xl ">
                     <button
                         onClick={handleSubmit}
                         className="bg-[#35509a] rounded-r-xl text-white py-[6px] px-3 h-full"

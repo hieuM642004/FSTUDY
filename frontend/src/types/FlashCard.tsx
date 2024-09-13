@@ -11,6 +11,9 @@ export default interface FlashCardInterface {
     words: Word[];
     wordCount: number;
     isPublic: boolean;
+    reviewInterval: number;
+    reviewCount: number;
+    
 }
 
 export interface ExampleResponse {

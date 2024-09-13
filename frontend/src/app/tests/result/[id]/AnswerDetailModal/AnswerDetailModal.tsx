@@ -1,43 +1,43 @@
 import React from 'react';
 import { Collapse, Modal } from 'antd';
+import { isArray } from 'lodash';
 
 const AnswerDetailModal = ({ question, isVisible, onCancel }: any) => {
     const isCorrectAnswer = (option: string) => {
-        return question.questionId.correctAnswer.includes(option);
+        return question?.questionId?.correctAnswer.includes(option);
     };
 
     const isSelectedOption = (option: string) => {
-        return question.selectedOptions.includes(option);
+        return question?.selectedOptions.includes(option);
     };
 
     return (
         <Modal
-            title={`Đáp án chi tiết #${question.questionId.order}`}
+            title={`Đáp án chi tiết #${question?.questionId?.order}`}
             visible={isVisible}
             onCancel={onCancel}
             footer={null}
             width={800}
         >
-            <h3>{question.questionId.questionGroup?.passageText}</h3>
             <p>
                 <strong className="bg-gray-200 p-1 rounded-md">
-                    #{question?.questionId.questionType.replace(/-/g, ' ')}
+                    #{question?.questionId?.questionType.replace(/-/g, ' ')}
                 </strong>{' '}
             </p>
             <div className="my-2">
-                {question.questionId.questionGroup?.audioUrl && (
+                {question?.questionId?.questionGroup?.audioUrl && (
                     <audio controls>
                         <source
-                            src={question.questionId.questionGroup?.audioUrl}
+                            src={question?.questionId?.questionGroup?.audioUrl}
                             type="audio/mp3"
                         />
                         Your browser does not support the audio element.
                     </audio>
                 )}
 
-                {question.questionId.questionGroup?.imageUrl && (
+                {question?.questionId?.questionGroup?.imageUrl && (
                     <img
-                        src={question.questionId.questionGroup?.imageUrl}
+                        src={question?.questionId?.questionGroup?.imageUrl}
                         alt="Question Visual"
                         style={{
                             width: '100%',
@@ -47,12 +47,12 @@ const AnswerDetailModal = ({ question, isVisible, onCancel }: any) => {
                     />
                 )}
 
-                {question.questionId.questionGroup?.passageText && (
-                    <p>{question.questionId.questionGroup?.passageText}</p>
+                {question?.questionId?.questionGroup?.passageText && (
+                    <p>{question?.questionId?.questionGroup?.passageText}</p>
                 )}
             </div>
 
-            {question.questionId.questionGroup?.audioUrl && (
+            {question?.questionId?.questionGroup?.audioUrl && (
                 <>
                     <p>
                         <strong>Transcript:</strong>
@@ -63,7 +63,7 @@ const AnswerDetailModal = ({ question, isVisible, onCancel }: any) => {
                                 key: '1',
                                 label: 'Transcript',
                                 children: (
-                                    <p>{question.questionId.description}</p>
+                                    <p>{question?.questionId?.description}</p>
                                 ),
                             },
                         ]}
@@ -73,7 +73,7 @@ const AnswerDetailModal = ({ question, isVisible, onCancel }: any) => {
 
             <div className="mt-4">
                 <strong>Đáp án đã chọn:</strong>
-                {question.selectedOptions.map(
+                {question?.selectedOptions?.map(
                     (option: string, index: number) => (
                         <div
                             key={index}
@@ -83,7 +83,7 @@ const AnswerDetailModal = ({ question, isVisible, onCancel }: any) => {
                                     : 'text-red-600'
                             }`}
                         >
-                             {option}
+                            {option}
                             {isCorrectAnswer(option) && <span> (Đúng)</span>}
                         </div>
                     ),
@@ -92,12 +92,16 @@ const AnswerDetailModal = ({ question, isVisible, onCancel }: any) => {
 
             <div className="mt-4">
                 <strong>Đáp án đúng:</strong>
-                {question.questionId.correctAnswer.map(
-                    (option: string, index: number) => (
-                        <div key={index} className={`text-green-600`}>
-                            {option}
-                        </div>
-                    ),
+                {isArray(question?.questionId?.correctAnswer) ? (
+                    question?.questionId?.correctAnswer.map(
+                        (option: string, index: number) => (
+                            <div key={index} className={`text-green-600`}>
+                                {option}
+                            </div>
+                        ),
+                    )
+                ) : (
+                    <div>{question?.questionId?.correctAnswer}</div>
                 )}
             </div>
 
@@ -107,7 +111,7 @@ const AnswerDetailModal = ({ question, isVisible, onCancel }: any) => {
                     {
                         key: '1',
                         label: 'Giải thích',
-                        children: <p>{question.questionId.explanation}</p>,
+                        children: <p>{question?.questionId?.explanation}</p>,
                     },
                 ]}
             />

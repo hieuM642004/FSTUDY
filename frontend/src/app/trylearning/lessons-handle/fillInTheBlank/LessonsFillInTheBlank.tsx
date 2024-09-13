@@ -40,7 +40,7 @@ const FillInTheBlankPage = ({ id }: { id: string }) => {
         if (!newUserAnswers[index]) {
             newUserAnswers[index] = ['', ''];
         }
-        newUserAnswers[index][answerIndex] = value; // Chuyển đổi thành chữ thường
+        newUserAnswers[index][answerIndex] = value; 
         setUserAnswers(newUserAnswers);
     };
 

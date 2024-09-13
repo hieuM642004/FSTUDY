@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState, useRef } from 'react';
-import { Row, Col, Card, Button } from 'antd';
+import { Row, Col, Card } from 'antd';
 import { BlockOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 
 import FlashCardService from '@/services/FlashCardService';
@@ -11,6 +11,7 @@ import './FlashCards.scss';
 import ConfirmModal from '@/components/shared/ModalComfirm/ModalComfirm';
 import Message from '@/components/shared/Message/Message';
 import Link from 'next/link';
+import { useAuth } from '@/hooks/useAuth';
 
 const FlashCardList = () => {
     const [flashCards, setFlashCards] = useState<FlashCardInterface[]>([]);
@@ -24,19 +25,26 @@ const FlashCardList = () => {
         type: 'success' | 'error' | 'warning';
         content: string;
     } | null>(null);
-
+    const { userId,isLoggedIn}=useAuth()
+  
+    
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const response = await FlashCardService.getAllFlashCards();
-                setFlashCards(response);
+                if (userId) { 
+                    console.log(userId);
+                    const response = await FlashCardService.getAllFlashCardsOfUser(userId); 
+                    console.log(response);
+                    setFlashCards(response);
+                }
             } catch (error) {
                 console.error('Error fetching flashcards:', error);
             }
         };
-
+    
         fetchData();
-    }, []);
+    }, [userId]);  
+    
 
     const showConfirm = (id: string) => {
         setSelectedCardId(id);
@@ -54,11 +62,11 @@ const FlashCardList = () => {
                 );
                 messageRef.current = {
                     type: 'success',
-                    content: 'Flashcard deleted successfully!',
+                    content: 'Flashcard xóa thành công!',
                 };
                 setMessageProps({
                     type: 'success',
-                    content: 'Flashcard deleted successfully!',
+                    content: 'Flashcard xóa thành công!',
                 });
             } else {
                 console.error('Failed to delete flashcard');
@@ -81,7 +89,6 @@ const FlashCardList = () => {
         setSelectedCardId(null);
     };
 
-
     return (
         <>
             <div
@@ -93,19 +100,23 @@ const FlashCardList = () => {
                     <h2 className="text-4xl font-bold">Flashcard</h2>
                 </div>
             </div>
-
-            <ButtonPrimary
+{
+    isLoggedIn &&(
+           <ButtonPrimary
                 to="/flashcard/add"
                 label="Tạo Flashcard"
                 className="mb-4"
             />
+    )
+}
+         
 
             <Row
                 gutter={[16, 16]}
                 className="mb-4 p-4 rounded-md "
                 id="container-flashcard"
             >
-                {flashCards?.map((flashCard) => (
+                {flashCards && flashCards?.map((flashCard) => (
                     <Col
                         key={flashCard._id}
                         xs={24}
@@ -142,15 +153,26 @@ const FlashCardList = () => {
                         >
                             <Link href={`/flashcard/${flashCard._id}`}>
                                 <div className="w-full">
-                                    {flashCard.words.map((word, index) => (
+                                    {flashCard?.words?.map((word, index) => (
                                         <div key={index}></div>
                                     ))}
-                                    Có {flashCard.words.length} từ vựng
+                                    Có {flashCard?.words?.length} từ vựng
                                 </div>
                             </Link>
                         </Card>
                     </Col>
                 ))}
+                
+                  <div className='text-center mx-auto'>
+                        {flashCards?.length === 0 && (
+                            <h3 className='text-center  font-bold'>Chưa có flashcard nào được tạo. </h3>
+                        )}
+                        {
+                            !isLoggedIn && (<h3 className='text-center ml-1  font-bold'>Đăng nhập để tạo flashcard</h3>
+                            )
+                        }
+                    
+                  </div>
                 <ConfirmModal
                     visible={isModalVisible}
                     message="Bạn có chắc chắn muốn xóa flashcard này?"

@@ -32,7 +32,6 @@ function Speaking() {
             try {
                 const response = await FlashCardService.getTopicInConversation(); 
                 setTopics(response.topics);
-                console.log('Fetched topics:', response.topics); 
             } catch (error) {
                 console.error('Error fetching topics:', error);
             }

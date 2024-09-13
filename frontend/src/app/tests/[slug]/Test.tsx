@@ -8,7 +8,7 @@ import {
     EyeOutlined,
 } from '@ant-design/icons';
 import { useState, useEffect } from 'react';
-import { Avatar, List, Checkbox, Select, Row, Col } from 'antd';
+import { Avatar, List, Checkbox, Select, Row, Col,Spin } from 'antd';
 import type { CheckboxProps } from 'antd';
 import ButtonPrimary from '@/components/shared/ButtonPrimary/ButtonPrimary';
 import Target from '@/components/client/Target/Target';
@@ -36,6 +36,7 @@ function Test({ slug }: { slug: string }) {
         const getExam = async () => {
             const exam = await ExamService.getAllExamById(slug);
             setExam(exam);
+           
             const totalQuestions = exam.idSession.reduce((sum: any, session :any) => {
                 return sum + (session.idQuestionGroups?.length || 0);
             }, 0);
@@ -105,7 +106,7 @@ function Test({ slug }: { slug: string }) {
                             {examId ? (
                                 <ExamResults id={examId} />
                             ) : (
-                                <p>Đang tải...</p>
+                                <div className='flex justify-center p-10'><Spin></Spin></div>
                             )}
                         </div>
                     </div>

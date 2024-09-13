@@ -12,6 +12,7 @@ import { Observable } from 'rxjs';
 import { AxiosResponse } from 'axios';
 import * as YouTubeTranscript from 'youtube-transcript';
 import { map, catchError } from 'rxjs/operators';
+import { UpdateWordReviewDto } from './dto/UpdateWordReviewDto';
 
 @Injectable()
 export class FlashCardService {
@@ -37,6 +38,20 @@ export class FlashCardService {
             );
         }
         return [flashCard]
+        } catch (error) {
+            console.error(error);
+        }
+    }
+    async getFlashCardsOfUser(idUser: string): Promise<any> {
+        try {
+           const flashCard= await this.flashCardModel.find({userId: idUser});
+           if (!flashCard) {
+            throw new HttpException(
+                `FlashCard with ID '${idUser}' not found`,
+                HttpStatus.NOT_FOUND,
+            );
+        }
+        return flashCard
         } catch (error) {
             console.error(error);
         }
@@ -243,5 +258,41 @@ export class FlashCardService {
     
         return results;
       }
+      async updateWordReview(
+        id: string,
+        wordIndex: number,
+        updateWordReviewDto: UpdateWordReviewDto,
+      ): Promise<FlashCard> {
+        const flashCard = await this.flashCardModel.findById(id);
+        if (!flashCard) {
+          throw new HttpException(
+            `FlashCard with ID '${id}' not found`,
+            HttpStatus.NOT_FOUND,
+          );
+        }
+      
+        if (wordIndex < 0 || wordIndex >= flashCard.words.length) {
+          throw new HttpException(
+            `Word index '${wordIndex}' is out of bounds`,
+            HttpStatus.BAD_REQUEST,
+          );
+        }
+      
+      
+        const word = flashCard.words[wordIndex];
+        
+     
+        word.reviewCount = updateWordReviewDto.reviewCount;
+        word.reviewInterval = updateWordReviewDto.reviewInterval;
+        word.lastReviewed = new Date(updateWordReviewDto.lastReviewed); 
+        word.nextReviewDate = new Date(updateWordReviewDto.nextReviewDate); 
+      
+        
+        flashCard.markModified(`words.${wordIndex}`);
+      
+     
+        return await flashCard.save();
+      }
+      
    
 }

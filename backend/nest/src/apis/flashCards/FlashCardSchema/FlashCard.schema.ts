@@ -13,8 +13,22 @@ class Word {
 
   @Prop()
   audioUrl: string;
+
   @Prop()
   image: string;
+
+  // Thuộc tính cho kỹ thuật lặp lại ngắt quãng
+  @Prop({ default: 0 })
+  reviewCount?: number; // Số lần từ này đã được ôn tập
+
+  @Prop({ default: 1 })
+  reviewInterval?: number; // Khoảng thời gian lặp lại ôn tập (tính bằng ngày)
+
+  @Prop({ type: Date, default: Date.now })
+  lastReviewed?: Date; // Ngày lần cuối từ này được ôn tập
+
+  @Prop({ type: Date, default: Date.now })
+  nextReviewDate?: Date; // Ngày cần ôn lại từ tiếp theo
 }
 
 @Schema({ timestamps: true })

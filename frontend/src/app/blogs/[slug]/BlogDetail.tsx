@@ -20,11 +20,10 @@ function BlogDetail({ id }: string | any) {
         const fetchBlogs = async () => {
             try {
                 const res = await nestApiInstance.get(`/blog/${id}`);
-                setBlogDetail(res.data.data);
-                if(res){
-                    setBlogId(res.data.data._id)   
+                setBlogDetail(res.data.data.blogs);
+                if (res) {
+                    setBlogId(res.data.data.blogs._id);
                 }
-                
             } catch (error) {
                 console.error('Failed to fetch blogs:', error);
             }
@@ -58,7 +57,7 @@ function BlogDetail({ id }: string | any) {
                     {/* title blogdetail */}
                     <div className="text-center">
                         <h2 className=" xl:text-4xl md:text-2xl  text-xl font-bold mb-4">
-                            {blogDetail.title}
+                            { blogDetail && blogDetail?.title}
                         </h2>
                         {/* <p className="mb-4 font-semibold text-lg">
                             {blogDetail.content}
@@ -80,7 +79,7 @@ function BlogDetail({ id }: string | any) {
                                                     width={35}
                                                     height={35}
                                                     src={
-                                                        blogDetail?.user?.avatar
+                                                      blogDetail &&   blogDetail?.user?.avatar
                                                     }
                                                     alt="Picture of the author"
                                                     className="rounded-full"
@@ -90,7 +89,7 @@ function BlogDetail({ id }: string | any) {
                                                 <p>
                                                     {blogDetail?.user?.fullname}
                                                 </p>
-                                                <span>{blogDetail.date}</span>
+                                                <span>{blogDetail && blogDetail?.date}</span>
                                             </div>
                                         </div>
                                         {/*  Related articles */}
@@ -125,7 +124,7 @@ function BlogDetail({ id }: string | any) {
                                         {/* main content  */}
                                         <div>
                                             <Image
-                                                src={blogDetail.avatar}
+                                                src={blogDetail && blogDetail?.avatar}
                                                 alt="pics"
                                                 width={1000}
                                                 height={0}
@@ -133,13 +132,13 @@ function BlogDetail({ id }: string | any) {
                                             />
                                             <div
                                                 dangerouslySetInnerHTML={{
-                                                    __html: blogDetail.content,
+                                                    __html: blogDetail && blogDetail?.content,
                                                 }}
                                             />
                                         </div>
                                         {/* comment  */}
                                         <div className="my-7">
-                                            <Comment idBlog={blogId}/>
+                                            <Comment idBlog={blogId} />
                                         </div>
                                         {/* Maybe you will be interested */}
                                         <div>
