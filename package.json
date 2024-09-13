@@ -1,0 +1,9 @@
+{
+  "devDependencies": {
+    "@types/youtube": "^0.1.0"
+  },
+  "dependencies": {
+    "video.js": "^8.17.3",
+    "vimeo": "^2.3.1"
+  }
+}
