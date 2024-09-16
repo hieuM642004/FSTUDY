@@ -174,7 +174,7 @@ function NavBar() {
                                     </span>
                                 </div>
                             </div>
-                            <RegisterNow />
+                            <RegisterNow idCourse={id} />
                             <FreeLessons data={courseDetail} />
                             <div className="border-b-[0.6px] border-gray-500 my-5"></div>
                             <div>

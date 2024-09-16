@@ -6,16 +6,22 @@ import { Button, Popover,Input } from 'antd';
 import { EllipsisOutlined } from '@ant-design/icons';
 
 import HandleComment from './HandleComment';
+import { useAppDispatch } from '@/hooks/useAppDispatch';
+import { useTypedSelector } from '@/hooks/useTypedSelector';
+import { fetchUserData } from '@/lib/redux/features/user/userSlice';
+import Link from 'next/link';
 
 const SOCKET_SERVER_URL = 'http://localhost:3002';
 
 moment.locale('vi');
+
 const {TextArea }=Input
 const ContentEdit = ({ onRemove, idMySelf, socketRef, idBlog  , idCourse , editContent}: any) => {
     return (
         <div>
             <p className="cursor-pointer">
                 <HandleComment
+                    dataUser={dataUser}
                     idCourse={idCourse}
                     socketRef={socketRef}
                     idBlog={idBlog}
@@ -23,15 +29,15 @@ const ContentEdit = ({ onRemove, idMySelf, socketRef, idBlog  , idCourse , editC
                     editContent={editContent}
                 />
             </p>
-            <p className="cursor-pointer"
-           
-             onClick={() => {
-                if (confirm('Bạn có chắc chắn muốn xóa?')) {
-                    onRemove()
-                } else {
-                    //    hủy
-                }
-            }}
+            <p
+                className="cursor-pointer"
+                onClick={() => {
+                    if (confirm('Bạn có chắc chắn muốn xóa?')) {
+                        onRemove();
+                    } else {
+                        //    hủy
+                    }
+                }}
             >
                 Xóa
             </p>
@@ -44,12 +50,15 @@ function Comment({ idBlog = null, idCourse = null }: string | any) {
     const [idCmt, setIdCmt] = useState('');
     const [CheckSubmit, setCheckSubmit] = useState(false);
     const [editContent, setEditContent] = useState();
-    
+    const dispatch = useAppDispatch();
+    const dataUser = useTypedSelector((state) => state.user);
     const socketRef: any = useRef(null);
     useEffect(() => {
+        dispatch(fetchUserData());
+        console.log('check dataUser?.id', dataUser?.id);
+
         // Connect to Socket.IO server
         socketRef.current = io(SOCKET_SERVER_URL);
-
         // Listen for events from the server
         socketRef.current.timeout(3000).on('comments', (data: any) => {
             setMessage(data);
@@ -62,19 +71,19 @@ function Comment({ idBlog = null, idCourse = null }: string | any) {
         return () => {
             socketRef.current.disconnect();
         };
-    }, [idBlog, idCourse]);
+    }, [idBlog, idCourse, dispatch]);
 
     const handleContentChange = (event: any | string): void => {
         setContent(event.target.value);
     };
 
     const handleSubmit = () => {
-        if(!content){
+        if (!content) {
             alert('Bạn phải nhập nội dung trước khi gửi');
-            return ;
+            return;
         }
         const NewDataCommnet = {
-            idUser: '6673c0f300582bda3b1e96a0', // id user 
+            idUser: dataUser?.id,
             idBlog: idBlog || null,
             idCourse: idCourse || null,
             parentId: null,
@@ -129,6 +138,7 @@ function Comment({ idBlog = null, idCourse = null }: string | any) {
                                     socketRef={socketRef}
                                     idBlog={idBlog}
                                     editContent={editContent}
+                                    dataUser={dataUser}
                                 />
                             </span>
                             {/* Recursive call to render child replies */}
@@ -142,49 +152,89 @@ function Comment({ idBlog = null, idCourse = null }: string | any) {
                                 </div>
                             )}
                         </div>
-                        <div className="absolute right-0 top-0">
-                            <Popover
-                                content={
-                                    <ContentEdit
-                                        idCourse={idCourse}
-                                        onRemove={handleRemove}
-                                        idMySelf={idCmt}
-                                        socketRef={socketRef}
-                                        idBlog={idBlog}
-                                        editContent={editContent}
-                                    />
-                                }
-                                title=""
-                                trigger="click"
-                            >
-                                <Button
-                                    onClick={() => {
-                                        handleEditDelete(reply?._id , reply?.content);
-                                    }}
-                                >
-                                    <EllipsisOutlined />
-                                </Button>
-                            </Popover>
-                        </div>
+                        {reply?.idUser?._id == dataUser?.id ? (
+                            <>
+                                {' '}
+                                <div className="absolute right-0 top-0">
+                                    <Popover
+                                        content={
+                                            <ContentEdit
+                                                dataUser={dataUser}
+                                                idCourse={idCourse}
+                                                onRemove={handleRemove}
+                                                idMySelf={idCmt}
+                                                socketRef={socketRef}
+                                                idBlog={idBlog}
+                                                editContent={editContent}
+                                            />
+                                        }
+                                        title=""
+                                        trigger="click"
+                                    >
+                                        <Button
+                                            onClick={() => {
+                                                handleEditDelete(
+                                                    reply?._id,
+                                                    reply?.content,
+                                                );
+                                            }}
+                                        >
+                                            <EllipsisOutlined />
+                                        </Button>
+                                    </Popover>
+                                </div>
+                            </>
+                        ) : (
+                            <></>
+                        )}
                     </div>
                 ))}
             </>
         );
     };
 
-    const handleEditDelete = (id: string , contentedit : any) => {
+    const handleEditDelete = (id: string, contentedit: any) => {
         setIdCmt(id);
-        setEditContent(contentedit)
+        setEditContent(contentedit);
     };
 
     const handleRemove = () => {
-        socketRef.current.emit('deleteComment', idCmt , idBlog, idCourse);
+        socketRef.current.emit('deleteComment', idCmt, idBlog, idCourse);
         setCheckSubmit(!CheckSubmit);
     };
-    
+
     return (
         <>
             <h3 className="font-bold text-xl mb-3">Bình Luận</h3>
+            {dataUser?.id !== null ? (
+                <>
+                    <div className="flex mb-4">
+                        <textarea
+                            name="content"
+                            rows={1}
+                            className="py-[6px] pl-6 pr-3 w-[100%] border rounded-l-xl"
+                            placeholder="Chia sẻ cảm nghĩ của bạn ..."
+                            value={content}
+                            onChange={handleContentChange}
+                        ></textarea>
+                        <div className="rounded-r-xl">
+                            <button
+                                onClick={handleSubmit}
+                                className="bg-[#35509a] rounded-r-xl text-white py-[6px] px-3 h-full"
+                            >
+                                Gửi
+                            </button>
+                        </div>
+                    </div>
+                </>
+            ) : (
+                <>
+                    <Link href="/login" className="italic text-[#355097]">
+                        Vui lòng đăng nhập để bình luận.
+                    </Link>
+                </>
+            )}
+
             <div className="flex mb-4">
                 <TextArea
                     name="content"
@@ -213,7 +263,6 @@ function Comment({ idBlog = null, idCourse = null }: string | any) {
                                 {message.length !== 0 &&
                                     Array.isArray(message) &&
                                     message.map((item: any, index) => {
-                                        
                                         if (item.parentId === null) {
                                             return (
                                                 <div key={index}>
@@ -253,6 +302,9 @@ function Comment({ idBlog = null, idCourse = null }: string | any) {
                                                             </p>
                                                             <span className="font-bold text-[#355097] cursor-pointer">
                                                                 <HandleComment
+                                                                    dataUser={
+                                                                        dataUser
+                                                                    }
                                                                     idCourse={
                                                                         idCourse
                                                                     }
@@ -265,7 +317,9 @@ function Comment({ idBlog = null, idCourse = null }: string | any) {
                                                                     idBlog={
                                                                         idBlog
                                                                     }
-                                                                    editContent={editContent}
+                                                                    editContent={
+                                                                        editContent
+                                                                    }
                                                                 />
                                                             </span>
                                                             {item.replies &&
@@ -281,42 +335,55 @@ function Comment({ idBlog = null, idCourse = null }: string | any) {
                                                                     </div>
                                                                 )}
                                                         </div>
-
-                                                        <div className="absolute right-0 top-0">
-                                                            <Popover
-                                                                content={
-                                                                    <ContentEdit
-                                                                        idCourse={idCourse}
-                                                                        onRemove={
-                                                                            handleRemove
+                                                        {item?.idUser?._id ==
+                                                        dataUser?.id ? (
+                                                            <>
+                                                                <div className="absolute right-0 top-0">
+                                                                    <Popover
+                                                                        content={
+                                                                            <ContentEdit
+                                                                                dataUser={
+                                                                                    dataUser
+                                                                                }
+                                                                                idCourse={
+                                                                                    idCourse
+                                                                                }
+                                                                                onRemove={
+                                                                                    handleRemove
+                                                                                }
+                                                                                idMySelf={
+                                                                                    idCmt
+                                                                                }
+                                                                                socketRef={
+                                                                                    socketRef
+                                                                                }
+                                                                                idBlog={
+                                                                                    idBlog
+                                                                                }
+                                                                                editContent={
+                                                                                    editContent
+                                                                                }
+                                                                            />
                                                                         }
-                                                                        idMySelf={
-                                                                            idCmt
-                                                                        }
-                                                                        socketRef={
-                                                                            socketRef
-                                                                        }
-                                                                        idBlog={
-                                                                            idBlog
-                                                                        }
-                                                                        editContent={editContent}
-                                                                    />
-                                                                }
-                                                                title=""
-                                                                trigger="click"
-                                                            >
-                                                                <Button
-                                                                    onClick={() => {
-                                                                        handleEditDelete(
-                                                                            item?._id,
-                                                                            item?.content
-                                                                        );
-                                                                    }}
-                                                                >
-                                                                    <EllipsisOutlined />
-                                                                </Button>
-                                                            </Popover>
-                                                        </div>
+                                                                        title=""
+                                                                        trigger="click"
+                                                                    >
+                                                                        <Button
+                                                                            onClick={() => {
+                                                                                handleEditDelete(
+                                                                                    item?._id,
+                                                                                    item?.content,
+                                                                                );
+                                                                            }}
+                                                                        >
+                                                                            <EllipsisOutlined />
+                                                                        </Button>
+                                                                    </Popover>
+                                                                </div>
+                                                            </>
+                                                        ) : (
+                                                            <></>
+                                                        )}
                                                     </div>
                                                 </div>
                                             );

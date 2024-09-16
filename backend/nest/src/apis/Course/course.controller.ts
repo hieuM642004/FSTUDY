@@ -523,15 +523,14 @@ createVideo(
         @Param('key') key: string,
     
     ) {
-        const { vnp_ResponseCode,  message , partnerCode , orderId , amount} = req.query;   
+        const { vnp_ResponseCode  , vnp_BankCode , vnp_TxnRef , vnp_Amount } = req.query;   
          if (!vnp_ResponseCode || !email || !key) {
             throw new BadRequestException('Missing required parameters');
         }
         if (vnp_ResponseCode === '00') {
             try {
                 await this.courseService.sendSuccessEmail(email as string, key as string);
-                // res.redirect(`${process.env.BASEURL_FE}/paid?email=${email}&message=${message}&partnerCode=${partnerCode}&orderId=${orderId}&amount=${amount}`);    
-                    } catch (error) {
+                res.redirect(`${process.env.BASEURL_FE}/paid?email=${email}&message=${'SUCCESS'}&partnerCode=${vnp_BankCode}&orderId=${vnp_TxnRef}&amount=${vnp_Amount}`);                    } catch (error) {
                 throw new InternalServerErrorException('Error sending email');
             }
         } else {

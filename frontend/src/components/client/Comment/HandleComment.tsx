@@ -11,7 +11,8 @@ function HandleComment({
     parentId,
     idCourse,
     idMySelf,
-    editContent
+    editContent, 
+    dataUser
 }: String | any) {
     const [open, setOpen] = useState(false);
     
@@ -40,7 +41,7 @@ function HandleComment({
             } else {
                 // insert
                 const newData = {
-                    idUser: '6673c0f300582bda3b1e96a0',
+                    idUser: dataUser?.id,
                     idBlog: idBlog || null,
                     idCourse: idCourse || null,
                     parentId: parentId || null,
@@ -69,7 +70,10 @@ function HandleComment({
                 className="hover:text-black text-[#35509a] cursor-pointer mt-2"
                 onClick={showModal}
             >
-                {idMySelf ? 'Chỉnh sửa' : 'Trả lời'}
+                {dataUser?.id ? <> 
+                    {idMySelf ? 'Chỉnh sửa' : 'Trả lời'}
+                </> : <> </>}
+             
             </p>
             <Modal
                 open={open}

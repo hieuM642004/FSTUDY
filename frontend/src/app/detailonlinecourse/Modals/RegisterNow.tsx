@@ -1,10 +1,22 @@
-import { Modal, Form, Input } from 'antd';
-import React, { useState } from 'react';
+import { Modal, Form, RadioChangeEvent, Radio, message } from 'antd';
+import React, { useEffect, useState } from 'react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
+import PurchaseService from '@/services/purchase/PurchaseService';
+import { useAppDispatch } from '@/hooks/useAppDispatch';
+import { useTypedSelector } from '@/hooks/useTypedSelector';
+import { fetchUserData } from '@/lib/redux/features/user/userSlice';
 import ButtonPrimary from '@/components/shared/ButtonPrimary/ButtonPrimary';
+import logoVnpay from '/public/images/logoVnpay.png';
+import logoMomo from '/public/images/logoMomo.jpg';
 
-const RegisterNow = () => {
+const RegisterNow = ({ idCourse }: String | any) => {
+    const [messageApi, contextHolder] = message.useMessage();
+
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const router = useRouter();
 
     const showModal = () => {
         setIsModalOpen(true);
@@ -19,23 +31,53 @@ const RegisterNow = () => {
         wrapperCol: { span: 16 },
     };
 
-    const validateMessages = {
-        required: '${label} bắt buộc nhập!',
-        types: {
-            email: '${label} không hợp lệ!',
-        },
-        pattern: {
-            mismatch: '${label} không hợp lệ',
-        },
+    const [value, setValue] = useState(1);
+    const dispatch = useAppDispatch();
+    const dataUser = useTypedSelector((state) => state.user);
+    useEffect(() => {
+        dispatch(fetchUserData());
+    }, [dispatch]);
+    const onFinish = async () => {
+        const userId = dataUser?.id;
+        const courseId = idCourse;
+        if (value === 1) {
+            const response: string | any = await PurchaseService.purchaseMomo({
+                userId,
+                courseId,
+            });
+            if (response) {
+                router.push(response?.payUrl);
+            } else {
+                messageApi.open({
+                    type: 'error',
+                    content: 'KÍCH HOẠT KHÓA HỌC THẤT BẠI',
+                });
+            }
+        } else {
+            const response: string | any = await PurchaseService.purchaseVnpay({
+                userId,
+                courseId,
+            });
+
+            if (response) {
+                router.push(response?.paymentUrl);
+            } else {
+                messageApi.open({
+                    type: 'error',
+                    content: 'KÍCH HOẠT KHÓA HỌC THẤT BẠI',
+                });
+            }
+        }
     };
 
-    const onFinish = (values: any) => {
-        console.log(values);
-        setIsModalOpen(false); 
+    const onChange = (e: RadioChangeEvent) => {
+        console.log('radio checked', e.target.value);
+        setValue(e.target.value);
     };
 
     return (
         <>
+            {contextHolder}
             <ButtonPrimary
                 onClick={showModal}
                 size="large"
@@ -48,57 +90,65 @@ const RegisterNow = () => {
                 onCancel={handleCancel}
                 footer={null}
             >
-                <Form
-                    {...layout}
-                    name="nest-messages"
-                    onFinish={onFinish}
-                    style={{ maxWidth: 600 }}
-                    validateMessages={validateMessages}
-                >
-                    <Form.Item
-                        name={['user', 'name']}
-                        label="Họ tên"
-                        rules={[{ required: true }]}
-                    >
-                        <Input />
-                    </Form.Item>
-                    <Form.Item
-                        name={['user', 'address']}
-                        label="Địa chỉ"
-                        rules={[{ required: true }]}
-                    >
-                        <Input />
-                    </Form.Item>
-                    <Form.Item
-                        name={['user', 'phone']}
-                        label="Số ĐT"
-                        rules={[
-                            {
-                                required: true,
-                                type: 'string',
-                                pattern: /(84|0[3|5|7|8|9])+([0-9]{8})\b/g,
-                            },
-                        ]}
-                    >
-                        <Input />
-                    </Form.Item>
-                    <Form.Item
-                        name={['user', 'email']}
-                        label="Email"
-                        rules={[{ type: 'email' }]}
-                    >
-                        <Input />
-                    </Form.Item>
-                    <ButtonPrimary
-                        htmlType="submit"
-                        size="middle"
-                        label="Đặt hàng ngay"
-                        className="w-full uppercase flex justify-center  mb-3"
-                    />
-                </Form>
+                <h3 className="font-bold text-lg">
+                    Thanh toán trực tiếp để học khóa học ngay
+                </h3>
+                {dataUser?.id ? (
+                    <>
+                        {' '}
+                        <Form
+                            {...layout}
+                            name="nest-messages"
+                            onFinish={onFinish}
+                            style={{ maxWidth: 600 }}
+                            className="my-3"
+                        >
+                            <Radio.Group onChange={onChange} value={value}>
+                                <Radio value={1}>
+                                    THANH TOÁN MOMO
+                                    <Image
+                                        src={logoMomo}
+                                        width={50}
+                                        height={50}
+                                        alt="VNPAY"
+                                    />
+                                </Radio>
+                                <Radio value={2}>
+                                    THANH TOÁN VNPAY
+                                    <Image
+                                        src={logoVnpay}
+                                        width={50}
+                                        height={50}
+                                        alt="VNPAY"
+                                    />
+                                </Radio>
+                            </Radio.Group>
+                            <ButtonPrimary
+                                htmlType="submit"
+                                size="middle"
+                                label="Thanh Toán"
+                                className="w-full uppercase flex justify-center  mb-3 mt-3"
+                            />
+                        </Form>{' '}
+                    </>
+                ) : (
+                    <>
+                        <Link
+                            className="mb-4 text-[#213261] text-lg my-5"
+                            href="/login"
+                        >
+                            Vui lòng đăng nhập để thanh toán
+                        </Link>
+                    </>
+                )}
+
                 <div>
-                    <a href="" className="block mb-4 text-[#213261]">Điều khoản và điều kiện giao dịch</a>
-                    <a href="" className="mb-4 text-[#213261]">Hướng dẫn thanh toán</a>
+                    <a href="" className="block mb-4 text-[#213261]">
+                        Điều khoản và điều kiện giao dịch
+                    </a>
+                    <a href="" className="mb-4 text-[#213261]">
+                        Hướng dẫn thanh toán
+                    </a>
                 </div>
             </Modal>
         </>
