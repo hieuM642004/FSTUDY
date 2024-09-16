@@ -80,7 +80,7 @@ class AuthService {
             return decodedToken.exp * 1000 < new Date().getTime();
         } catch (error) {
             console.error('Error checking token expiration:', error);
-            return true; // Có thể mặc định là expired nếu gặp lỗi trong việc decode token.
+            return true;
         }
     };
     

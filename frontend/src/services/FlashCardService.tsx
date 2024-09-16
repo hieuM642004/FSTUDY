@@ -148,7 +148,6 @@ static async startConversation(topic: string) {
             nextReviewDate: Date;
         }
     ): Promise<boolean> {
-        console.log(reviewData);
         try {
             const response = await nestApiInstance.put(
                 `/flashcards/update-word-review/${flashCardId}/${wordIndex}`,

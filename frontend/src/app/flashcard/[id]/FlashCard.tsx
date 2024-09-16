@@ -7,6 +7,8 @@ import FlashCardInterface from '@/types/FlashCard';
 import Link from 'next/link';
 import { MoreOutlined } from '@ant-design/icons';
 import ButtonPrimary from '@/components/shared/ButtonPrimary/ButtonPrimary';
+import moment from 'moment-timezone';
+import { formatVietnamTime } from '@/utils/formatVietnamTime';
 
 function FlashCard({ id }: { id: string }) {
     const [isFlipped, setIsFlipped] = useState(false);
@@ -32,7 +34,20 @@ function FlashCard({ id }: { id: string }) {
 
         fetchData();
     }, [id]);
-
+    useEffect(()=>{
+if(window.location.hash === '#review'){
+ setIsPracticeMode(true);   
+}
+    },[])
+    useEffect(() => {
+        if (isPracticeMode) {
+            
+            window.location.hash = 'review';
+        } else {
+           
+            window.location.hash = '';
+        }
+    }, [isPracticeMode]);
     const handleCardClick = (audioUrl: string) => {
         setIsFlipped(!isFlipped);
         if (audioRef.current) {
@@ -46,28 +61,28 @@ function FlashCard({ id }: { id: string }) {
             ...prevResults,
             [index]: answer,
         }));
-
-        const now = new Date();
+    
+        const now = new Date(); 
+    
         const reviewData = {
-            reviewCount: flashCard?.words[index].reviewCount + 1 || 1, 
-            reviewInterval: calculateNextInterval(flashCard?.words[index].reviewCount || 0), 
-            lastReviewed: now,
-            nextReviewDate: new Date(now.getTime() + (flashCard?.words[index].reviewInterval || 1) * 24 * 60 * 60 * 1000), 
+            reviewCount: flashCard?.words[index].reviewCount + 1 || 1,
+            reviewInterval: calculateNextInterval(flashCard?.words[index].reviewCount || 0),
+            lastReviewed: formatVietnamTime(now), 
+            nextReviewDate: formatVietnamTime(new Date(now.getTime() + calculateNextInterval(flashCard?.words[index].reviewCount || 0) * 24 * 60 * 60 * 1000)), 
         };
 
-      
+    
         setReviewDataList((prevData) => [
             ...prevData,
             { wordIndex: index, ...reviewData },
         ]);
-
-        
+    
         if (answer) {
             message.success('Bạn đã nhớ từ này!');
         } else {
             message.error('Bạn chưa nhớ từ này!');
         }
-
+    
         setTimeout(() => {
             if (flashCard && flashCard.words) {
                 if (carouselRef.current && index + 1 < flashCard.words.length) {
@@ -78,7 +93,7 @@ function FlashCard({ id }: { id: string }) {
             }
         }, 1000); 
     };
-
+    
    
     const calculateNextInterval = (reviewCount: number): number => {
         switch (reviewCount) {
@@ -202,7 +217,7 @@ function FlashCard({ id }: { id: string }) {
                                 >
                                     <div className="flex flex-col lg:flex-row justify-center items-center lg:mx-5 space-y-4 lg:space-y-0 lg:space-x-4">
                                         <img
-                                            className="w-48 md:w-64 lg:w-80"
+                                            className="w-48 h-48 md:w-64 lg:w-80"
                                             src={word && word?.image}
                                             alt=""
                                         />
