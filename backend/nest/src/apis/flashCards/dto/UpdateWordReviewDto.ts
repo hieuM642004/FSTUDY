@@ -8,8 +8,8 @@ export class UpdateWordReviewDto {
     reviewInterval: number;
 
     @IsOptional()
-    lastReviewed: Date;
+    lastReviewed: string;
 
     @IsOptional()
-    nextReviewDate: Date;
+    nextReviewDate: string;
 }

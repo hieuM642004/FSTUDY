@@ -5,48 +5,49 @@ import { User } from 'src/apis/users/UserSchema/user.schema';
 export type FlashCardDocument = FlashCard & Document;
 
 class Word {
-  @Prop()
-  word: string;
+    @Prop()
+    word: string;
 
-  @Prop()
-  definition: string;
+    @Prop()
+    definition: string;
 
-  @Prop()
-  audioUrl: string;
+    @Prop()
+    audioUrl: string;
 
-  @Prop()
-  image: string;
+    @Prop()
+    image: string;
 
-  // Thuộc tính cho kỹ thuật lặp lại ngắt quãng
-  @Prop({ default: 0 })
-  reviewCount?: number; // Số lần từ này đã được ôn tập
+    @Prop({ default: 0 })
+    reviewCount?: number;
 
-  @Prop({ default: 1 })
-  reviewInterval?: number; // Khoảng thời gian lặp lại ôn tập (tính bằng ngày)
+    @Prop({ default: 1 })
+    reviewInterval?: number;
 
-  @Prop({ type: Date, default: Date.now })
-  lastReviewed?: Date; // Ngày lần cuối từ này được ôn tập
+    @Prop( )
+    lastReviewed?: string;
 
-  @Prop({ type: Date, default: Date.now })
-  nextReviewDate?: Date; // Ngày cần ôn lại từ tiếp theo
+    @Prop( )
+    nextReviewDate?: string;
 }
 
 @Schema({ timestamps: true })
 export class FlashCard {
-  @Prop()
-  nameCard: string;
+    _id?: string;
 
-  @Prop({ type: [Word], _id: false })
-  words: Word[];
+    @Prop()
+    nameCard: string;
 
-  @Prop({ default: 0 })
-  wordCount: number;
+    @Prop({ type: [Word], _id: false })
+    words: Word[];
 
-  @Prop({ default: false })
-  isPublic: boolean;
+    @Prop({ default: 0 })
+    wordCount: number;
 
-  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User' })
-  userId: string;
+    @Prop({ default: false })
+    isPublic: boolean;
+
+    @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User' })
+    userId: string;
 }
 
 export const FlashCardSchema = SchemaFactory.createForClass(FlashCard);

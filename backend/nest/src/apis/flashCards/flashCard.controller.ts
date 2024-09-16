@@ -224,8 +224,6 @@ export class FlashCardController {
      @Param('wordIndex') wordIndex: number,
      @Body() updateWordReviewDto: UpdateWordReviewDto,
    ): Promise<ResponseData<FlashCard>> {
-    
-    
      try {
        const updatedFlashCard = await this.flashCardService.updateWordReview(id, wordIndex, updateWordReviewDto);
        return new ResponseData<FlashCard>(

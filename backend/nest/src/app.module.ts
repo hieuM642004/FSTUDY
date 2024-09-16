@@ -14,29 +14,32 @@ import { FlashCardModule } from './apis/flashCards/flashCard.module';
 import { CommentModule1 } from './apis/socket/comments/comment.module';
 import { ExamModule } from './apis/exams/exam.module';
 import { ExamResultModule } from './apis/exams/examResult/examResult.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
-  imports: [
-    UserModule,
-    BlogModule,
-    AuthModule,
-    CourseModule,
-    FlashCardModule,
-    CommentModule1,
-    ExamModule,
-    ExamResultModule,
-    ConfigModule.forRoot({ envFilePath: '.env', isGlobal: true }),
-    MongooseModule.forRoot(process.env.MONGODB_URI),
-  ],
-  controllers: [AppController],
-  providers: [AppService],
+    imports: [
+        ScheduleModule.forRoot(),
+        UserModule,
+        BlogModule,
+        AuthModule,
+        CourseModule,
+        FlashCardModule,
+        CommentModule1,
+        ExamModule,
+        ExamResultModule,
+        ConfigModule.forRoot({ envFilePath: '.env', isGlobal: true }),
+        MongooseModule.forRoot(process.env.MONGODB_URI),
+    ],
+    controllers: [AppController],
+    providers: [AppService],
 })
 export class AppModule implements NestModule {
-  configure(consumer: MiddlewareConsumer) {
-    consumer.apply(cookieParser()).forRoutes('*');
-    consumer.apply(JwtMiddleware).forRoutes('*');
-    consumer.apply(bodyParser.urlencoded({ extended: true })).forRoutes('*');
-    consumer.apply(bodyParser.json()).forRoutes('*');
-  }
+    configure(consumer: MiddlewareConsumer) {
+        consumer.apply(cookieParser()).forRoutes('*');
+        consumer.apply(JwtMiddleware).forRoutes('*');
+        consumer
+            .apply(bodyParser.urlencoded({ extended: true }))
+            .forRoutes('*');
+        consumer.apply(bodyParser.json()).forRoutes('*');
+    }
 }
-

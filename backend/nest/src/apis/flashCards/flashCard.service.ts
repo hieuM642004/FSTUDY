@@ -1,8 +1,9 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { Cron } from '@nestjs/schedule';
 import { HttpService } from '@nestjs/axios';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
-
+import mongoose, { Model } from 'mongoose';
+import * as moment from 'moment-timezone';
 import {
     FlashCard,
     FlashCardDocument,
@@ -13,12 +14,18 @@ import { AxiosResponse } from 'axios';
 import * as YouTubeTranscript from 'youtube-transcript';
 import { map, catchError } from 'rxjs/operators';
 import { UpdateWordReviewDto } from './dto/UpdateWordReviewDto';
-
+import { transporter } from 'src/providers/mail/mailler';
+import { User } from '../users/userSchema/user.schema';
+import * as mjml from 'mjml';
+import * as handlebars from 'handlebars';
+import * as fs from 'fs';
 @Injectable()
 export class FlashCardService {
     constructor(
         @InjectModel(FlashCard.name)
         private readonly flashCardModel: Model<FlashCardDocument>,
+        @InjectModel(User.name)
+        private readonly userModel: mongoose.Model<User>,
         private readonly httpService: HttpService,
     ) {}
     async getFlashCards(): Promise<FlashCard[]> {
@@ -284,8 +291,8 @@ export class FlashCardService {
      
         word.reviewCount = updateWordReviewDto.reviewCount;
         word.reviewInterval = updateWordReviewDto.reviewInterval;
-        word.lastReviewed = new Date(updateWordReviewDto.lastReviewed); 
-        word.nextReviewDate = new Date(updateWordReviewDto.nextReviewDate); 
+        word.lastReviewed = updateWordReviewDto.lastReviewed; 
+        word.nextReviewDate = updateWordReviewDto.nextReviewDate; 
       
         
         flashCard.markModified(`words.${wordIndex}`);
@@ -294,5 +301,85 @@ export class FlashCardService {
         return await flashCard.save();
       }
       
-   
+      @Cron('0 * * * *') 
+      async notifyUsersToReviewWords() {
+          const now = new Date(); 
+          console.log('Current time:', now);
+          
+          const flashCards = await this.flashCardModel.find({}).populate('userId').exec(); 
+      
+          const flashCardsToNotify = flashCards.filter(flashCard => {
+              return flashCard.words.some(word => {
+                  const nextReviewDate = moment(word.nextReviewDate, 'DD/MM/YY HH:mm:ss').toDate();
+                  
+                  console.log('Next Review Date (raw):', word.nextReviewDate);
+                  console.log('Next Review Date (converted):', nextReviewDate);
+                  
+                  return nextReviewDate <= now;
+              });
+          });
+      
+          if (flashCardsToNotify.length === 0) {
+              console.log('No flashcards to notify at this time.');
+              return;
+          }
+      
+          for (const flashCard of flashCardsToNotify) {
+              if (!flashCard.userId || !((flashCard.userId as any).email)) {
+                  console.error(`User or user email is missing for flashcard: ${flashCard.nameCard}`);
+                  continue; 
+              }
+      
+              try {
+                  await this.sendNotification(flashCard.userId, flashCard);
+                  console.log(`Successfully sent email notification for flashcard: ${flashCard.nameCard}`);
+              } catch (error) {
+                  console.error(`Failed to send notification for flashcard: ${flashCard.nameCard}`, error);
+              }
+          }
+      }
+      
+      
+      private async sendNotification(user: any, flashCard: FlashCard) {
+        const flashCardUrl = `http://localhost:3000/flashcard/${flashCard._id}#review`;
+
+        if (!user || !user.email) {
+            console.error('User or email is missing, cannot send notification.');
+            throw new Error('User or email is missing');
+        }
+
+        const formattedNextReviewDate = moment(flashCard.words[0].nextReviewDate, 'DD/MM/YY HH:mm:ss').format('DD/MM/YY HH:mm:ss');
+
+        // Load MJML template from file
+        const mjmlTemplate = fs.readFileSync('src/providers/mail/templates/reminder.mjml', 'utf8');
+
+        // Compile template with Handlebars
+        const template = handlebars.compile(mjmlTemplate);
+
+        // Render MJML template to HTML
+        const htmlContent = mjml(template({
+            name: user.fullname || 'người dùng',
+            cardName: flashCard.nameCard,
+            nextReviewDate: formattedNextReviewDate,
+            reviewLink: flashCardUrl,
+        })).html;
+
+        const mailOptions = {
+            from: 'hieu@78544@gmail.com',
+            to: user.email,
+            subject: 'Nhắc nhở ôn tập từ vựng',
+            html: htmlContent,
+        };
+
+        try {
+            console.log(`Sending email to ${user.email} for flashcard: ${flashCard.nameCard}`);
+            await transporter.sendMail(mailOptions);
+            console.log(`Email successfully sent to ${user.email}`);
+        } catch (error) {
+            console.error(`Failed to send reminder email to ${user.email}:`, error);
+            throw new Error('Failed to send reminder email');
+        }
+    }
+    
+    
 }
