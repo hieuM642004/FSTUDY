@@ -14,17 +14,9 @@ import Link from 'next/link';
 const SOCKET_SERVER_URL = 'http://localhost:3002';
 
 moment.locale('vi');
-const ContentEdit = ({
-    onRemove,
-    idMySelf,
-    socketRef,
-    idBlog,
-    idCourse,
-    editContent,
-    dataUser,
-}: any) => {
+
 const {TextArea }=Input
-const ContentEdit = ({ onRemove, idMySelf, socketRef, idBlog  , idCourse , editContent}: any): React.JSX.Element => {
+const ContentEdit = ({ onRemove, idMySelf, socketRef, idBlog  , idCourse , editContent}: any) => {
     return (
         <div>
             <p className="cursor-pointer">
