@@ -21,8 +21,7 @@ const ClientLayout = ({ children }: { children: ReactNode }) => {
                     <Breadcrumb.Item>App</Breadcrumb.Item>
                 </Breadcrumb>
                 <div>
-                    <SiteElevator />
-                    {children}
+                    <Provider store={store}>{children}</Provider>
                     <SiteElevator />
                 </div>
             </Content>

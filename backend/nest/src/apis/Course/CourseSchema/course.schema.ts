@@ -16,6 +16,9 @@ export class Quiz {
 
     @Prop()
     explanation: string;
+
+    @Prop({ required: true, enum: ContentType, default: ContentType.QUIZ })
+    content_type: ContentType;
 }
 
 export const QuizSchema = SchemaFactory.createForClass(Quiz);
@@ -24,12 +27,15 @@ export const QuizSchema = SchemaFactory.createForClass(Quiz);
 export class FillInTheBlank {
     @Prop({ required: true })
     sentence: string;
+
     @Prop({ required: true })
     correctAnswers: string[];
+
+    @Prop({ required: true, enum: ContentType, default: ContentType.FILL_IN_THE_BLANK })
+    content_type: ContentType;
 }
 
-export const FillInTheBlankSchema =
-    SchemaFactory.createForClass(FillInTheBlank);
+export const FillInTheBlankSchema = SchemaFactory.createForClass(FillInTheBlank);
 
 @Schema({ timestamps: true })
 export class WordMatching {
@@ -38,6 +44,9 @@ export class WordMatching {
 
     @Prop({ required: true })
     matches: string[];
+
+    @Prop({ required: true, enum: ContentType, default: ContentType.WORD_MATCHING })
+    content_type: ContentType;
 }
 
 export const WordMatchingSchema = SchemaFactory.createForClass(WordMatching);
@@ -48,23 +57,22 @@ export class Video {
     videoUrl: string;
 
     @Prop({ required: true })
+    slug: string;
+
+    @Prop({ required: true })
     title: string;
+
     @Prop({ required: true })
     description: string;
+
+    @Prop({ required: true, enum: ContentType, default: ContentType.VIDEO })
+    content_type: ContentType;
 }
 
 export const VideoSchema = SchemaFactory.createForClass(Video);
 
 @Schema({ timestamps: true })
 export class Content {
-    @Prop({
-        required: true,
-        enum: ContentType,
-    })
-    content_type: ContentType;
-    @Prop({ required: true })
-    slug: string;
-
     @Prop([{ type: SchemaTypes.ObjectId, ref: 'Quiz' }])
     quiz?: Types.ObjectId[];
 
@@ -79,7 +87,22 @@ export class Content {
 }
 
 export const ContentSchema = SchemaFactory.createForClass(Content);
+@Schema({ timestamps: true })
+export class VideoProgress {
+  @Prop({ type: Types.ObjectId, ref: 'User', required: true })
+  userId: string;
 
+  @Prop({ type: Types.ObjectId, ref: 'Video', required: true })
+  videoId: string;
+
+  @Prop({ required: true, default: 0 })
+  progress: number; 
+
+  @Prop({ required: true, default: false })
+  completed: boolean; 
+}
+
+export const VideoProgressSchema = SchemaFactory.createForClass(VideoProgress);
 @Schema({ timestamps: true })
 export class Lesson {
     @Prop({ required: true })
@@ -161,7 +184,7 @@ export class Course {
     @Prop({ required: true })
     price: number;
 
-    @Prop({ required: true })
+    @Prop({ required: true , default: 0 })
     discount: number;
 
     @Prop({ required: true, default: Date.now })

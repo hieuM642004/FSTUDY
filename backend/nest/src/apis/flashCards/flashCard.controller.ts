@@ -7,6 +7,9 @@ import {
     Delete,
     Put,
     UseGuards,
+    BadRequestException,
+    Query,
+    NotFoundException,
 } from '@nestjs/common';
 import { FlashCardService } from './flashCard.service';
 import { ResponseData } from 'src/global/globalClass';
@@ -15,6 +18,7 @@ import { HttpMessage, HttpStatus } from 'src/global/globalEnum';
 import { FlashCard } from './FlashCardSchema/FlashCard.schema';
 import { UpdateFlashCardDto } from './dto/UpdateFlashCard.dto';
 import { AuthGuard } from '@nestjs/passport';
+import { UpdateWordReviewDto } from './dto/UpdateWordReviewDto';
 
 @Controller('flashcards')
 export class FlashCardController {
@@ -37,7 +41,26 @@ export class FlashCardController {
             );
         }
     }
-    @Get(':id')
+    @Get('flashcard-of-user/:id')
+    async getFlashCardsOfUser(@Param('id') idUser: string): Promise<ResponseData<FlashCard[]>> {
+        console.log(idUser);
+        
+        try {
+            const flashCards = await this.flashCardService.getFlashCardsOfUser(idUser);
+            return new ResponseData<FlashCard[]>(
+                flashCards,
+                HttpStatus.SUCCESS,
+                HttpMessage.SUCCESS,
+            );
+        } catch (error) {
+            return new ResponseData<any>(
+                null,
+                HttpStatus.ERROR,
+                HttpMessage.ERROR,
+            );
+        }
+    }
+    @Get('flashcard/:id')
     async getFlashCardById(
         @Param('id') id: string,
     ): Promise<ResponseData<FlashCard[]>> {
@@ -52,7 +75,7 @@ export class FlashCardController {
             return new ResponseData<any>(
                 null,
                 HttpStatus.ERROR,
-                HttpMessage.ERROR,
+                error.response.message,
             );
         }
     }
@@ -182,6 +205,37 @@ export class FlashCardController {
             return new ResponseData<any>(null, HttpStatus.ERROR, error.message);
         }
     }
-
+   @Get('search-on-youtube')
+   async searchVideo(@Query('word') word: string) {
+     if (!word) {
+       throw new BadRequestException('Missing word parameter');
+     }
+ 
+     try {
+       const results = await this.flashCardService.searchVideo(word);
+       return results;
+     } catch (error) {
+       throw new NotFoundException('No video found with the specified word.');
+     }
+   }
+   @Put('update-word-review/:id/:wordIndex')
+   async updateWordReview(
+     @Param('id') id: string,
+     @Param('wordIndex') wordIndex: number,
+     @Body() updateWordReviewDto: UpdateWordReviewDto,
+   ): Promise<ResponseData<FlashCard>> {
+    
+    
+     try {
+       const updatedFlashCard = await this.flashCardService.updateWordReview(id, wordIndex, updateWordReviewDto);
+       return new ResponseData<FlashCard>(
+         updatedFlashCard,
+         HttpStatus.SUCCESS,
+         HttpMessage.SUCCESS,
+       );
+     } catch (error) {
+       return new ResponseData<any>(null, HttpStatus.ERROR, error.message);
+     }
+   }
    
 }

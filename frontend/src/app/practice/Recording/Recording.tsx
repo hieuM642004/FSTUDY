@@ -147,7 +147,7 @@ const Recording: React.FC<RecordingProps> = React.memo(
                                 {group?.questions.length === 1 &&
                                     group?.audioUrl && (
                                         <audio
-                                            src="https://www.soundjay.com/button/sounds/button-4.mp3"
+                                            src={group?.audioUrl}
                                             controls
                                             className="w-full mt-2"
                                         />

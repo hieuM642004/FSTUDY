@@ -19,7 +19,8 @@ function Blogs() {
     const fetchBlogs = async () => {
         try {
             const response = await nestApiInstance.get(`/blog`);
-            setBlogs(response.data.data);
+
+            setBlogs(response?.data?.data);
         } catch (error) {
             console.error('Error fetching blogs:', error);
         }
@@ -32,8 +33,8 @@ function Blogs() {
                 '/blog/child-topic',
             );
 
-            setTopics(topicsResponse.data.data);
-            setChildTopics(childTopicsResponse.data.data);
+            setTopics(topicsResponse?.data?.data);
+            setChildTopics(childTopicsResponse?.data?.data);
         } catch (error) {
             console.error('Error fetching topics:', error);
         }
@@ -47,7 +48,7 @@ function Blogs() {
     const handleBlogUpdate = () => {
         setTrigger((prev) => !prev); // Toggle to trigger useEffect
     };
-
+    if (blogs.length === 0) return <div>Loading...</div>;
     return (
         <div className="pb-4 pt-4">
             <div className="pt-4 px-3">

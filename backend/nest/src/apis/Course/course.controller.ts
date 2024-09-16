@@ -1,9 +1,12 @@
 import {
+    BadRequestException,
     Body,
     Controller,
     Delete,
     Get,
     HttpCode,
+    HttpException,
+    InternalServerErrorException,
     Param,
     Patch,
     Post,
@@ -45,13 +48,16 @@ import { error, log } from 'console';
 import { CreateCourseDto } from './dto/course/create-course.dto';
 import { UpdateCourseDto } from './dto/course/update-course.dto';
 const crypto = require('crypto');
+import * as multer from 'multer';
 
 import { Types } from 'mongoose';
 import axios from 'axios';
 
 @Controller('course')
 export class CourseController {
-    constructor(private readonly courseService: CourseService) {}
+    constructor(
+        private readonly courseService: CourseService,
+    ) {}
 
     /**
      * Quizzes
@@ -154,14 +160,34 @@ export class CourseController {
      * Video Controllers
      *
      */
+   
+
+  
     @Post('video/create')
     @UseInterceptors(FileInterceptor('videoUrl'))
-    createVideo(
-        @Body() createVideoDto: CreateVideoDto,
-        @UploadedFile() file: Express.Multer.File,
-    ): Promise<Video> {
-        return this.courseService.createVideo(createVideoDto, file);
+    async uploadVideo(@UploadedFile() file: Express.Multer.File, @Body() createVideoDto: CreateVideoDto) {
+      try {
+        if (!file) {
+          throw new BadRequestException('No file uploaded');
+        }
+        const video = await this.courseService.createVideo(createVideoDto, file);
+        return { message: 'Video successfully uploaded', video };
+      } catch (error) {
+        if (error instanceof BadRequestException) {
+          throw new BadRequestException(error.message);
+        }
+        throw new InternalServerErrorException('Internal server error');
+      }
     }
+
+    @Post('video/create')
+@UseInterceptors(FileInterceptor('videoUrl'))
+createVideo(
+    @Body() createVideoDto: CreateVideoDto,
+    @UploadedFile() file: Express.Multer.File,
+): Promise<Video> {
+    return this.courseService.createVideo(createVideoDto, file);
+}
 
     @Get('video/')
     findAllVideo(): Promise<Video[]> {
@@ -187,7 +213,25 @@ export class CourseController {
     removeVideo(@Param('id') id: string) {
         return this.courseService.removeVideo(id);
     }
+   
+    @Post('update/progress')
+    async updateProgress(
+        @Body() body: { videoId: string; currentTime: number; totalTime: number; userId: string }
+    ) {
+        const progressPercentage = (body.currentTime / body.totalTime) * 100;
 
+        const updatedProgress = await this.courseService.updateProgress(
+            body.videoId,
+            progressPercentage,
+            body.userId
+        );
+        return updatedProgress;
+    }
+
+    @Get('progress/:userId')
+    async getProgress(@Param('userId') userId: string) {
+        return this.courseService.getProgress(userId);
+    }
     /**
      * Content Controllers
      */
@@ -260,24 +304,18 @@ export class CourseController {
     ) {
         return this.courseService.addContentToLesson(lessonId, contentId);
     }
-
     @Patch('content/add/:id')
     async addData(
         @Param('id') contentId: string,
-        @Body() body: { contentType: ContentType; dataId: string },
+        @Body('dataId') dataId: string,
     ): Promise<Content> {
-        const { contentType, dataId } = body;
-
-        if (!Object.values(ContentType).includes(contentType)) {
-            throw new error('Invalid content type');
+        if (!Types.ObjectId.isValid(contentId) || !Types.ObjectId.isValid(dataId)) {
+            throw new Error('Invalid ID format');
         }
-
-        return this.courseService.addDataToContent(
-            contentId,
-            contentType,
-            dataId,
-        );
+    
+        return this.courseService.addDataToContent(contentId, dataId);
     }
+    
     /**
      * Course Type
      *  */
@@ -401,7 +439,7 @@ export class CourseController {
     
 
     @Get(':id')
-    findOneCourse(@Param('slug') id: string): Promise<Course> {
+    findOneCourse(@Param('id') id: string): Promise<Course> {
         return this.courseService.findOneCourse(id);
     }
     @Get('search/:slug')
@@ -477,38 +515,55 @@ export class CourseController {
   
       return { paymentUrl };
     }
-    @Get('/callbackvnpay')
-    async handlePostCallbackVnPay(@Res() res: Response , @Req() req: Request) {
-        const { vnp_ResponseCode, email, transId } = req.query;
-        if (vnp_ResponseCode === '00' && email) {
-            const key = transId; 
-            try {
-                await this.courseService.sendSuccessEmail(email as string, req.query.key as string);
-                //code redirect
-            } catch (error) {
-                console.error('Failed to send success email:', error);
-            }
+    @Get('/callbackvnpay/:email/:key')
+    async handlePostCallbackVnPay(
+        @Res() res: Response, 
+        @Req() req: Request,
+        @Param('email') email: string,
+        @Param('key') key: string,
+    
+    ) {
+        const { vnp_ResponseCode,  message , partnerCode , orderId , amount} = req.query;   
+         if (!vnp_ResponseCode || !email || !key) {
+            throw new BadRequestException('Missing required parameters');
         }
-        return res.status(204).json(req.body);
-    }
-
-    @Get('/callback')
-    async handlePostCallback(@Res() res: Response , @Req() req: Request) {
-        const { resultCode, email, transId } = req.query;
-        
-        // Check if the resultCode is present and successful (assuming 0 means success)
-        if (resultCode === '0' && email) {
-            const key = transId; // Assuming you want to send the transaction ID as the key
+        if (vnp_ResponseCode === '00') {
             try {
-                await this.courseService.sendSuccessEmail(email as string, req.query.key as string);
-                //code redirect
-            } catch (error) {
-                console.error('Failed to send success email:', error);
+                await this.courseService.sendSuccessEmail(email as string, key as string);
+                // res.redirect(`${process.env.BASEURL_FE}/paid?email=${email}&message=${message}&partnerCode=${partnerCode}&orderId=${orderId}&amount=${amount}`);    
+                    } catch (error) {
+                throw new InternalServerErrorException('Error sending email');
             }
+        } else {
+            console.log('Payment failed or cancelled:', vnp_ResponseCode);
         }
     
-        return res.status(204).json(req.body);
+        return res.status(204).json(req.body); 
     }
+    
+        @Get('/callback/:email/:key')
+        async handlePostCallback(
+            @Res() res: Response, 
+            @Req() req: Request, 
+            @Param('email') email: string,
+            @Param('key') transId: string,
+            @Query() query: { resultCode: string }) {
+                const { resultCode,  message , partnerCode , orderId , amount} = req.query;        
+            if (!resultCode || !email || !transId) {
+                throw new BadRequestException('Invalid parameters');
+            }
+            if (resultCode === '0') {
+                try {
+                    await this.courseService.sendSuccessEmail(email, transId);
+                    return res.redirect(`${process.env.BASEURL_FE}/paid?email=${email}&message=${message}&partnerCode=${partnerCode}&orderId=${orderId}&amount=${amount}`); 
+                } catch (error) {
+                    console.error('Failed to send success email:', error);
+                    throw new InternalServerErrorException('Error sending email');
+                }
+            }
+    
+            return res.status(204).json(req.body);
+        }
     @Get('purchase/:userId')
     async getPurchasesByUserId(@Param('userId') userId: string): Promise<Purchase[]> {
         const objectId = new Types.ObjectId(userId);

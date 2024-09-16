@@ -52,6 +52,8 @@ function Login() {
 
               
                 router.push('/');
+            }else{
+                setErrorMessage('Đăng nhập thất bại! Vui lòng kiểm tra lại email và mật khẩu.');
             }
         } catch (error) {
             setErrorMessage('Đăng nhập thất bại! Vui lòng kiểm tra lại email và mật khẩu.');

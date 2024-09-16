@@ -1,15 +1,12 @@
 'use client';
 
 import { useState, useEffect, useRef, memo } from 'react';
-
 import ButtonPrimary from '@/components/shared/ButtonPrimary/ButtonPrimary';
 import ConfirmModal from '@/components/shared/ModalComfirm/ModalComfirm';
 import ExamService from '@/services/ExamsService';
-import { getUserIdFromToken } from '@/utils/authUtils';
 import { useRouter } from 'next/navigation';
-import { useTypedSelector } from '@/hooks/useTypedSelector';
-import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { useAuth } from '@/hooks/useAuth';
+import { isArray } from 'lodash';
 
 const CountDownWithSubmit = ({
     timeStart,
@@ -22,18 +19,21 @@ const CountDownWithSubmit = ({
     const requestRef = useRef<number | null>(null);
     const startTimeRef = useRef(Date.now());
     const pausedTimeRef = useRef<number | null>(null);
-const router=useRouter();
-    const dispatch = useAppDispatch();
-    const {userId}=useAuth()
+    const elapsedTimeRef = useRef<number>(0);
+    const router = useRouter();
+    const { userId } = useAuth();
+
     const updateCount = () => {
-        setCount((prevCount: any) => {
+        setCount(() => {
             const elapsedTime = Math.floor(
                 (Date.now() - startTimeRef.current) / 1000,
             );
+
             if (isIncremental) {
-                return timeStart + elapsedTime;
+                return elapsedTimeRef.current + elapsedTime;
             } else {
-                const remainingTime = timeStart - elapsedTime;
+                const remainingTime =
+                    timeStart - elapsedTime - elapsedTimeRef.current;
                 if (remainingTime <= 0) {
                     onTimeup();
                     return 0;
@@ -56,17 +56,16 @@ const router=useRouter();
             cancelAnimationFrame(requestRef.current);
             requestRef.current = null;
             pausedTimeRef.current = count;
+
+            elapsedTimeRef.current = isIncremental
+                ? pausedTimeRef.current
+                : timeStart - pausedTimeRef.current;
         }
     };
 
     const resumeTimer = () => {
         if (pausedTimeRef.current !== null) {
-            startTimeRef.current =
-                Date.now() -
-                (pausedTimeRef.current - (isIncremental ? timeStart : 0)) *
-                    1000;
-        } else {
-            startTimeRef.current = Date.now() - count * 1000;
+            startTimeRef.current = Date.now();
         }
         requestRef.current = requestAnimationFrame(updateCount);
     };
@@ -83,33 +82,33 @@ const router=useRouter();
 
     const handleSubmitExam = async () => {
         const answers = await filterListAnswer();
-    
         const data = {
-            examSessionId: answers.session, 
+            examSessionId: answers.session,
             correctAnswers: answers.correctAnswers,
             incorrectAnswers: answers.incorrectAnswers,
             skippedAnswers: answers.skippedAnswers,
             completionTime: answers.pausedTimeFormatted,
-            idUser: userId,  
+            idUser: userId,
         };
-    
+
         const result = await ExamService.submitExam(data);
-        if(result){
+        if (result) {
             router.push(`/tests/result/${result._id}`);
         }
     };
-    
+
     const filterListAnswer = async () => {
         const pausedTimeFormatted = toMMSS(pausedTimeRef.current || 0);
-        const userAnswers = JSON.parse(localStorage.getItem('answerList') || '[]');
-    
+        const userAnswers = JSON.parse(
+            localStorage.getItem('answerList') || '[]',
+        );
         const answerList = listAnswer;
-    
+
         const correctAnswers: any[] = [];
         const incorrectAnswers: any[] = [];
         const skippedAnswers: any[] = [];
         let session: any = [];
-    
+
         Object.keys(answerList).forEach((sessionId) => {
             session.push(sessionId);
             answerList[sessionId].forEach((item: any) => {
@@ -117,29 +116,53 @@ const router=useRouter();
                     const userAnswer = userAnswers.find(
                         (ans: any) => ans.order === question.order,
                     );
-    
+
                     if (userAnswer) {
                         let isCorrect = false;
                         let selectedOptions: string[] = [];
-    
-                        if (question.questionType === 'multiple-choice') {
-                            selectedOptions = [question.options[userAnswer.value - 1]];
-                            isCorrect = question.correctAnswer.includes(selectedOptions[0]);
-                        } else if (question.questionType === 'fill-in-the-blank') {
-                            selectedOptions = [userAnswer.value];
-                            isCorrect = question.correctAnswer.some(
-                                (correct: any) =>
-                                    correct.toString().trim().toLowerCase() ===
-                                    userAnswer.value.toString().trim().toLowerCase(),
+
+                        if (question?.questionType === 'multiple-choice') {
+                            selectedOptions = [
+                                question?.options[userAnswer.value - 1],
+                            ];
+                            isCorrect = question?.correctAnswer.includes(
+                                selectedOptions[0],
                             );
+                        } else if (
+                            question?.questionType === 'fill-in-the-blank'
+                        ) {
+                            selectedOptions = [userAnswer?.value];
+                            if (isArray(question?.correctAnswer)) {
+                                isCorrect = question?.correctAnswer.some(
+                                    (correct: any) =>
+                                        correct
+                                            .toString()
+                                            .trim()
+                                            .toLowerCase() ===
+                                        userAnswer?.value
+                                            .toString()
+                                            .trim()
+                                            .toLowerCase(),
+                                );
+                            } else {
+                                isCorrect =
+                                    question?.correctAnswer
+                                        .toString()
+                                        .trim()
+                                        .toLowerCase() ===
+                                    userAnswer?.value
+                                        .toString()
+                                        .trim()
+                                        .toLowerCase();
+                            }
                         }
-    
+
                         const answer = {
-                            questionId: question._id, 
+                            questionId: question?._id,
                             selectedOptions,
                             isCorrect,
                         };
-    
+
                         if (isCorrect) {
                             correctAnswers.push(answer);
                         } else {
@@ -156,7 +179,7 @@ const router=useRouter();
                 });
             });
         });
-    
+
         return {
             session,
             pausedTimeFormatted,
@@ -165,7 +188,7 @@ const router=useRouter();
             skippedAnswers,
         };
     };
-    
+
     const handleCancel = () => {
         setIsModalVisible(false);
         resumeTimer();

@@ -2,7 +2,7 @@ import moment from 'moment';
 import Image from 'next/image';
 import React, { useEffect, useRef, useState } from 'react';
 import io from 'socket.io-client';
-import { Button, Popover } from 'antd';
+import { Button, Popover,Input } from 'antd';
 import { EllipsisOutlined } from '@ant-design/icons';
 
 import HandleComment from './HandleComment';
@@ -23,6 +23,8 @@ const ContentEdit = ({
     editContent,
     dataUser,
 }: any) => {
+const {TextArea }=Input
+const ContentEdit = ({ onRemove, idMySelf, socketRef, idBlog  , idCourse , editContent}: any): React.JSX.Element => {
     return (
         <div>
             <p className="cursor-pointer">
@@ -108,7 +110,7 @@ function Comment({ idBlog = null, idCourse = null }: string | any) {
         if (!repliesArr || repliesArr.length === 0) {
             return null;
         }
-        const result = message.filter((item1, index) => {
+        const result = message.filter((item1:any, index) => {
             return repliesArr.some((item2) => item2 === item1._id);
         });
 
@@ -241,6 +243,24 @@ function Comment({ idBlog = null, idCourse = null }: string | any) {
                 </>
             )}
 
+            <div className="flex mb-4">
+                <TextArea
+                    name="content"
+                    rows={1}
+                    className="py-[6px] pl-6 pr-3 w-[100%] border rounded-l-lg"
+                    placeholder="Chia sẻ cảm nghĩ của bạn ..."
+                    value={content}
+                    onChange={handleContentChange}
+                ></TextArea>
+                <div className="rounded-r-xl ">
+                    <button
+                        onClick={handleSubmit}
+                        className="bg-[#35509a] rounded-r-xl text-white py-[6px] px-3 h-full"
+                    >
+                        Gửi
+                    </button>
+                </div>
+            </div>
             {/*  comment post */}
             <div className="mt-2">
                 {/* comment now */}

@@ -21,6 +21,7 @@ import { Readable } from 'stream';
 import { PaginatedResult } from './interfaces/paginatedResult';
 import { UpdateQuestionGroupDto } from './dto/questionGroup/updateQuestionGroup.dto';
 import { CreateQuestionGroupDto } from './dto/questionGroup/createQuestionGroup.dto';
+import FirebaseService from 'src/providers/storage/firebase/firebase.service';
 
 @Injectable()
 export class ExamService {
@@ -34,6 +35,7 @@ export class ExamService {
         @InjectModel(Question.name)
         private readonly questionModel: mongoose.Model<Question>,
         private readonly googleDriveUploader: GoogleDriveUploader,
+        private readonly firebaseService: FirebaseService,
     ) {}
     async findAllExams(): Promise<Exams[]> {
         return await this.examModel.find().populate('idSession').exec();
@@ -265,26 +267,23 @@ export class ExamService {
     ): Promise<QuestionGroup> {
         try {
             if (image) {
-                const fileStream = Readable.from(image.buffer);
-                const imageId = await this.googleDriveUploader.uploadImage(
-                    fileStream,
+                const imageUrl = await this.firebaseService.uploadImageToFirebase(
+                    image.buffer,
                     image.originalname,
-                    '1dBsbu_CDHGOY_9Jsq_wBwB5_gqAWNMvu',
+                    'images'
                 );
-                createQuestionGroupDto.imageUrl =
-                    this.googleDriveUploader.getThumbnailUrl(imageId);
+                createQuestionGroupDto.imageUrl = imageUrl;
             }
-
+    
             if (audio) {
-                const fileStream = Readable.from(audio.buffer);
-                const audioId = await this.googleDriveUploader.uploadAudio(
-                    fileStream,
+                const audioUrl = await this.firebaseService.uploadAudioToFirebase(
+                    audio.buffer,
                     audio.originalname,
-                    '1dBsbu_CDHGOY_9Jsq_wBwB5_gqAWNMvu',
+                    'audio'
                 );
-                createQuestionGroupDto.audioUrl =
-                this.googleDriveUploader.getAudioUrl(audioId);
+                createQuestionGroupDto.audioUrl = audioUrl;
             }
+    
             const questionGroup = await this.questionGroupModel.create(
                 createQuestionGroupDto,
             );
@@ -299,6 +298,7 @@ export class ExamService {
             throw new Error('Error creating questionGroup: ' + error.message);
         }
     }
+    
 
     async updateQuestionGroup(
         id: string,
@@ -313,51 +313,27 @@ export class ExamService {
             if (!existingQuestionGroup) {
                 throw new NotFoundException('QuestionGroup not found.');
             }
-
-            if (imageFile && existingQuestionGroup.imageUrl) {
-                const oldImageFileId =
-                    this.googleDriveUploader.extractFileIdFromUrl(
-                        existingQuestionGroup.imageUrl,
-                    );
-                if (oldImageFileId) {
-                    await this.googleDriveUploader.delete(oldImageFileId);
-                }
-            }
-
+    
             if (imageFile) {
-                const fileStream = Readable.from(imageFile.buffer);
-                const newImageFileId =
-                    await this.googleDriveUploader.uploadImage(
-                        fileStream,
-                        imageFile.originalname,
-                        '1dBsbu_CDHGOY_9Jsq_wBwB5_gqAWNMvu',
-                    );
-                updateQuestionGroupDto.imageUrl =
-                    this.googleDriveUploader.getThumbnailUrl(newImageFileId);
+             
+                const imageUrl = await this.firebaseService.uploadImageToFirebase(
+                    imageFile.buffer,
+                    imageFile.originalname,
+                    'images'
+                );
+                updateQuestionGroupDto.imageUrl = imageUrl;
             }
-
-            if (audioFile && existingQuestionGroup.audioUrl) {
-                const oldAudioFileId =
-                    this.googleDriveUploader.extractFileIdFromUrl(
-                        existingQuestionGroup.audioUrl,
-                    );
-                if (oldAudioFileId) {
-                    await this.googleDriveUploader.delete(oldAudioFileId);
-                }
-            }
-
+    
             if (audioFile) {
-                const fileStream = Readable.from(audioFile.buffer);
-                const newAudioFileId =
-                    await this.googleDriveUploader.uploadVideo(
-                        fileStream,
-                        audioFile.originalname,
-                        '1dBsbu_CDHGOY_9Jsq_wBwB5_gqAWNMvu',
-                    );
-                updateQuestionGroupDto.audioUrl =
-                    this.googleDriveUploader.getVideoUrl(newAudioFileId);
+              
+                const audioUrl = await this.firebaseService.uploadAudioToFirebase(
+                    audioFile.buffer,
+                    audioFile.originalname,
+                    'audio'
+                );
+                updateQuestionGroupDto.audioUrl = audioUrl;
             }
-
+    
             const updatedQuestionGroup = await this.questionGroupModel
                 .findByIdAndUpdate(id, updateQuestionGroupDto, { new: true })
                 .exec();
@@ -366,6 +342,7 @@ export class ExamService {
             throw new Error('Error updating questionGroup: ' + error.message);
         }
     }
+    
 
     async deleteQuestionGroup(id: string): Promise<QuestionGroup> {
         const existingQuestionGroup = await this.questionGroupModel
@@ -374,24 +351,15 @@ export class ExamService {
         if (!existingQuestionGroup) {
             throw new NotFoundException('QuestionGroup not found.');
         }
+    
         if (existingQuestionGroup.audioUrl) {
-            const audioFileId = this.googleDriveUploader.extractFileIdFromUrl(
-                existingQuestionGroup.audioUrl,
-            );
-            if (audioFileId) {
-                await this.googleDriveUploader.delete(audioFileId);
-            }
+            await this.firebaseService.deleteFileFromFirebase(existingQuestionGroup.audioUrl);
         }
-
+    
         if (existingQuestionGroup.imageUrl) {
-            const imageFileId = this.googleDriveUploader.extractFileIdFromUrl(
-                existingQuestionGroup.imageUrl,
-            );
-            if (imageFileId) {
-                await this.googleDriveUploader.delete(imageFileId);
-            }
+            await this.firebaseService.deleteFileFromFirebase(existingQuestionGroup.imageUrl);
         }
-
+    
         await this.examSessionModel
             .updateMany(
                 { _id: existingQuestionGroup.examSession },
@@ -400,6 +368,7 @@ export class ExamService {
             .exec();
         return await this.questionGroupModel.findByIdAndDelete(id).exec();
     }
+    
 
     //Question
     async findAllQuestions(): Promise<Question[]> {

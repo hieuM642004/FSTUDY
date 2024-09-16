@@ -105,7 +105,7 @@ function HandleComment({
                                 <UserOutlined className="site-form-item-icon" />
                             }
                             
-                            placeholder="nhập"
+                            placeholder="Nhập"
                         />
                     </Form.Item>
                     <ButtonPrimary

@@ -1,0 +1,2619 @@
+openapi: 3.0.1
+info:
+  title: FStudy - Language Course Purchase API
+  description: |
+    Welcome to the FStudy API! This API allows users to browse, purchase, and manage language courses on the FStudy platform. Our platform offers a wide range of language courses designed to help learners achieve their language learning goals efficiently and effectively.
+
+    ## Features
+    - **Course Catalog**: Browse a comprehensive list of available language courses.
+    - **Course Details**: Get detailed information about each course, including syllabus, instructor information, and pricing.
+    - **User Management**: Manage user profiles, including registration, login, and profile updates.
+    - **Purchase Courses**: Securely purchase language courses and access purchased content.
+    - **Progress Tracking**: Track learning progress and achievements within the platform.
+    - **Reviews and Ratings**: Read and submit reviews and ratings for courses.
+
+    ## Authentication
+    The FStudy API uses JWT (JSON Web Token) for authentication. Users must obtain a token by logging in and include it in the `Authorization` header of requests.
+
+    ## Error Handling
+    The API returns standard HTTP status codes for successful and erroneous requests. Error responses include a message explaining the reason for the error.
+
+    ## Base URL
+    The base URL for all API requests is: `http://localhost:4000/`
+
+    ## Versioning
+    This is version 1 of the FStudy API. Future versions will include additional features and improvements.
+
+    ## Contact
+    For support and inquiries, please contact us at [support@fstudy.com](mailto:support@fstudy.com).
+
+  contact:
+    name: FStudy Support
+    email: support@fstudy.com
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  version: 1.0.11
+externalDocs:
+  description: Find out more about Swagger
+  url: http://swagger.io
+servers:
+  - url: http://localhost:4000/
+tags:
+  - name: users
+    description: Everything about users
+  - name: Authentication
+    description: Everything about Authentication
+  - name: Blogs
+    description: Everything about Blogs
+  - name: CourseTypes
+    description: Everything about Courses
+  - name: Contents
+    description: Contents of Lesson
+  - name: Lessons 
+    description: Lessons of Course
+  - name: Quizzes 
+    description: Quizzes of Content
+  - name: Fill In The Blank 
+    description: Fill The Blank Question
+  - name: Word Matching 
+    description: Word matching Question
+  - name: Video 
+    description: Video of Content
+  - name: Courses
+    description: Everything about Courses
+  - name: Purchase
+    description: Purchase Courses
+paths:
+  /users/:
+    get:
+      tags:
+        - users
+      summary: Get all users
+      description: Retrieve a list of all users with pagination support.
+      parameters:
+        - name: page
+          in: query
+          description: The page number to retrieve.
+          schema:
+            type: integer
+          required: true
+          example: 1
+        - name: limit
+          in: query
+          description: The number of users to retrieve per page.
+          schema:
+            type: integer
+          example: 10
+      responses:
+        '200':
+          description: A list of users
+      security:
+        - bearerAuth: []
+  /users/{id}:
+    get:
+      tags:
+        - users
+      summary: Get user by ID
+      description: Retrieve detailed information about a specific user by their ID.
+      parameters:
+        - name: id
+          in: path
+          description: The ID of the user to retrieve.
+          required: true
+          schema:
+            type: string
+            example : 6673c0f300582bda3b1e96a0
+      responses:
+        '200':
+          description: Detailed information about the user
+      security:
+        - bearerAuth: []
+  /users/create-user:
+    post:
+      tags:
+        - users
+      summary: Create a new user
+      description: Register a new user with the provided details.
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                fullname:
+                  type: string
+                  description: The full name of the user.
+                avatar:
+                  type: string
+                  format: binary
+                  description: The avatar image of the user.
+                email:
+                  type: string
+                  description: The email address of the user.
+                password:
+                  type: string
+                  description: The password for the user.
+                role:
+                  type: string
+                  description: The role of the user (e.g., admin, user).
+      responses:
+        '201':
+          description: User created successfully
+      security:
+        - bearerAuth: []
+  /users/update-user/{id}:
+    put:
+      tags:
+        - users
+      summary: Update user by ID
+      description: Update the details of an existing user by their ID.
+      parameters:
+        - name: id
+          in: path
+          description: The ID of the user to update.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                fullname:
+                  type: string
+                  description: The full name of the user.
+                avatar:
+                  type: string
+                  format: binary
+                  description: The avatar image of the user.
+                email:
+                  type: string
+                  description: The email address of the user.
+                password:
+                  type: string
+                  description: The password for the user.
+                role:
+                  type: string
+                  description: The role of the user (e.g., admin, user).
+      responses:
+        '200':
+          description: User updated successfully
+      security:
+        - bearerAuth: []
+  /users/search:
+     post:
+      tags:
+        - users
+      summary: Search user by email
+      description: Search for a user by their email address.
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                key:
+                  type: string
+                  description: The email address to search for.
+      responses:
+        '200':
+          description: Search results for the user
+      security:
+        - bearerAuth: []
+
+  /auth/login:
+    post:
+      summary: User Login
+      description: Authenticates a user with their email and password. On success, returns a token for accessing secured routes.
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                  description: User's email address.
+                  example: quang123@gmail.com
+                password:
+                  type: string
+                  format: password
+                  description: User's account password.
+                  example: 123456789
+      responses:
+        '200':
+          description: Successful login. Token is returned for future requests.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    description: JWT token for authenticated requests.
+        '401':
+          description: Unauthorized. Invalid credentials provided.
+        '400':
+          description: Bad Request. Missing or invalid parameters.
+      security:
+        - mytoken: []
+
+  /auth/loginAdmin:
+    post:
+      summary: Admin Login
+      description: Authenticates an admin with their email and password.
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                  description: Admin's email address.
+                  example: nmquang1997@gmail.com
+                password:
+                  type: string
+                  format: password
+                  description: Admin's account password.
+                  example: 123456789
+      responses:
+        '200':
+          description: Successful login for admin.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    description: JWT token for authenticated admin requests.
+        '401':
+          description: Unauthorized. Invalid admin credentials provided.
+        '400':
+          description: Bad Request. Missing or invalid parameters.
+      security:
+        - mytoken: []
+
+  /auth/register:
+    post:
+      summary: User Registration
+      description: Registers a new user with email, password, and optional avatar image. The user's role is set to 'admin' by default.
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - fullname
+                - email
+                - password
+              properties:
+                fullname:
+                  type: string
+                  description: Full name of the user.
+                  example: Admin Account
+                avatar:
+                  type: string
+                  format: binary
+                  description: Optional avatar image for the user.
+                email:
+                  type: string
+                  format: email
+                  description: User's email address.
+                  example: nmquang19935@gmail.com
+                password:
+                  type: string
+                  format: password
+                  description: Account password for the user.
+                  example: 123456789
+                role:
+                  type: string
+                  description: User's role, set to 'admin' by default. This field is read-only.
+                  example: admin
+                  readOnly: true
+      responses:
+        '201':
+          description: User successfully registered.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Confirmation message.
+        '400':
+          description: Bad Request. Missing or invalid parameters.
+
+  /auth/google/callback:
+    get:
+      summary: Google Login Callback
+      description: Handles the Google OAuth callback after the user has authenticated with Google.
+      tags:
+        - Authentication
+      responses:
+        '200':
+          description: Successful Google login.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    description: JWT token for authenticated requests.
+        '401':
+          description: Unauthorized. Google login failed or invalid token.
+      security:
+        - bearerAuth: []
+  /blog/create-topic:
+    post:
+      tags:
+      - Blogs
+      summary: Create a new topic
+      description: Creates a new topic with the provided name, description, and subtopics.
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: The name of the new topic
+                  example: Toeic 123
+                description:
+                  type: string
+                  description: A brief description of the topic
+                  example: Đây là Toeic
+                subTopics:
+                  type: string
+                  description: The ID of the subtopics associated with this topic
+                  example: 66977643badef7824986a2a6
+      responses:
+        '200':
+          description: Topic created successfully
+        '400':
+          description: Bad request, invalid input data
+
+  /blog/update-topic/{id}:
+    put:
+      tags:
+      - Blogs
+      summary: Update an existing topic
+      description: Updates an existing topic identified by the given ID with new name, description, and subtopics.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: The ID of the topic to be updated
+          schema:
+            type: string
+            example: 669c70afb8a925b598c50ce0
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: The updated name of the topic
+                  example: day là bài viết về chu de
+                description:
+                  type: string
+                  description: Updated description of the topic
+                  example: This is Ielts's blogs
+                subTopics:
+                  type: string
+                  description: The ID of the updated subtopics
+                  example: 66977643badef7824986a2a6
+      responses:
+        '200':
+          description: Topic updated successfully
+        '404':
+          description: Topic not found
+
+  /blog/topic/{id}:
+    get:
+      tags:
+      - Blogs
+      summary: Get a topic by ID
+      description: Retrieves the details of a topic identified by the given ID.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: The ID of the topic to be retrieved
+          schema:
+            type: string
+            example: 66cd41cce3325ec6537dc9fb
+      responses:
+        '200':
+          description: Topic retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  name:
+                    type: string
+                    description: The name of the topic
+                  description:
+                    type: string
+                    description: Description of the topic
+                  subTopics:
+                    type: array
+                    items:
+                      type: string
+                    description: List of subtopic IDs associated with the topic
+        '404':
+          description: Topic not found
+
+  /blog/delete-topic/{id}:
+    delete:
+      tags:
+      - Blogs
+      summary: Delete a topic by ID
+      description: Deletes a topic identified by the given ID.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: The ID of the topic to be deleted
+          schema:
+            type: string
+            example: 6697b7f95fbb6c1462fb4e43
+      responses:
+        '200':
+          description: Topic deleted successfully
+        '404':
+          description: Topic not found
+
+  /blog/child-topic:
+    get:
+      tags:
+      - Blogs
+      summary: Get all child topics
+      description: Retrieves a list of all child topics.
+      responses:
+        '200':
+          description: List of child topics retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                      description: The name of the child topic
+                    description:
+                      type: string
+                      description: Description of the child topic
+                    topic:
+                      type: string
+                      description: The ID of the parent topic
+
+  /blog/create-child-topic:
+    post:
+      tags:
+      - Blogs
+      summary: Create a new child topic
+      description: Creates a new child topic with the provided name, description, and associated parent topic.
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: The name of the new child topic
+                  example: Toeic moi nhat 2024
+                description:
+                  type: string
+                  description: A brief description of the child topic
+                  example: Đây là Toeic 1
+                topic:
+                  type: string
+                  description: The ID of the parent topic
+                  example: 6697b7f95fbb6c1462fb4e43
+      responses:
+        '200':
+          description: Child topic created successfully
+        '400':
+          description: Bad request, invalid input data
+
+  /blog/update-child-topic/{id}:
+    put:
+      tags:
+      - Blogs
+      summary: Update an existing child topic
+      description: Updates an existing child topic identified by the given ID with new name, description, and associated parent topic.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: The ID of the child topic to be updated
+          schema:
+            type: string
+            example: 66cd4200e3325ec6537dc9ff
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: The updated name of the child topic
+                  example: Speaking moi nhat 2025
+                description:
+                  type: string
+                  description: Updated description of the child topic
+                  example: This is Speaking part of blog
+                topic:
+                  type: string
+                  description: The ID of the updated parent topic
+                  example: 669c70afb8a925b598c50ce0
+      responses:
+        '200':
+          description: Child topic updated successfully
+        '404':
+          description: Child topic not found
+
+  /blog/child-topic/{id}:
+    get:
+      tags:
+      - Blogs
+      summary: Get a child topic by ID
+      description: Retrieves the details of a child topic identified by the given ID.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: The ID of the child topic to be retrieved
+          schema:
+            type: string
+            example: 66b749b270412bb8e833f2ac
+      responses:
+        '200':
+          description: Child topic retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  name:
+                    type: string
+                    description: The name of the child topic
+                  description:
+                    type: string
+                    description: Description of the child topic
+                  topic:
+                    type: string
+                    description: The ID of the parent topic
+        '404':
+          description: Child topic not found
+
+  /blog/delete-child-topic/{id}:
+    delete:
+      tags:
+      - Blogs
+      summary: Delete a child topic by ID
+      description: Deletes a child topic identified by the given ID.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: The ID of the child topic to be deleted
+          schema:
+            type: string
+            example: 669c70e8b8a925b598c50ce5
+      responses:
+        '200':
+          description: Child topic deleted successfully
+        '404':
+          description: Child topic not found
+
+  /blog/create-blog:
+    post:
+      tags:
+      - Blogs
+      summary: Create a new blog
+      description: Creates a new blog with the provided name, content, title, and associated child topics. Optionally, an avatar can be uploaded.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: The name of the new blog
+                  example: đây là bài viết mới được viết luôn nè
+                content:
+                  type: string
+                  description: The content of the blog
+                  example: đây là content của bài viết 2
+                title:
+                  type: string
+                  description: The title of the blog
+                  example: đây là title của bài viết 232
+                avatar:
+                  type: string
+                  format: binary
+                  description: An optional image file to be used as the blog's avatar
+                status:
+                  type: string
+                  description: The status of the blog (e.g., published, draft)
+                  example: 1
+                childTopics:
+                  type: string
+                  description: The ID of the child topics associated with the blog
+                  example: 66b749b270412bb8e833f2ac
+                user:
+                  type: string
+                  description: The ID of the user creating the blog
+                  example: 6673c0f300582bda3b04d8d3
+      responses:
+        '200':
+          description: Blog created successfully
+        '400':
+          description: Bad request, invalid input data
+
+  /blog/update-blog/{id}:
+    put:
+      tags:
+      - Blogs
+      summary: Update an existing blog
+      description: Updates an existing blog identified by the given ID with new content, title, status, and associated child topics. Optionally, an avatar can be updated.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: The ID of the blog to be updated
+          schema:
+            type: string
+            example: 6673c0f300582bda3b04d8d5
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: The updated name of the blog
+                  example: đây là bài viết mới được viết sửa luôn nè
+                content:
+                  type: string
+                  description: The updated content of the blog
+                  example: đây là content của bài viết 2 sửa
+                title:
+                  type: string
+                  description: The updated title of the blog
+                  example: đây là title của bài viết 232 sửa
+                avatar:
+                  type: string
+                  format: binary
+                  description: An optional image file to be used as the updated blog's avatar
+                status:
+                  type: string
+                  description: The updated status of the blog
+                  example: 1
+                childTopics:
+                  type: string
+                  description: The updated ID of the child topics associated with the blog
+                  example: 66b749b270412bb8e833f2ac
+                user:
+                  type: string
+                  description: The updated ID of the user creating the blog
+                  example: 6673c0f300582bda3b04d8d3
+      responses:
+        '200':
+          description: Blog updated successfully
+        '404':
+          description: Blog not found
+
+  /blog/{id}:
+    get:
+      tags:
+      - Blogs
+      summary: Get a blog by ID
+      description: Retrieves the details of a blog identified by the given ID, including its name, content, title, status, and associated child topics.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: The ID of the blog to be retrieved
+          schema:
+            type: string
+            example: 6673c0f300582bda3b04d8d5
+      responses:
+        '200':
+          description: Blog retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  name:
+                    type: string
+                    description: The name of the blog
+                  content:
+                    type: string
+                    description: The content of the blog
+                  title:
+                    type: string
+                    description: The title of the blog
+                  avatar:
+                    type: string
+                    description: The URL of the blog's avatar
+                  status:
+                    type: string
+                    description: The status of the blog
+                  childTopics:
+                    type: array
+                    items:
+                      type: string
+                    description: List of child topic IDs associated with the blog
+                  comments:
+                    type: string
+                    description: Comments associated with the blog
+        '404':
+          description: Blog not found
+
+  /blog/delete-blog/{id}:
+    delete:
+      tags:
+      - Blogs
+      summary: Delete a blog by ID
+      description: Deletes a blog identified by the given ID.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: The ID of the blog to be deleted
+          schema:
+            type: string
+            example: 6673c0f300582bda3b04d8d5
+      responses:
+        '200':
+          description: Blog deleted successfully
+        '404':
+          description: Blog not found
+
+  /blog/by-child-topic/{id}:
+    get:
+      tags:
+      - Blogs
+      summary: Get blogs by child topic ID
+      description: Retrieves a list of blogs associated with a specific child topic identified by the given ID.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: The ID of the child topic
+          schema:
+            type: string
+            example: 66b749b270412bb8e833f2ac
+      responses:
+        '200':
+          description: List of blogs retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                      description: The name of the blog
+                    content:
+                      type: string
+                      description: The content of the blog
+                    title:
+                      type: string
+                      description: The title of the blog
+                    avatar:
+                      type: string
+                      description: The URL of the blog's avatar
+                    status:
+                      type: string
+                      description: The status of the blog
+                    childTopics:
+                      type: array
+                      items:
+                        type: string
+                      description: List of child topic IDs associated with the blog
+                    comments:
+                      type: string
+                      description: Comments associated with the blog
+        '404':
+          description: No blogs found for the given child topic ID
+  /course/type:
+    get:
+      tags:
+      - CourseTypes
+      summary: Get all course types
+      description: Retrieves a list of all course types.
+      responses:
+        '200':
+          description: A list of course types
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      description: The ID of the course type
+                    name:
+                      type: string
+                      description: The name of the course type
+                    description:
+                      type: string
+                      description: The description of the course type
+        '500':
+          description: Server error
+
+  /course/type/create-course-type:
+    post:
+      tags:
+      - CourseTypes
+      summary: Create a new course type
+      description: Creates a new course type with the given name and description.
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: The name of the course type
+                description:
+                  type: string
+                  description: The description of the course type
+      responses:
+        '201':
+          description: Course type created successfully
+        '400':
+          description: Bad request, invalid input data
+
+  /course/type/update-course-type/{id}:
+    put:
+      tags:
+      - CourseTypes
+      summary: Update an existing course type
+      description: Updates an existing course type identified by the given ID with new name and description.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: The ID of the course type to be updated
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: The updated name of the course type
+                description:
+                  type: string
+                  description: The updated description of the course type
+      responses:
+        '200':
+          description: Course type updated successfully
+        '404':
+          description: Course type not found
+        '400':
+          description: Bad request, invalid input data
+
+  /course/type/{id}:
+    get:
+      tags:
+      - CourseTypes
+      summary: Get a course type by ID
+      description: Retrieves the details of a course type identified by the given ID.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: The ID of the course type to be retrieved
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Course type retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    description: The ID of the course type
+                  name:
+                    type: string
+                    description: The name of the course type
+                  description:
+                    type: string
+                    description: The description of the course type
+        '404':
+          description: Course type not found
+
+  /course/type/{id }:
+    delete:
+      tags:
+      - CourseTypes
+      summary: Delete a course type by ID
+      description: Deletes a course type identified by the given ID.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: The ID of the course type to be deleted
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Course type deleted successfully
+        '404':
+          description: Course type not found
+  /course/content:
+    get:
+      tags:
+      - Contents
+      summary: Get all content
+      description: Retrieves a list of all content items.
+      responses:
+        '200':
+          description: A list of content items
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      description: The ID of the content item
+                    content_type:
+                      type: string
+                      description: The type of content (e.g., quiz, fill_in_the_blank, word_matching, video)
+                    data:
+                      type: object
+                      description: The actual content data
+        '500':
+          description: Server error
+
+  /course/content/create:
+    post:
+      tags:
+      - Contents
+      summary: Create a new content item
+      description: Creates a new content item with the given details.
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                content_type:
+                  type: string
+                  description: The type of content being created (e.g., quiz, fill_in_the_blank, word_matching, video)
+                quiz:
+                  type: string
+                  description: The ID of the quiz, if applicable
+                fill_in_the_blank:
+                  type: string
+                  description: The ID of the fill-in-the-blank content, if applicable
+                word_matching:
+                  type: string
+                  description: The ID of the word matching content, if applicable
+                video:
+                  type: string
+                  description: The ID of the video content, if applicable
+      responses:
+        '201':
+          description: Content item created successfully
+        '400':
+          description: Bad request, invalid input data
+
+  /course/content/{id}:
+    get:
+      tags:
+      - Contents
+      summary: Get content by ID
+      description: Retrieves the details of a content item identified by the given ID.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: The ID of the content item to be retrieved
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Content item retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    description: The ID of the content item
+                  content_type:
+                    type: string
+                    description: The type of content (e.g., quiz, fill_in_the_blank, word_matching, video)
+                  data:
+                    type: object
+                    description: The actual content data
+        '404':
+          description: Content item not found
+
+    put:
+      tags:
+      - Contents
+      summary: Update an existing content item
+      description: Updates an existing content item identified by the given ID with new details.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: The ID of the content item to be updated
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                content_type:
+                  type: string
+                  description: The updated type of content
+                word_matching:
+                  type: string
+                  description: The ID of the updated word matching content, if applicable
+      responses:
+        '200':
+          description: Content item updated successfully
+        '404':
+          description: Content item not found
+        '400':
+          description: Bad request, invalid input data
+
+    delete:
+      tags:
+      - Contents
+      summary: Delete content by ID
+      description: Deletes a content item identified by the given ID.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: The ID of the content item to be deleted
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Content item deleted successfully
+        '404':
+          description: Content item not found
+
+  /course/content/add/{id}:
+    patch:
+      tags:
+      - Contents
+      summary: Add data to content item
+      description: Adds additional data to an existing content item identified by the given ID.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: The ID of the content item to be updated
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                contentType:
+                  type: string
+                  description: The type of content being added (e.g., quiz, fill_in_the_blank, word_matching, video)
+                dataId:
+                  type: string
+                  description: The ID of the data being added
+      responses:
+        '200':
+          description: Data added to content item successfully
+        '404':
+          description: Content item not found
+        '400':
+          description: Bad request, invalid input data
+  /course/lesson:
+    get:
+      tags:
+      - Lessons
+      summary: Get all lessons
+      description: Retrieves a list of all lessons.
+      responses:
+        '200':
+          description: A list of lessons
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      description: The ID of the lesson
+                    title:
+                      type: string
+                      description: The title of the lesson
+                    content:
+                      type: string
+                      description: The content associated with the lesson
+                    isFree:
+                      type: boolean
+                      description: Indicates if the lesson is free
+        '500':
+          description: Server error
+
+  /course/lesson/create:
+    post:
+      tags:
+      - Lessons
+      summary: Create a new lesson
+      description: Creates a new lesson with the specified details.
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                lesson:
+                  type: string
+                  description: The lesson identifier or title
+                content:
+                  type: string
+                  description: The ID of the content associated with the lesson
+                isFree:
+                  type: boolean
+                  description: Indicates if the lesson is free
+                title:
+                  type: string
+                  description: The title of the lesson
+      responses:
+        '201':
+          description: Lesson created successfully
+        '400':
+          description: Bad request, invalid input data
+
+  /course/lesson/{id}:
+    get:
+      tags:
+      - Lessons
+      summary: Get lesson by ID
+      description: Retrieves the details of a lesson identified by the given ID.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: The ID of the lesson to be retrieved
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Lesson retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    description: The ID of the lesson
+                  title:
+                    type: string
+                    description: The title of the lesson
+                  content:
+                    type: string
+                    description: The content associated with the lesson
+                  isFree:
+                    type: boolean
+                    description: Indicates if the lesson is free
+        '404':
+          description: Lesson not found
+
+    put:
+      tags:
+      - Lessons
+      summary: Update an existing lesson
+      description: Updates an existing lesson identified by the given ID with new details.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: The ID of the lesson to be updated
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                lesson:
+                  type: string
+                  description: The updated lesson identifier or title
+                content:
+                  type: string
+                  description: The updated ID of the content associated with the lesson
+                isFree:
+                  type: boolean
+                  description: Indicates if the lesson is free
+                title:
+                  type: string
+                  description: The updated title of the lesson
+      responses:
+        '200':
+          description: Lesson updated successfully
+        '404':
+          description: Lesson not found
+        '400':
+          description: Bad request, invalid input data
+
+    delete:
+      tags:
+      - Lessons
+      summary: Delete lesson by ID
+      description: Deletes a lesson identified by the given ID.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: The ID of the lesson to be deleted
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Lesson deleted successfully
+        '404':
+          description: Lesson not found
+
+  /course/lesson/add/{id}:
+    patch:
+      tags:
+      - Lessons
+      summary: Add content to lesson
+      description: Adds content to an existing lesson identified by the given ID.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: The ID of the lesson to which content is being added
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                content:
+                  type: string
+                  description: The ID of the content being added
+      responses:
+        '200':
+          description: Content added to lesson successfully
+        '404':
+          description: Lesson not found
+        '400':
+          description: Bad request, invalid input data
+  /course/quiz/create:
+    post:
+      tags:
+      - Quizzes
+      summary: Create a new quiz
+      description: Creates a new quiz with the specified question, options, correct answer, and explanation.
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                question:
+                  type: string
+                  description: The question for the quiz
+                options:
+                  type: array
+                  items:
+                    type: string
+                  description: The options for the quiz
+                correctAnswer:
+                  type: string
+                  description: The index of the correct answer in the options array
+                explanation:
+                  type: string
+                  description: Explanation for the correct answer
+      responses:
+        '201':
+          description: Quiz created successfully
+        '400':
+          description: Bad request, invalid input data
+
+  /course/quiz/update/{id}:
+    put:
+      tags:
+      - Quizzes
+      summary: Update an existing quiz
+      description: Updates an existing quiz identified by the given ID with new details.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: The ID of the quiz to be updated
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                question:
+                  type: string
+                  description: The updated question for the quiz
+                options:
+                  type: array
+                  items:
+                    type: string
+                  description: The updated options for the quiz
+                correctAnswer:
+                  type: string
+                  description: The updated index of the correct answer in the options array
+                explanation:
+                  type: string
+                  description: Updated explanation for the correct answer
+      responses:
+        '200':
+          description: Quiz updated successfully
+        '404':
+          description: Quiz not found
+        '400':
+          description: Bad request, invalid input data
+
+  /course/quiz:
+    get:
+      tags:
+      - Quizzes
+      summary: Get all quizzes
+      description: Retrieves a list of all quizzes.
+      responses:
+        '200':
+          description: A list of quizzes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      description: The ID of the quiz
+                    question:
+                      type: string
+                      description: The question of the quiz
+                    options:
+                      type: array
+                      items:
+                        type: string
+                      description: The options for the quiz
+                    correctAnswer:
+                      type: string
+                      description: The index of the correct answer in the options array
+                    explanation:
+                      type: string
+                      description: Explanation for the correct answer
+        '500':
+          description: Server error
+
+  /course/quiz/{id}:
+    get:
+      tags:
+      - Quizzes
+      summary: Get quiz by ID
+      description: Retrieves the details of a quiz identified by the given ID.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: The ID of the quiz to be retrieved
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Quiz retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    description: The ID of the quiz
+                  question:
+                    type: string
+                    description: The question of the quiz
+                  options:
+                    type: array
+                    items:
+                      type: string
+                    description: The options for the quiz
+                  correctAnswer:
+                    type: string
+                    description: The index of the correct answer in the options array
+                  explanation:
+                    type: string
+                    description: Explanation for the correct answer
+        '404':
+          description: Quiz not found
+
+    delete:
+      tags:
+      - Quizzes
+      summary: Delete quiz by ID
+      description: Deletes a quiz identified by the given ID.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: The ID of the quiz to be deleted
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Quiz deleted successfully
+        '404':
+          description: Quiz not found
+  /course/fill/create:
+    post:
+      tags:
+      - Fill In The Blank
+      summary: Create a new fill-in-the-blank exercise
+      description: Creates a new fill-in-the-blank exercise with the specified sentence, blanks, correct answers, and explanation.
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                sentence:
+                  type: string
+                  description: The sentence with blanks
+                blanks:
+                  type: array
+                  items:
+                    type: string
+                  description: The possible answers for each blank
+                correctAnswers:
+                  type: array
+                  items:
+                    type: string
+                  description: The correct answers for each blank
+                correctAnswer:
+                  type: string
+                  description: The correct answer to the exercise
+                explanation:
+                  type: string
+                  description: Explanation for the correct answer
+      responses:
+        '201':
+          description: Fill-in-the-blank exercise created successfully
+        '400':
+          description: Bad request, invalid input data
+
+  /course/fill/update/{id}:
+    put:
+      tags:
+      - Fill In The Blank
+      summary: Update an existing fill-in-the-blank exercise
+      description: Updates an existing fill-in-the-blank exercise identified by the given ID with new details.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: The ID of the fill-in-the-blank exercise to be updated
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                sentence:
+                  type: string
+                  description: The updated sentence with blanks
+                blanks:
+                  type: array
+                  items:
+                    type: string
+                  description: The updated possible answers for each blank
+                correctAnswers:
+                  type: array
+                  items:
+                    type: string
+                  description: The updated correct answers for each blank
+                correctAnswer:
+                  type: string
+                  description: The updated correct answer to the exercise
+                explanation:
+                  type: string
+                  description: Updated explanation for the correct answer
+      responses:
+        '200':
+          description: Fill-in-the-blank exercise updated successfully
+        '404':
+          description: Fill-in-the-blank exercise not found
+        '400':
+          description: Bad request, invalid input data
+
+  /course/fill/{id}:
+    get:
+      tags:
+      - Fill In The Blank
+      summary: Get fill-in-the-blank exercise by ID
+      description: Retrieves the details of a fill-in-the-blank exercise identified by the given ID.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: The ID of the fill-in-the-blank exercise to be retrieved
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Fill-in-the-blank exercise retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    description: The ID of the fill-in-the-blank exercise
+                  sentence:
+                    type: string
+                    description: The sentence with blanks
+                  blanks:
+                    type: array
+                    items:
+                      type: string
+                    description: The possible answers for each blank
+                  correctAnswers:
+                    type: array
+                    items:
+                      type: string
+                    description: The correct answers for each blank
+                  correctAnswer:
+                    type: string
+                    description: The correct answer to the exercise
+                  explanation:
+                    type: string
+                    description: Explanation for the correct answer
+        '404':
+          description: Fill-in-the-blank exercise not found
+
+    delete:
+      tags:
+      - Fill In The Blank
+      summary: Delete fill-in-the-blank exercise by ID
+      description: Deletes a fill-in-the-blank exercise identified by the given ID.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: The ID of the fill-in-the-blank exercise to be deleted
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Fill-in-the-blank exercise deleted successfully
+        '404':
+          description: Fill-in-the-blank exercise not found
+
+  /course/fill:
+    get:
+      tags:
+      - Fill In The Blank
+      summary: Get all fill-in-the-blank exercises
+      description: Retrieves a list of all fill-in-the-blank exercises.
+      responses:
+        '200':
+          description: A list of fill-in-the-blank exercises
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      description: The ID of the fill-in-the-blank exercise
+                    sentence:
+                      type: string
+                      description: The sentence with blanks
+                    blanks:
+                      type: array
+                      items:
+                        type: string
+                      description: The possible answers for each blank
+                    correctAnswers:
+                      type: array
+                      items:
+                        type: string
+                      description: The correct answers for each blank
+                    correctAnswer:
+                      type: string
+                      description: The correct answer to the exercise
+                    explanation:
+                      type: string
+                      description: Explanation for the correct answer
+        '500':
+          description: Server error
+  /course/word-matching/create:
+    post:
+      tags:
+      - Word Matching
+      summary: Create a new word-matching exercise
+      description: Creates a new word-matching exercise with the specified words, matches, and explanation.
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                words:
+                  type: array
+                  items:
+                    type: string
+                  description: The words to be matched
+                matches:
+                  type: array
+                  items:
+                    type: string
+                  description: The possible matches for the words
+                correctAnswer:
+                  type: string
+                  description: The correct match for the exercise
+                explanation:
+                  type: string
+                  description: Explanation for the correct answer
+      responses:
+        '201':
+          description: Word-matching exercise created successfully
+        '400':
+          description: Bad request, invalid input data
+
+  /course/word-matching/{id}:
+    put:
+      tags:
+      - Word Matching
+      summary: Update an existing word-matching exercise
+      description: Updates an existing word-matching exercise identified by the given ID with new details.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: The ID of the word-matching exercise to be updated
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                words:
+                  type: array
+                  items:
+                    type: string
+                  description: The updated words to be matched
+                matches:
+                  type: array
+                  items:
+                    type: string
+                  description: The updated possible matches for the words
+                correctAnswer:
+                  type: string
+                  description: The updated correct match for the exercise
+                explanation:
+                  type: string
+                  description: Updated explanation for the correct answer
+      responses:
+        '200':
+          description: Word-matching exercise updated successfully
+        '404':
+          description: Word-matching exercise not found
+        '400':
+          description: Bad request, invalid input data
+
+    get:
+      tags:
+      - Word Matching
+      summary: Get word-matching exercise by ID
+      description: Retrieves the details of a word-matching exercise identified by the given ID.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: The ID of the word-matching exercise to be retrieved
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Word-matching exercise retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    description: The ID of the word-matching exercise
+                  words:
+                    type: array
+                    items:
+                      type: string
+                    description: The words to be matched
+                  matches:
+                    type: array
+                    items:
+                      type: string
+                    description: The possible matches for the words
+                  correctAnswer:
+                    type: string
+                    description: The correct match for the exercise
+                  explanation:
+                    type: string
+                    description: Explanation for the correct answer
+        '404':
+          description: Word-matching exercise not found
+
+    delete:
+      tags:
+      - Word Matching
+      summary: Delete word-matching exercise by ID
+      description: Deletes a word-matching exercise identified by the given ID.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: The ID of the word-matching exercise to be deleted
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Word-matching exercise deleted successfully
+        '404':
+          description: Word-matching exercise not found
+
+  /course/word-matching:
+    get:
+      tags:
+      - Word Matching
+      summary: Get all word-matching exercises
+      description: Retrieves a list of all word-matching exercises.
+      responses:
+        '200':
+          description: A list of word-matching exercises
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      description: The ID of the word-matching exercise
+                    words:
+                      type: array
+                      items:
+                        type: string
+                      description: The words to be matched
+                    matches:
+                      type: array
+                      items:
+                        type: string
+                      description: The possible matches for the words
+                    correctAnswer:
+                      type: string
+                      description: The correct match for the exercise
+                    explanation:
+                      type: string
+                      description: Explanation for the correct answer
+        '500':
+          description: Server error
+  /course/video/create:
+    post:
+      tags:
+      - Video
+      summary: Create a new video
+      description: Creates a new video with the specified title, description, and video file.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  description: Title of the video
+                description:
+                  type: string
+                  description: Description of the video
+                videoUrl:
+                  type: string
+                  format: binary
+                  description: Video file to be uploaded
+      responses:
+        '201':
+          description: Video created successfully
+        '400':
+          description: Bad request, invalid input data
+
+  /course/video/{id}:
+    put:
+      tags:
+      - Video
+      summary: Update an existing video
+      description: Updates an existing video identified by the given ID with new details.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: The ID of the video to be updated
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  description: Updated title of the video
+                description:
+                  type: string
+                  description: Updated description of the video
+                videoUrl:
+                  type: string
+                  format: binary
+                  description: Updated video file
+      responses:
+        '200':
+          description: Video updated successfully
+        '404':
+          description: Video not found
+        '400':
+          description: Bad request, invalid input data
+
+    get:
+      tags:
+      - Video
+      summary: Get video by ID
+      description: Retrieves the details of a video identified by the given ID.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: The ID of the video to be retrieved
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Video retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    description: The ID of the video
+                  title:
+                    type: string
+                    description: Title of the video
+                  description:
+                    type: string
+                    description: Description of the video
+                  videoUrl:
+                    type: string
+                    description: URL of the video file
+        '404':
+          description: Video not found
+
+    delete:
+      tags:
+      - Video
+      summary: Delete video by ID
+      description: Deletes a video identified by the given ID.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: The ID of the video to be deleted
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Video deleted successfully
+        '404':
+          description: Video not found
+
+  /course/video:
+    get:
+      tags:
+      - Video
+      summary: Get all videos
+      description: Retrieves a list of all videos.
+      responses:
+        '200':
+          description: A list of videos
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      description: The ID of the video
+                    title:
+                      type: string
+                      description: Title of the video
+                    description:
+                      type: string
+                      description: Description of the video
+                    videoUrl:
+                      type: string
+                      description: URL of the video file
+        '500':
+          description: Server error
+  /course:
+    get:
+      tags:
+      - Courses
+      summary: Get all courses
+      description: Fetches a list of courses with pagination.
+      parameters:
+        - name: page
+          in: query
+          description: Page number for pagination.
+          required: true
+          schema:
+            type: integer
+            example: 1
+        - name: limit
+          in: query
+          description: Number of courses to return per page.
+          required: true
+          schema:
+            type: integer
+            example: 2
+      responses:
+        '200':
+          description: List of courses
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      example: "123456"
+                    title:
+                      type: string
+                      example: "Introduction to Programming"
+                    slug:
+                      type: string
+                      example: "introduction-to-programming"
+                    # Add other course properties here
+
+  /course/create:
+    post:
+      tags:
+      - Courses
+      summary: Create a new course
+      description: Creates a new course with the provided details.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  example: "Introduction to Programming"
+                slug:
+                  type: string
+                  example: "introduction-to-programming"
+                thumbnail:
+                  type: string
+                  format: binary
+                featured:
+                  type: boolean
+                  example: true
+                display_order:
+                  type: integer
+                  example: 10
+                detail_title:
+                  type: string
+                  example: "Course Details"
+                detail_type:
+                  type: string
+                  example: "Programming"
+                detail_short_description:
+                  type: string
+                  example: "A short description of the course"
+                detail_content:
+                  type: string
+                  example: "Detailed content of the course"
+                typeCourse:
+                  type: string
+                  example: "66701e914d8468178b2273fe"
+                lessons:
+                  type: string
+                  example: "66d83245b7da9d3b945dda76"
+                price:
+                  type: integer
+                  example: 20000000
+                discount:
+                  type: integer
+                  example: 15000000
+                createdBy:
+                  type: string
+                  example: "669a80376ac15e8d5e02f910"
+                updatedBy:
+                  type: string
+                  example: "669a80376ac15e8d5e02f910"
+      responses:
+        '201':
+          description: Course created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    example: "123456"
+                  # Add other course properties here
+
+  /course/{id}:
+    put:
+      tags:
+      - Courses
+      summary: Update a course
+      description: Updates an existing course with the provided details.
+      parameters:
+        - name: id
+          in: path
+          description: ID of the course to update
+          required: true
+          schema:
+            type: string
+            example: "123456"
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  example: "Updated Course Title"
+                slug:
+                  type: string
+                  example: "updated-course-title"
+                thumbnail:
+                  type: string
+                  format: binary
+                featured:
+                  type: boolean
+                  example: true
+                display_order:
+                  type: integer
+                  example: 10
+                detail_title:
+                  type: string
+                  example: "Updated Detail Title"
+                detail_type:
+                  type: string
+                  example: "Updated Type"
+                detail_short_description:
+                  type: string
+                  example: "Updated short description"
+                detail_content:
+                  type: string
+                  example: "Updated content"
+                typeCourse:
+                  type: string
+                  example: "669a08d764747a60c2cec499"
+                lessons:
+                  type: string
+                  example: "66c14c0350335d8b4adac544"
+                price:
+                  type: integer
+                  example: 100000
+                discount:
+                  type: integer
+                  example: 25000000
+                createdBy:
+                  type: string
+                  example: "669a80376ac15e8d5e02f910"
+                updatedBy:
+                  type: string
+                  example: "669a80376ac15e8d5e02f910"
+      responses:
+        '200':
+          description: Course updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    example: "123456"
+                  # Add other course properties here
+                  
+    get:
+      tags:
+      - Courses
+      summary: Get course by ID
+      description: Fetches a specific course by its ID.
+      parameters:
+        - name: id
+          in: path
+          description: ID of the course to fetch
+          required: true
+          schema:
+            type: string
+            example: "123456"
+      responses:
+        '200':
+          description: Course details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    example: "123456"
+                  title:
+                    type: string
+                    example: "Introduction to Programming"
+                  # Add other course properties here
+
+  /course/search/{slug}:
+    get:
+      tags:
+      - Courses
+      summary: Get course by slug
+      description: Fetches a specific course by its slug.
+      parameters:
+        - name: slug
+          in: path
+          description: Slug of the course to fetch
+          required: true
+          schema:
+            type: string
+            example: "introduction-to-programming"
+      responses:
+        '200':
+          description: Course details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    example: "123456"
+                  title:
+                    type: string
+                    example: "Introduction to Programming"
+                  # Add other course properties here
+
+    delete:
+      tags:
+      - Courses
+      summary: Delete a course
+      description: Deletes a specific course by its ID.
+      parameters:
+        - name: id
+          in: path
+          description: ID of the course to delete
+          required: true
+          schema:
+            type: string
+            example: "123456"
+      responses:
+        '204':
+          description: Course deleted successfully
+
+  /course/course/add/{id}:
+    patch:
+      tags:
+      - Courses
+      summary: Add lesson to course
+      description: Adds a lesson to an existing course.
+      parameters:
+        - name: id
+          in: path
+          description: ID of the course to which the lesson will be added
+          required: true
+          schema:
+            type: string
+            example: "123456"
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                lesson:
+                  type: string
+                  example: "669c6d9713f60aad3988f9d0"
+      responses:
+        '200':
+          description: Lesson added to course
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    example: "123456"
+                  lessons:
+                    type: array
+                    items:
+                      type: string
+                    example: ["669c6d9713f60aad3988f9d0"]
+  /course/purchase/{courseId}:
+    post:
+      tags:
+      - Purchase
+      summary: Create a purchase for a course
+      description: Initiates a purchase process for the specified course.
+      parameters:
+        - name: courseId
+          in: path
+          description: ID of the course to purchase
+          required: true
+          schema:
+            type: string
+            example: "669c6e8a551ddc6403594563"
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                userId:
+                  type: string
+                  example: "6674ee1fb107865522b2e83f"
+      responses:
+        '200':
+          description: Purchase created successfully
+        '400':
+          description: Bad request
+
+  /course/purchase-VNPAY/{courseId}/{userId}:
+    post:
+      tags:
+      - Purchase
+      summary: Create a purchase for a course via VNPAY
+      description: Initiates a VNPAY purchase process for the specified course and user.
+      parameters:
+        - name: courseId
+          in: path
+          description: ID of the course to purchase
+          required: true
+          schema:
+            type: string
+            example: "669c6a2f84bac74ac5ea0b5e"
+        - name: userId
+          in: path
+          description: ID of the user making the purchase
+          required: true
+          schema:
+            type: string
+            example: "6673e11306bf880bcfa1e8a2"
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                userId:
+                  type: string
+                  example: "6673e11306bf880bcfa1e8a2"
+      responses:
+        '200':
+          description: VNPAY purchase created successfully
+        '400':
+          description: Bad request
+
+  /course/purchase-vnpay/{courseId}:
+    post:
+      tags:
+      - Purchase
+      summary: Create a VNPAY purchase with additional parameters
+      description: Initiates a VNPAY purchase for the specified course with additional payment details.
+      parameters:
+        - name: courseId
+          in: path
+          description: ID of the course to purchase
+          required: true
+          schema:
+            type: string
+            example: "669c6e8a551ddc6403594563"
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                userId:
+                  type: string
+                  example: "6674ea15a15c73f343781394"
+                bankCode:
+                  type: string
+                  example: "NCB"
+                orderDescription:
+                  type: string
+                  example: "thanhtoan"
+                orderType:
+                  type: string
+                  example: "billpayment"
+      responses:
+        '200':
+          description: VNPAY purchase created successfully
+        '400':
+          description: Bad request
+
+  /course/complete:
+    post:
+      tags:
+      - Purchase
+      summary: Activate a course
+      description: Completes the purchase and activates the course.
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                key:
+                  type: string
+                  example: "286edd9d-91fa-419d-87ab-025a3c1a382b"
+      responses:
+        '200':
+          description: Course activated successfully
+        '400':
+          description: Bad request
+
+  /home.html/callback:
+    post:
+      tags:
+      - Purchase
+      summary: Handle payment callback
+      description: Handles callback from MoMo or other payment systems.
+      parameters:
+        - name: partnerCode
+          in: query
+          description: Partner code from payment provider
+          required: true
+          schema:
+            type: string
+            example: "MOMO"
+        - name: orderId
+          in: query
+          description: Order ID from payment provider
+          required: true
+          schema:
+            type: string
+            example: "MOMO1723892640171"
+        - name: requestId
+          in: query
+          description: Request ID from payment provider
+          required: true
+          schema:
+            type: string
+            example: "MOMO1723892640171"
+        - name: amount
+          in: query
+          description: Amount of the transaction
+          required: true
+          schema:
+            type: string
+            example: "100000"
+        - name: orderInfo
+          in: query
+          description: Description of the order
+          required: true
+          schema:
+            type: string
+            example: "pay+with+MoMo"
+        - name: orderType
+          in: query
+          description: Type of order
+          required: true
+          schema:
+            type: string
+            example: "momo_wallet"
+        - name: transId
+          in: query
+          description: Transaction ID from payment provider
+          required: true
+          schema:
+            type: string
+            example: "4101597102"
+        - name: resultCode
+          in: query
+          description: Result code of the transaction
+          required: true
+          schema:
+            type: string
+            example: "0"
+        - name: message
+          in: query
+          description: Result message of the transaction
+          required: true
+          schema:
+            type: string
+            example: "Successful."
+        - name: payType
+          in: query
+          description: Payment type
+          required: true
+          schema:
+            type: string
+            example: "napas"
+        - name: responseTime
+          in: query
+          description: Response time
+          required: true
+          schema:
+            type: string
+            example: "1723892696255"
+        - name: extraData
+          in: query
+          description: Additional data
+          schema:
+            type: string
+            example: ""
+        - name: signature
+          in: query
+          description: Signature for verification
+          required: true
+          schema:
+            type: string
+            example: "740a4b86af18432237806e9a82254d142fa799c0e3e8e346643978d96402f86b"
+      responses:
+        '200':
+          description: Callback handled successfully
+        '400':
+          description: Bad request
+
+  /course/purchase/{userId}:
+    get:
+      tags:
+      - Purchase
+      summary: Get purchases by user ID
+      description: Retrieves all purchases made by a specific user.
+      parameters:
+        - name: userId
+          in: path
+          description: ID of the user
+          required: true
+          schema:
+            type: string
+            example: "6674ee1fb107865522b2e83f"
+      responses:
+        '200':
+          description: List of purchases for the user
+        '404':
+          description: Purchases not found
+components:
+  securitySchemes:
+    mytoken:
+      type: apiKey
+      in: header
+      name: Authorization
+      description: A token used to authorize the requests.
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Use JWT token for secure routes.

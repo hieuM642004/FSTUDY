@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation';
 import ButtonPrimary from '@/components/shared/ButtonPrimary/ButtonPrimary';
 import Editor from '../../../components/client/Editer/Editer';
 import { nestApiInstance } from '../../../constant/api';
+import { useAuth } from '@/hooks/useAuth';
 
 function HandleBlogPage({ id }: { id?: string }) {
     const router = useRouter();
@@ -15,12 +16,12 @@ function HandleBlogPage({ id }: { id?: string }) {
     const [text, setText] = useState('');
     const [initialContent, setInitialContent] = useState('');
     const [initialChildTopics, setInitialChildTopics] = useState<any[]>([]);
-    const [user, setUser] = useState('6673c0f300582bda3b1e96a0');
     const [avatar, setAvatar] = useState<File | null>(null);
     const [options, setOptions] = useState<any[]>([]);
-
+    const { userId } = useAuth();
     const formik = useFormik({
         initialValues: {
+            user: userId,
             title: '',
             content: '',
             avatar: '',
@@ -45,7 +46,7 @@ function HandleBlogPage({ id }: { id?: string }) {
         enableReinitialize: true,
         onSubmit: async (values) => {
             const formData = new FormData();
-            formData.append('user', user);
+            formData.append('user', userId as string);
             formData.append('title', values.title);
             formData.append('content', text);
 
@@ -71,7 +72,6 @@ function HandleBlogPage({ id }: { id?: string }) {
                             },
                         },
                     );
-                    // alert('Bài viết đã được cập nhật!');
                     message.success('Bài viết đã được cập nhật!');
                 } else {
                     await nestApiInstance.post('/blog/create-blog', formData, {

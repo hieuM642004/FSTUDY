@@ -2,7 +2,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Row, Col } from 'antd';
+import { Row, Col,Spin } from 'antd';
 import Target from '@/components/client/Target/Target';
 import ExamService from '@/services/ExamsService';
 import AnswerDetailModal from './AnswerDetailModal/AnswerDetailModal';
@@ -57,7 +57,7 @@ function Result({ id }: { id: string }) {
     };
 
     if (!result) {
-        return <div>Đang tải...</div>;
+        return <div className='flex justify-center p-60'><Spin></Spin></div>;
     }
 
     const totalQuestions =

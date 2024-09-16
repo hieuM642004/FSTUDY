@@ -1,9 +1,13 @@
 import time
-from flask import Blueprint, jsonify, request
+import difflib
+from flask import Blueprint, jsonify, request, send_file
+from googleapiclient.discovery import build
+from google.oauth2.service_account import Credentials
 from googleapiclient.discovery import build
 from youtube_transcript_api import YouTubeTranscriptApi
 from youtube_transcript_api.formatters import JSONFormatter
 from pydub import AudioSegment
+import gspread
 import os
 import numpy as np
 import librosa
@@ -11,7 +15,17 @@ from flask_cors import CORS
 import re
 import assemblyai as aai
 import requests
-
+from googleapiclient.discovery import build
+from youtube_transcript_api import YouTubeTranscriptApi
+import nltk
+from nltk.corpus import wordnet, stopwords
+from googletrans import Translator
+import speech_recognition as sr
+import firebase_admin
+from firebase_admin import credentials, storage
+from gtts import gTTS
+nltk.download('punkt')
+nltk.download('wordnet')
 generate_response_api = Blueprint('generate_response_api', __name__)
 CORS(generate_response_api)
 
@@ -143,19 +157,23 @@ def evaluate_proficiency():
 YOUTUBE_API_KEY = 'AIzaSyCH8l3BK-JCGRe6p8DmZZg5D17_anLHTfk'
 youtube = build('youtube', 'v3', developerKey=YOUTUBE_API_KEY)
 
+# Download stopwords
+nltk.download('stopwords')
+
 search_api = Blueprint('search_api', __name__)
 
+# Function to search videos on YouTube
 def search_youtube(query):
     request = youtube.search().list(
         q=query,
         part='id,snippet',
         type='video',
         order='relevance',
-        
     )
     response = request.execute()
     return response.get('items', [])
 
+# Function to get the video transcript
 def get_video_transcript(video_id):
     try:
         transcript = YouTubeTranscriptApi.get_transcript(video_id)
@@ -163,6 +181,7 @@ def get_video_transcript(video_id):
     except Exception as e:
         return None
 
+# Function to find the word in transcript and return its timestamp
 def find_word_in_transcript(transcript, word):
     timestamps = []
     for entry in transcript:
@@ -170,6 +189,15 @@ def find_word_in_transcript(transcript, word):
             timestamps.append(entry['start'])  
     return timestamps
 
+# Function to extract vocabulary from the transcript
+def extract_vocabulary(transcript):
+    stop_words = set(stopwords.words('english'))  
+    words = nltk.word_tokenize(transcript)
+    words = [word.lower() for word in words if word.isalpha()]  
+    vocabulary = set([word for word in words if word not in stop_words and len(word) > 1])
+    return vocabulary
+
+# Route to search videos and return results with vocabulary and timestamps
 @generate_response_api.route('/search_video', methods=['GET'])
 def search_video():
     word = request.args.get('word')
@@ -184,16 +212,197 @@ def search_video():
         video_id = video['id']['videoId']
         transcript = get_video_transcript(video_id)
         if transcript:
+            # Join transcript into a single string for tokenization
+            transcript_text = " ".join([entry['text'] for entry in transcript])
+            
+            # Extract vocabulary
+            vocabulary = extract_vocabulary(transcript_text)
+
+            # Find timestamps for the given word
             timestamps = find_word_in_transcript(transcript, word)
             if timestamps:
                 first_timestamp = timestamps[0]
-                video_url = f'https://www.youtube.com/watch?v={video_id}&t={int(first_timestamp)}s'
+                video_url = f'https://www.youtube.com/embed/{video_id}?start={int(first_timestamp)}'
+
+                
+                vocab_with_timestamps = {}
+                for vocab_word in vocabulary:
+                    word_timestamps = find_word_in_transcript(transcript, vocab_word)
+                    if word_timestamps:
+                        vocab_with_timestamps[vocab_word] = f'https://www.youtube.com/embed/{video_id}?start={int(word_timestamps[0])}'
+                
                 results.append({
                     'video_url': video_url,
-                    'timestamp': int(first_timestamp)
+                    'timestamp': int(first_timestamp),
+                    'vocabulary': vocab_with_timestamps  
                 })
 
     if not results:
         return jsonify({'message': 'No video found with the specified word.'}), 404
 
     return jsonify(results), 200
+
+
+cred = credentials.Certificate('./app/keyfirebase.json')
+firebase_admin.initialize_app(cred, {
+    'storageBucket': 'podcast-4073a.appspot.com'
+})
+
+spreadsheet_id = '1_YqlF-DWDpsOhv2KlFoKsE6bypYnkBvoRr9ZCIhtXxc'
+sheet_name = 'fsyudy'
+
+def read_data_from_sheets(spreadsheet_id, sheet_name):
+  
+    creds = Credentials.from_service_account_file('./app/sheet.json', scopes=['https://www.googleapis.com/auth/spreadsheets'])
+    
+    
+    client = gspread.authorize(creds)
+    
+    
+    workbook = client.open_by_key(spreadsheet_id)
+    
+   
+    worksheet = workbook.worksheet(sheet_name)
+    
+   
+    values = worksheet.get_all_values()
+    
+    if not values:
+        print('No data found.')
+    return values
+
+
+def get_conversation_data(topic):
+    
+    data = read_data_from_sheets(spreadsheet_id, sheet_name)
+
+   
+    filtered_data = [row for row in data if row[0] == topic]
+
+   
+    system_responses = [row[2] for row in filtered_data]
+    user_expected_responses = [row[3] for row in filtered_data]
+    
+    return system_responses, user_expected_responses
+
+
+def upload_audio_to_firebase(local_file_path, audio_name):
+    bucket = storage.bucket()
+    blob = bucket.blob(f'audio/{audio_name}')
+    blob.upload_from_filename(local_file_path)
+    blob.make_public()
+    return blob.public_url
+
+
+def text_to_speech(text, output_file):
+    tts = gTTS(text=text, lang='en')
+    tts.save(output_file)
+    return output_file
+
+def speech_to_text(audio_file_path):
+    recognizer = sr.Recognizer()
+    with sr.AudioFile(audio_file_path) as source:
+        audio = recognizer.record(source)
+    try:
+        text = recognizer.recognize_google(audio, language="en-US")
+        return text
+    except sr.UnknownValueError:
+        return "Sorry, I couldn't understand what you said."
+    except sr.RequestError:
+        return "Could not request results from the speech recognition service."
+
+def calculate_similarity(user_input, expected_response):
+    ratio = difflib.SequenceMatcher(None, user_input.strip().lower(), expected_response.strip().lower()).ratio()
+    return round(ratio * 100, 2)
+
+@generate_response_api.route('/get-topics', methods=['GET'])
+def get_topics():
+   
+    data = read_data_from_sheets(spreadsheet_id, sheet_name)
+
+   
+    topics = list(set(row[0] for row in data[1:]))  
+
+    return jsonify({"topics": topics})
+
+@generate_response_api.route('/start-conversation', methods=['POST'])
+def start_conversation():
+    topic = request.form.get('topic', '')
+
+ 
+    system_responses, user_expected_responses = get_conversation_data(topic)
+
+    if not system_responses:
+        return jsonify({"error": "Invalid topic"}), 400
+
+  
+    system_response = system_responses[0]
+    expected_user_response = user_expected_responses[0]
+
+
+    audio_file = f"response_{topic}_0.mp3"
+    text_to_speech(system_response, audio_file)
+
+  
+    audio_url = upload_audio_to_firebase(audio_file, audio_file)
+
+    os.remove(audio_file)
+
+   
+    return jsonify({
+        "text_response": system_response,
+        "audio_file_url": audio_url,
+        "expected_user_response": expected_user_response
+    })
+
+
+@generate_response_api.route('/conversation', methods=['POST'])
+def conversation():
+    step = int(request.form.get('step', 1))
+    topic = request.form.get('topic', '')
+
+   
+    system_responses, user_expected_responses = get_conversation_data(topic)
+
+    if not system_responses:
+        return jsonify({"error": "Invalid topic"}), 400
+
+ 
+    if step < len(system_responses):
+        system_response = system_responses[step]
+        expected_user_response = user_expected_responses[step]
+    else:
+        return jsonify({"error": "End of conversation"}), 400
+
+    
+    if 'file' not in request.files:
+        return jsonify({"error": "No audio file found"}), 400
+
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({"error": "No file selected"}), 400
+
+    file_path = os.path.join("temp_user_audio.wav")
+    file.save(file_path)
+
+    
+    user_input = speech_to_text(file_path)
+    os.remove(file_path)
+
+   
+    similarity_percentage = calculate_similarity(user_input, expected_user_response)
+
+    
+    audio_file = f"response_{topic}_{step}.mp3"
+    text_to_speech(system_response, audio_file)
+    audio_url = upload_audio_to_firebase(audio_file, audio_file)
+    os.remove(audio_file)
+
+    return jsonify({
+        "text_response": system_response,
+        "user_input_text": user_input,
+        "similarity_percentage": similarity_percentage,
+        "audio_file_url": audio_url,
+        "next_step": step + 1,
+        "expected_user_response": expected_user_response
+    })

@@ -143,11 +143,10 @@ const TakeTheTest: React.FC = () => {
             {},
         );
     };
-const [d, setD] = useState({})
+    const [d, setD] = useState({});
     const createItemsFromGroups = (groups: { [sessionId: string]: any[] }) => {
-        setD(groups)
+        setD(groups);
         return Object.entries(groups).map(([sessionId, questions], index) => ({
-           
             key: `${index + 1}`,
             label: `Recording ${index + 1}`,
             children: (
@@ -190,8 +189,6 @@ const [d, setD] = useState({})
         // alert('Time is up!');
     };
 
-
-    
     return (
         <div className="pt-8">
             <div className="mb-2 flex items-center justify-center">
@@ -199,7 +196,7 @@ const [d, setD] = useState({})
                     {exam?.replace(/-/g, ' ')}
                 </h4>
 
-                <ConfirmExit /> 
+                {/* <ConfirmExit />  */}
             </div>
             <Row>
                 <Col xs={24} sm={24} md={20} lg={20} xl={20}>
@@ -234,14 +231,12 @@ const [d, setD] = useState({})
                             <div className=" text-center font-bold">
                                 Thời gian làm bài
                             </div>
-                            <CountDownWithSubmit 
-                    timeStart={timeLimit === 0 ? 0 : timeLimit * 60}  
-                    onTimeup={handleTimeup}
-                    isIncremental={timeLimit === 0}  
-                    listAnswer={d}
-                />
-
-
+                            <CountDownWithSubmit
+                                timeStart={timeLimit === 0 ? 0 : timeLimit * 60}
+                                onTimeup={handleTimeup}
+                                isIncremental={timeLimit === 0}
+                                listAnswer={d}
+                            />
                         </div>
                         <RecordingList
                             key={activeKey}
