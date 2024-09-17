@@ -7,8 +7,9 @@ import FlashCardInterface from '@/types/FlashCard';
 import Link from 'next/link';
 import { MoreOutlined } from '@ant-design/icons';
 import ButtonPrimary from '@/components/shared/ButtonPrimary/ButtonPrimary';
-import moment from 'moment-timezone';
 import { formatVietnamTime } from '@/utils/formatVietnamTime';
+import { useAuth } from '@/hooks/useAuth';
+import { useRouter } from 'next/navigation';
 
 function FlashCard({ id }: { id: string }) {
     const [isFlipped, setIsFlipped] = useState(false);
@@ -19,7 +20,17 @@ function FlashCard({ id }: { id: string }) {
     const [reviewDataList, setReviewDataList] = useState<any[]>([]); 
     const audioRef = useRef<HTMLAudioElement | null>(null);
     const carouselRef = useRef<any>(null); 
-
+    const {isLoggedIn,loading}=useAuth()
+    const router=useRouter()
+    
+    useEffect(() => {
+        if (!loading) {  
+            if (!isLoggedIn) {
+                router.push('/login');
+            }
+        }
+    }, [isLoggedIn, loading, router]); 
+    
     useEffect(() => {
         const fetchData = async () => {
             try {

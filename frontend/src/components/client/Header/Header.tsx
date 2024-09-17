@@ -1,10 +1,16 @@
 'use client';
 import React, { useEffect, useState } from 'react';
+import {
+    MenuFoldOutlined,
+    MenuUnfoldOutlined,
+    UnorderedListOutlined,
+    UploadOutlined,
+    UserOutlined,
+    VideoCameraOutlined,
+} from '@ant-design/icons';
+import {  Drawer, MenuProps } from 'antd';
 import Link from 'next/link';
-import { UnorderedListOutlined } from '@ant-design/icons';
-import { Drawer, MenuProps } from 'antd';
 import { useRouter } from 'next/navigation';
-import Image from 'next/image';
 import { useTypedSelector } from '@/hooks/useTypedSelector';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { clearUser, fetchUserData } from '@/lib/redux/features/user/userSlice';
@@ -12,7 +18,7 @@ import { deleteCookie } from 'cookies-next';
 
 import './Header.scss';
 import ButtonPrimary from '../../shared/ButtonPrimary/ButtonPrimary';
-import Dropdowns from '../Dropdown/Dropdown';
+import UserAvatarDropdown from '@/components/shared/User/User';
 
 const menuItems = [
     { key: 1, label: 'Khoá học online', href: '/courses-online' },
@@ -25,13 +31,16 @@ const menuItems = [
 const Header = () => {
     const router = useRouter();
     const [visible, setVisible] = useState(false);
-
+    const [isAdmin, setIsAdmin] = useState(false);
     const user = useTypedSelector((state) => state.user);
     const dispatch = useAppDispatch();
 
     useEffect(() => {
-        dispatch(fetchUserData()); 
+        dispatch(fetchUserData());
     }, [dispatch]);
+    useEffect(() => {
+        setIsAdmin(user.isAdmin);
+    }, [user.isAdmin]);
 
     const showDrawer = () => {
         setVisible(true);
@@ -42,14 +51,11 @@ const Header = () => {
     };
 
     const handleLogout = () => {
-      
         deleteCookie('token');
         deleteCookie('refreshToken');
-        
-       
+
         dispatch(clearUser());
 
-        
         router.push('/login');
     };
 
@@ -74,12 +80,15 @@ const Header = () => {
             ),
             key: '1',
         },
+        isAdmin
+            ? {
+                  label: <Link href={'/admin'}>Trang quản trị</Link>,
+                  key: '3',
+              }
+            : {},
         {
             label: (
-                <div
-                    onClick={handleLogout}
-                    className=""
-                >
+                <div onClick={handleLogout} className="">
                     Đăng xuất
                 </div>
             ),
@@ -118,7 +127,9 @@ const Header = () => {
                                 </Link>
                             </li>
                         ))}
-                        {!user.isLoggedIn && <ButtonPrimary label="Đăng nhập" />}
+                        {!user.isLoggedIn && (
+                            <ButtonPrimary label="Đăng nhập" />
+                        )}
                     </ul>
                 </nav>
             </Drawer>
@@ -140,39 +151,13 @@ const Header = () => {
                     </ul>
                 </nav>
                 {user.isLoggedIn ? (
-                    <>
-                        <Dropdowns
-                            items={itemsdropdown}
-                            title={
-                                user?.avatar ? (
-                                    <Image
-                                        src={user.avatar}
-                                        width={30}
-                                        height={30}
-                                        alt="User Avatar"
-                                        className="mr-2 rounded-full"
-                                    />
-                                ) : (
-                                    <Image
-                                        src="https://study4.com/static/img/user_icon.png"
-                                        width={30}
-                                        height={30}
-                                        alt="Default Avatar"
-                                        className="mr-2 rounded-full"
-                                    />
-                                )
-                            }
-                            stylecss=" text-normal"
-                        />
-                    </>
+                    <UserAvatarDropdown
+                        user={user as any}
+                        isAdmin={isAdmin}
+                        itemsdropdown={itemsdropdown}
+                    />
                 ) : (
-                    <>
-                        <ButtonPrimary
-                            to="/login"
-                            size="large"
-                            label="Đăng nhập"
-                        />
-                    </>
+                    <ButtonPrimary to="/login" size="large" label="Đăng nhập" />
                 )}
             </div>
         </header>

@@ -17,6 +17,7 @@ interface UserState {
     isLoading: boolean;
     error: string | null;
     isLoggedIn: boolean; 
+    isAdmin: boolean;
 }
 
 const initialState: UserState = {
@@ -33,6 +34,7 @@ const initialState: UserState = {
     isLoading: false,
     error: null,
     isLoggedIn: false, 
+    isAdmin: false,
 };
 
 export const fetchUserData = createAsyncThunk(
@@ -76,7 +78,7 @@ const userSlice = createSlice({
             state.isLoading = false;
             state.error = null;
             state.isLoggedIn = false; 
-
+            state.isAdmin = false;
           
         },
         refreshUserData(state) {
@@ -102,14 +104,18 @@ const userSlice = createSlice({
                 state.updatedAt = action.payload.updatedAt;
                 state.isLoading = false;
                 state.isLoggedIn = true; 
+                state.isAdmin = action.payload.role === 'admin';
             })
             .addCase(fetchUserData.rejected, (state, action) => {
                 state.isLoading = false;
                 state.error = action.payload as string;
                 state.isLoggedIn = false; 
+                state.isAdmin = false;
             });
     },
 });
+
+export const selectIsAdmin = (state: { user: UserState }) => state.user.isAdmin;
 
 export const { setUserId, clearUser, refreshUserData } = userSlice.actions;
 

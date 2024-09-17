@@ -1,9 +1,40 @@
-import { useSelector } from 'react-redux';
-import { selectIsLoggedIn, selectUserId } from '@/lib/redux/features/user/userSelectors';
+import { useEffect, useState } from 'react';
+import { getCookie } from 'cookies-next';
+import {jwtDecode} from 'jwt-decode';
+
+interface AuthState {
+    isLoggedIn: boolean;
+    loading: boolean;
+}
 
 export const useAuth = () => {
-    const isLoggedIn = useSelector(selectIsLoggedIn);
-    const userId = useSelector(selectUserId);
+    const [authState, setAuthState] = useState<AuthState>({
+        isLoggedIn: false,
+        loading: true, 
+    });
 
-    return { isLoggedIn, userId };
+    useEffect(() => {
+        const checkAuth = async () => {
+            try {
+                const token = getCookie('token');
+                if (token) {
+                    const decoded: any = jwtDecode(token as string);
+                    if (decoded.id) {
+                 
+                        setAuthState({ isLoggedIn: true, loading: false });
+                        return;
+                    }
+                }
+            
+                setAuthState({ isLoggedIn: false, loading: false });
+            } catch (error) {
+                
+                setAuthState({ isLoggedIn: false, loading: false });
+            }
+        };
+
+        checkAuth();
+    }, []);
+
+    return authState;
 };

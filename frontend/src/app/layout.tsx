@@ -1,7 +1,8 @@
+
 import { Roboto } from 'next/font/google';
-import dynamic from 'next/dynamic';
 import './globals.scss';
 import StyledComponentsRegistry from '../lib/AntdRegistry';
+import LayoutWrapper from './LayoutWrapper';
 
 const roboto = Roboto({
     weight: ['400', '700'],
@@ -9,10 +10,6 @@ const roboto = Roboto({
     subsets: ['latin'],
     display: 'swap',
 });
-
-const ClientLayout = dynamic(
-    () => import('../layouts/ClientLayout/ClientLayout'),
-);
 
 export const metadata = {
     title: 'FSTUDY',
@@ -22,13 +19,11 @@ export const metadata = {
 const RootLayout = ({ children }: React.PropsWithChildren) => {
     return (
         <html lang="en">
-           
             <body className={roboto.className}>
                 <StyledComponentsRegistry>
-                    <ClientLayout>{children}</ClientLayout>
+                    <LayoutWrapper>{children}</LayoutWrapper>
                 </StyledComponentsRegistry>
             </body>
-        
         </html>
     );
 };
