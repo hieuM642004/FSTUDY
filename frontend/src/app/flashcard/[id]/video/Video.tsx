@@ -5,7 +5,7 @@ import FlashCardService from '@/services/FlashCardService';
 import FlashCardInterface from '@/types/FlashCard';
 import { useEffect, useState, useRef } from 'react';
 import { DoubleLeftOutlined, DoubleRightOutlined } from '@ant-design/icons';
-
+import TextSelectorWrapper from '../../TextSelectorWrapper/TextSelectorWrapper';
 const { Option } = Select;
 
 function Video({ id }: { id: string }) {
@@ -30,6 +30,7 @@ function Video({ id }: { id: string }) {
 
         fetchData();
     }, [id]);
+
 
     const handleSelectChange = async (value: string) => {
         setSelectedWord(value);
@@ -138,25 +139,24 @@ function Video({ id }: { id: string }) {
                         </Row>
 
                         <div className="vocabulary ml-2 mt-4">
-                            <h3 className="font-bold text-xl">
-                                Từ vựng liên quan:
-                            </h3>
-                            <div>
-                                {Object.entries(
-                                    searchResults[currentVideoIndex].vocabulary,
-                                ).map(([word, videoUrl], i) => (
-                                    <span
-                                        key={i}
-                                        className="bg-slate-300 px-2 my-1 py-1 mx-1 inline-block rounded-md cursor-pointer"
-                                        onClick={() =>
-                                            handleWordClick(videoUrl)
-                                        }
-                                    >
-                                        {word}
-                                    </span>
-                                ))}
-                            </div>
-                        </div>
+    <h3 className="font-bold text-xl">Từ vựng liên quan:</h3>
+    <TextSelectorWrapper>
+        <div>
+            {Object.entries(searchResults[currentVideoIndex].vocabulary).map(
+                ([word, videoUrl], i) => (
+                    <span
+                        key={i}
+                        className="bg-slate-300 px-2 my-1 py-1 mx-1 inline-block rounded-md cursor-pointer"
+                        onDoubleClick={() => handleWordClick(videoUrl)}
+                    >
+                        {word}
+                    </span>
+                ),
+            )}
+        </div>
+    </TextSelectorWrapper>
+</div>
+
                     </>
                 )}
 

@@ -6,10 +6,6 @@ import { useRef } from 'react';
 function PagePractice() {
     const countDownRef = useRef<any>(null);
 
-    const handleTimeup = () => {
-        console.log('Time is up!');
-    };
-
     return (
         <>
             <TextSelectorWrapper

@@ -17,6 +17,7 @@ moment.locale('vi');
 
 const {TextArea }=Input
 const ContentEdit = ({ onRemove, idMySelf, socketRef, idBlog  , idCourse , editContent}: any) => {
+    const dataUser = useTypedSelector((state) => state.user);
     return (
         <div>
             <p className="cursor-pointer">
@@ -208,7 +209,7 @@ function Comment({ idBlog = null, idCourse = null }: string | any) {
             <h3 className="font-bold text-xl mb-3">Bình Luận</h3>
             {dataUser?.id !== null ? (
                 <>
-                    <div className="flex mb-4">
+                    {/* <div className="flex mb-4">
                         <textarea
                             name="content"
                             rows={1}
@@ -225,7 +226,7 @@ function Comment({ idBlog = null, idCourse = null }: string | any) {
                                 Gửi
                             </button>
                         </div>
-                    </div>
+                    </div> */}
                 </>
             ) : (
                 <>

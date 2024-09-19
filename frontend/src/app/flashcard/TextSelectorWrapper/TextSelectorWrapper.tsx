@@ -5,13 +5,8 @@ import FlashCardService from '@/services/FlashCardService';
 import FormFlashCard from '../FormFlashCard/FormFlashCard.';
 import FlashCardInterface from '@/types/FlashCard';
 
-interface TextSelectorWrapperProps {
-    children: React.ReactNode;
-    pauseTimer: () => void; // Function to pause the timer
-    resumeTimer: () => void; // Function to resume the timer
-}
 
-function TextSelectorWrapper({ children, pauseTimer, resumeTimer }: TextSelectorWrapperProps) {
+function TextSelectorWrapper({ children}:{children:React.ReactNode}) {
     const [showButton, setShowButton] = useState(false);
     const [buttonPosition, setButtonPosition] = useState({ top: 0, left: 0 });
     const [selectedText, setSelectedText] = useState('');
@@ -32,7 +27,21 @@ function TextSelectorWrapper({ children, pauseTimer, resumeTimer }: TextSelector
         };
         fetchData();
     }, []);
-
+    const handleDoubleClick = (text: string) => {
+        if (text && text.length > 0) {
+            setSelectedText(text);
+            setShowButton(true);
+        } else {
+            setShowButton(false);
+        }
+    };
+    useEffect(() => {
+        document.addEventListener('dblclick', handleMouseUp);
+        return () => {
+            document.removeEventListener('dblclick', handleMouseUp);
+        };
+    }, []);
+    
     // Handle mouse selection of text
     const handleMouseUp = () => {
         const selection = window.getSelection();
@@ -63,13 +72,12 @@ function TextSelectorWrapper({ children, pauseTimer, resumeTimer }: TextSelector
     // Handle button click to open modal and pause the timer
     const handleButtonClick = () => {
         setIsModalVisible(true);
-        pauseTimer();  // Pause the timer when modal is opened
+        
     };
 
     // Handle modal close and resume the timer
     const handleModalClose = () => {
         setIsModalVisible(false);
-        resumeTimer();  // Resume the timer when modal is closed
     };
 
     // Handle flashcard selection

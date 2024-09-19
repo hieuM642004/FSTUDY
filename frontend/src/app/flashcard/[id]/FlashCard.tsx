@@ -14,28 +14,32 @@ import { useRouter } from 'next/navigation';
 function FlashCard({ id }: { id: string }) {
     const [isFlipped, setIsFlipped] = useState(false);
     const [flashCard, setFlashCard] = useState<FlashCardInterface | null>(null);
-    const [results, setResults] = useState<{ [key: number]: boolean | null }>({});
-    const [isPracticeMode, setIsPracticeMode] = useState(false); 
-    const [isFinished, setIsFinished] = useState(false); 
-    const [reviewDataList, setReviewDataList] = useState<any[]>([]); 
+    const [results, setResults] = useState<{ [key: number]: boolean | null }>(
+        {},
+    );
+    const [isPracticeMode, setIsPracticeMode] = useState(false);
+    const [isFinished, setIsFinished] = useState(false);
+    const [reviewDataList, setReviewDataList] = useState<any[]>([]);
     const audioRef = useRef<HTMLAudioElement | null>(null);
-    const carouselRef = useRef<any>(null); 
-    const {isLoggedIn,loading}=useAuth()
-    const router=useRouter()
-    
+    const carouselRef = useRef<any>(null);
+    const { isLoggedIn, loading } = useAuth();
+    const router = useRouter();
+
     useEffect(() => {
-        if (!loading) {  
+        if (!loading) {
             if (!isLoggedIn) {
                 router.push('/login');
             }
         }
-    }, [isLoggedIn, loading, router]); 
-    
+    }, [isLoggedIn, loading, router]);
+
     useEffect(() => {
         const fetchData = async () => {
             try {
                 if (id) {
-                    const response = await FlashCardService.getAllFlashCardById(id);
+                    const response = await FlashCardService.getAllFlashCardById(
+                        id,
+                    );
                     setFlashCard(response);
                 }
             } catch (error) {
@@ -45,17 +49,15 @@ function FlashCard({ id }: { id: string }) {
 
         fetchData();
     }, [id]);
-    useEffect(()=>{
-if(window.location.hash === '#review'){
- setIsPracticeMode(true);   
-}
-    },[])
+    useEffect(() => {
+        if (window.location.hash === '#review') {
+            setIsPracticeMode(true);
+        }
+    }, []);
     useEffect(() => {
         if (isPracticeMode) {
-            
             window.location.hash = 'review';
         } else {
-           
             window.location.hash = '';
         }
     }, [isPracticeMode]);
@@ -72,66 +74,79 @@ if(window.location.hash === '#review'){
             ...prevResults,
             [index]: answer,
         }));
-    
-        const now = new Date(); 
-    
+
+        const now = new Date();
+
         const reviewData = {
             reviewCount: flashCard?.words[index].reviewCount + 1 || 1,
-            reviewInterval: calculateNextInterval(flashCard?.words[index].reviewCount || 0),
-            lastReviewed: formatVietnamTime(now), 
-            nextReviewDate: formatVietnamTime(new Date(now.getTime() + calculateNextInterval(flashCard?.words[index].reviewCount || 0) * 24 * 60 * 60 * 1000)), 
+            reviewInterval: calculateNextInterval(
+                flashCard?.words[index].reviewCount || 0,
+            ),
+            lastReviewed: formatVietnamTime(now),
+            nextReviewDate: formatVietnamTime(
+                new Date(
+                    now.getTime() +
+                        calculateNextInterval(
+                            flashCard?.words[index].reviewCount || 0,
+                        ) *
+                            24 *
+                            60 *
+                            60 *
+                            1000,
+                ),
+            ),
         };
 
-    
         setReviewDataList((prevData) => [
             ...prevData,
             { wordIndex: index, ...reviewData },
         ]);
-    
+
         if (answer) {
             message.success('Bạn đã nhớ từ này!');
         } else {
             message.error('Bạn chưa nhớ từ này!');
         }
-    
+
         setTimeout(() => {
             if (flashCard && flashCard.words) {
                 if (carouselRef.current && index + 1 < flashCard.words.length) {
-                    carouselRef.current.goTo(index + 1); 
+                    carouselRef.current.goTo(index + 1);
                 } else {
-                    setIsFinished(true); 
+                    setIsFinished(true);
                 }
             }
-        }, 1000); 
+        }, 1000);
     };
-    
-   
+
     const calculateNextInterval = (reviewCount: number): number => {
         switch (reviewCount) {
             case 0:
-                return 1; 
+                return 1;
             case 1:
-                return 3; 
+                return 3;
             case 2:
-                return 7; 
+                return 7;
             default:
-                return Math.min(reviewCount * 2, 30); 
+                return Math.min(reviewCount * 2, 30);
         }
     };
 
-    
     useEffect(() => {
         if (isFinished && reviewDataList.length > 0) {
             sendAllReviewData();
         }
     }, [isFinished, reviewDataList]);
 
-    
     const sendAllReviewData = async () => {
         try {
             for (let i = 0; i < reviewDataList.length; i++) {
                 const { wordIndex, ...reviewData } = reviewDataList[i];
-                await FlashCardService.updateWordReview(flashCard?._id as string, wordIndex, reviewData);
+                await FlashCardService.updateWordReview(
+                    flashCard?._id as string,
+                    wordIndex,
+                    reviewData,
+                );
             }
             message.success('Cập nhật ôn tập cho tất cả các từ thành công!');
         } catch (error) {
@@ -143,13 +158,21 @@ if(window.location.hash === '#review'){
         {
             key: '1',
             label: (
-                <Link href={`/flashcard/${flashCard?._id}/video`}>Học qua video</Link>
+                <Link
+                    href={`/flashcard/${flashCard?._id}/video`}
+                    className="ml-4"
+                >
+                    Học qua video
+                </Link>
             ),
         },
         {
             key: '2',
             label: (
-                <Link href={`/flashcard/${flashCard?._id}/multiple-choice`} className="ml-4">
+                <Link
+                    href={`/flashcard/${flashCard?._id}/multiple-choice`}
+                    className="ml-4"
+                >
                     Kiểm tra
                 </Link>
             ),
@@ -157,7 +180,10 @@ if(window.location.hash === '#review'){
         {
             key: '3',
             label: (
-                <Link href={`/flashcard/${flashCard?._id}/practice-reading`} className="ml-4">
+                <Link
+                    href={`/flashcard/${flashCard?._id}/practice-reading`}
+                    className="ml-4"
+                >
                     Luyện đọc
                 </Link>
             ),
@@ -165,7 +191,10 @@ if(window.location.hash === '#review'){
         {
             key: '4',
             label: (
-                <button className="px-4 py-2 rounded-md" onClick={() => setIsPracticeMode(true)}>
+                <button
+                    className="px-4 py-2 rounded-md"
+                    onClick={() => setIsPracticeMode(true)}
+                >
                     Bắt đầu chế độ luyện tập
                 </button>
             ),
@@ -173,19 +202,21 @@ if(window.location.hash === '#review'){
     ];
 
     const countRememberedWords = () => {
-        return Object.values(results).filter((result) => result === true).length;
+        return Object.values(results).filter((result) => result === true)
+            .length;
     };
 
     const countNotRememberedWords = () => {
-        return Object.values(results).filter((result) => result === false).length;
+        return Object.values(results).filter((result) => result === false)
+            .length;
     };
 
     return (
-        <div className='p-10'>
+        <div className="p-10">
             <div className="pt-7 flex justify-around ">
                 <span>
                     <h2 className="text-start text-3xl font-bold">
-                        FlashCard: {flashCard ? flashCard.nameCard : <Spin/>}
+                        FlashCard: {flashCard ? flashCard.nameCard : <Spin />}
                     </h2>
                 </span>
                 <div className="flex justify-center">
@@ -200,9 +231,9 @@ if(window.location.hash === '#review'){
             {flashCard && !isFinished && (
                 <Carousel
                     className="shadow-md bg-transparent mx-auto mt-2 mb-6 w-2/3 h-96"
-                    arrows={!isPracticeMode} 
+                    arrows={!isPracticeMode}
                     infinite={false}
-                    ref={carouselRef} 
+                    ref={carouselRef}
                 >
                     {flashCard.words.map((word, index) => (
                         <div key={index}>
@@ -239,18 +270,21 @@ if(window.location.hash === '#review'){
                                 </div>
                             </div>
 
-                           
                             {isPracticeMode && (
                                 <div className="flex justify-center mt-4">
                                     <button
                                         className="bg-red-500 text-white px-4 py-2 rounded-md mx-2"
-                                        onClick={() => handleAnswer(index, false)}
+                                        onClick={() =>
+                                            handleAnswer(index, false)
+                                        }
                                     >
                                         Chưa nhớ
                                     </button>
                                     <button
                                         className="bg-green-500 text-white px-4 py-2 rounded-md mx-2"
-                                        onClick={() => handleAnswer(index, true)}
+                                        onClick={() =>
+                                            handleAnswer(index, true)
+                                        }
                                     >
                                         Đã nhớ
                                     </button>
@@ -261,13 +295,20 @@ if(window.location.hash === '#review'){
                 </Carousel>
             )}
 
-          
             {isFinished && (
                 <div className="text-center mt-10 shadow-md p-10">
                     <h2 className="text-2xl font-bold mb-4">Hết </h2>
-                    <p className="text-lg">Số từ bạn đã nhớ: {countRememberedWords()}</p>
-                    <p className="text-lg">Số từ bạn chưa nhớ: {countNotRememberedWords()}</p>
-                    <ButtonPrimary to="/flashcard" className="mt-4" label='Trở về flashcard'/>
+                    <p className="text-lg">
+                        Số từ bạn đã nhớ: {countRememberedWords()}
+                    </p>
+                    <p className="text-lg">
+                        Số từ bạn chưa nhớ: {countNotRememberedWords()}
+                    </p>
+                    <ButtonPrimary
+                        to="/flashcard"
+                        className="mt-4"
+                        label="Trở về flashcard"
+                    />
                 </div>
             )}
 

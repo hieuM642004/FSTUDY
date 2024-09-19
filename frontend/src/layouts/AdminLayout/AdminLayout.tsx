@@ -39,13 +39,12 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
     const handleLogout = () => {
         deleteCookie('token');
         deleteCookie('refreshToken');
-
+        deleteCookie('typeLogin');
         dispatch(clearUser());
 
         router.push('/login');
     };
     const itemsdropdown = [
-    
         {
             label: <Link href="/my-account">Trang cá nhân</Link>,
             key: '1',
@@ -94,7 +93,6 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
                     </Link>
                 </div>
                 <Menu
-              
                     theme="dark"
                     mode="inline"
                     defaultSelectedKeys={['1']}

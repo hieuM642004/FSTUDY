@@ -53,6 +53,7 @@ const Header = () => {
     const handleLogout = () => {
         deleteCookie('token');
         deleteCookie('refreshToken');
+        deleteCookie('typeLogin');
 
         dispatch(clearUser());
 

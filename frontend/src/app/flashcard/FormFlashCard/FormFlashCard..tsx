@@ -32,12 +32,14 @@ function FormFlashCard({
     const [isWordValid, setIsWordValid] = useState<{
         [index: number]: boolean;
     }>({});
-const {isLoggedIn,userId}=useAuth()
+const {isLoggedIn}=useAuth()
     const [messageProps, setMessageProps] = useState<{
         type: 'success' | 'error' | 'warning';
         content: string;
     } | null>(null);
     const router = useRouter();
+    const dataUser = useTypedSelector((state) => state.user);
+    const {}=dataUser
     useEffect(() => {
         if (id) {
             const fetchCardData = async () => {
@@ -358,7 +360,7 @@ const {isLoggedIn,userId}=useAuth()
             words: [],
             wordCount: 0,
             isPublic: false,
-            userId:userId
+            userId: dataUser?.id,
         };
 
         if (!cards || cards.length === 0) {

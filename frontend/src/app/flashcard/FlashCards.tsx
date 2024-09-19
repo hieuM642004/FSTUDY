@@ -12,6 +12,7 @@ import ConfirmModal from '@/components/shared/ModalComfirm/ModalComfirm';
 import Message from '@/components/shared/Message/Message';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
+import { useTypedSelector } from '@/hooks/useTypedSelector';
 
 const FlashCardList = () => {
     const [flashCards, setFlashCards] = useState<FlashCardInterface[]>([]);
@@ -25,15 +26,15 @@ const FlashCardList = () => {
         type: 'success' | 'error' | 'warning';
         content: string;
     } | null>(null);
-    const { userId,isLoggedIn}=useAuth()
-  
+    const {isLoggedIn}=useAuth()
+    const dataUser = useTypedSelector((state) => state.user);
     
     useEffect(() => {
         const fetchData = async () => {
             try {
-                if (userId) { 
-                    console.log(userId);
-                    const response = await FlashCardService.getAllFlashCardsOfUser(userId); 
+                if (dataUser?.id) { 
+                    console.log(dataUser?.id);
+                    const response = await FlashCardService.getAllFlashCardsOfUser(dataUser?.id); 
                     console.log(response);
                     setFlashCards(response);
                 }
@@ -43,7 +44,7 @@ const FlashCardList = () => {
         };
     
         fetchData();
-    }, [userId]);  
+    }, [dataUser?.id]);  
     
 
     const showConfirm = (id: string) => {
