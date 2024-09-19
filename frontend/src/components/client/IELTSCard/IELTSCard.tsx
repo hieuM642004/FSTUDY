@@ -19,6 +19,7 @@ const IELTSCard = ({ title, idSession, durition,slug,examType }: Exams) => {
                     <CommentOutlined /> {10}
                 </p>
                 <p className="text-sm !text-black">{idSession?.length} phần thi | 40 câu hỏi</p>
+                <p className="text-sm">{idSession?.length} phần thi | 40 câu hỏi</p>
                 <div className="mt-2">
                     <span className="bg-blue-100  text-xs font-semibold mr-2 px-2.5 py-0.5 rounded ">
                         #{examType}
