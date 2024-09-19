@@ -82,11 +82,14 @@ const Header = () => {
             key: '1',
         },
         isAdmin
-            ? {
-                  label: <Link href={'/admin'}>Trang quản trị</Link>,
-                  key: '3',
-              }
-            : {},
+        ? {
+            label: <Link href={'/admin'}>Trang quản trị</Link>,
+            key: '3',
+          }
+        : {
+            label: null,
+            key: '',
+          },
         {
             label: (
                 <div onClick={handleLogout} className="">

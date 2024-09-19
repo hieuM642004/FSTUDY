@@ -5,14 +5,15 @@ import { Button } from 'antd';
 import Link from 'next/link';
 
 interface PrimaryButtonProps {
-    label: string;
+    label?: string;
     to?: string;
     size?: 'large' | 'middle' | 'small';
     className?: string;
     onClick?: () => void;
     htmlType?: "button" | "reset" | "submit" | undefined;
     disabled?: boolean;
-    loading?: boolean
+    loading?: boolean;
+    icon?: React.ReactNode;
 }
 
 const sizeClassMap = {
@@ -30,18 +31,19 @@ const ButtonPrimary: React.FC<PrimaryButtonProps> = ({
     htmlType = "button",
     disabled = false,
     loading = false,
+    icon
 }) => {
     let btnClass = `btn-primary font-semibold ${sizeClassMap[size]} ${className}`;
 
     return to ? (
         <Link href={to}>
             <Button className={btnClass} onClick={onClick} type="primary" htmlType={htmlType} disabled={disabled}>
-                {label}
+                {label || icon}
             </Button>
         </Link>
     ) : (
         <Button className={btnClass} onClick={onClick} loading={loading} type="primary" htmlType={htmlType} disabled={disabled}>
-            {label}
+               {label || icon}
         </Button>
     );
 };
