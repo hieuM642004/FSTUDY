@@ -1,8 +1,10 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Card, Button, message, Select } from 'antd';
+import { Card, Button, message, Select, Progress } from 'antd';
 import { nestApiInstance } from '../../../../constant/api';
+import { getCookie } from 'cookies-next';
+import {jwtDecode} from 'jwt-decode';
 
 type WordMatchingData = {
     _id: string;
@@ -10,85 +12,121 @@ type WordMatchingData = {
     matches: string[];
 };
 
+type ProgressData = {
+    progress: number;
+    completed: boolean;
+    selectedMatches: { [key: string]: string };
+    wordMatchingId: string;
+};
+
+type ResultType = { [word: string]: boolean };
+type CorrectMatchesType = { [key: number]: ResultType };
+
 const WordMatchingPage = ({ id }: { id: string }) => {
     const [questions, setQuestions] = useState<WordMatchingData[]>([]);
-    const [selectedWords, setSelectedWords] = useState<{
-        [key: string]: string;
-    }>({});
+    const [selectedWords, setSelectedWords] = useState<{ [key: string]: string }>({});
     const [isSubmitted, setIsSubmitted] = useState(false);
-    const [result, setResult] = useState<{ [key: string]: boolean }>({});
-
-    const fetchLessons = async () => {
-        try {
-            const response = await nestApiInstance.get(`/course/content/${id}`);
-            setQuestions(response.data.word_matching);
-        } catch (error) {
-            console.error('Error fetching lessons:', error);
-        }
-    };
+    const [result, setResult] = useState<CorrectMatchesType>({});
+    const [progress, setProgress] = useState<number>(0);
+    const [completed, setCompleted] = useState<boolean>(false);
+    const [userId, setUserId] = useState<string | null>(null);
 
     useEffect(() => {
-        fetchLessons();
-    }, [id]);
+        const token = getCookie('token') as string;
+        if (token) {
+            try {
+                const decoded: any = jwtDecode(token);
+                setUserId(decoded.id);
+            } catch (error) {
+                console.error('Error decoding token:', error);
+            }
+        } else {
+            setUserId(null);
+        }
+    }, []);
 
-    const handleMatchChange = (
-        questionIndex: number,
-        word: string,
-        match: string,
-    ) => {
+    useEffect(() => {
+        if (userId) {
+            const fetchLessons = async () => {
+                try {
+                    const response = await nestApiInstance.get(`/course/content/${id}`);
+                    setQuestions(response.data.word_matching);
+
+                    const progressResponse = await nestApiInstance.get(`/course/word-progress/${userId}/${id}`);
+                    const progressData: ProgressData = progressResponse.data;
+
+                    if (progressData) {
+                        setProgress(progressData.progress);
+                        setCompleted(progressData.completed);
+                        setSelectedWords(progressData.selectedMatches || {});
+                    }
+                } catch (error) {
+                    console.error('Error fetching lessons or progress:', error);
+                }
+            };
+
+            fetchLessons();
+        }
+    }, [userId, id]);
+
+    const handleMatchChange = (questionIndex: number, word: string, match: string) => {
         setSelectedWords((prev) => ({
             ...prev,
             [`${questionIndex}-${word}`]: match,
         }));
     };
 
-    const handleSubmit = () => {
-        const unselectedWords = questions.some((question, questionIndex) =>
-            question.words.some(
-                (word) => !selectedWords[`${questionIndex}-${word}`],
-            ),
-        );
+    const handleSubmit = async () => {
+        if (questions.length === 0) return;
 
-        if (unselectedWords) {
-            message.error('Vui lòng chọn đáp án cho tất cả các từ!', 1);
-            return;
-        }
+        const correctMatches: CorrectMatchesType = questions.reduce((acc, question, questionIndex) => {
+            const questionResult: ResultType = question.words.reduce((questionAcc, word) => {
+                const selectedMatch = (selectedWords[`${questionIndex}-${word}`] || '').trim().toLowerCase();
+                const correctMatch = question.matches[question.words.indexOf(word)]?.trim().toLowerCase() || '';
+                const isCorrect = selectedMatch === correctMatch;
+                return { ...questionAcc, [word]: isCorrect };
+            }, {});
 
-        const correctMatches = questions.reduce(
-            (acc, question, questionIndex) => {
-                const questionResult = question.words.reduce(
-                    (questionAcc, word) => {
-                        const selectedMatch = (
-                            selectedWords[`${questionIndex}-${word}`] || ''
-                        )
-                            .trim()
-                            .toLowerCase();
-                        const correctMatch =
-                            question.matches[question.words.indexOf(word)]
-                                ?.trim()
-                                .toLowerCase() || '';
-                        const isCorrect = selectedMatch === correctMatch;
-                        return { ...questionAcc, [word]: isCorrect };
-                    },
-                    {},
-                );
-
-                return { ...acc, [questionIndex]: questionResult };
-            },
-            {},
-        );
+            return { ...acc, [questionIndex]: questionResult };
+        }, {});
 
         setResult(correctMatches);
         setIsSubmitted(true);
 
-        const allCorrect = Object.values(correctMatches).every((result) =>
-            Object.values(result).every((isCorrect) => isCorrect),
-        );
+        // Calculate correct count and current progress
+        const totalQuestions = questions.length;
+        const correctCount = Object.values(correctMatches).reduce((count, questionResult) => {
+            return (
+                count +
+                Object.values(questionResult).filter((isCorrect) => isCorrect).length
+            );
+        }, 0);
 
-        if (allCorrect) {
-            message.success('Bạn đã ghép đúng tất cả các từ!', 1);
-        } else {
-            message.error('Bạn đã ghép sai một số từ! Hãy thử lại', 1);
+        const totalWords = questions.reduce((sum, question) => sum + question.words.length, 0);
+        const currentProgress = Math.round((correctCount / totalWords) * 100);
+        const isCompleted = currentProgress >= 100;
+
+        // Update progress
+        try {
+            await nestApiInstance.post('/course/update/word-progress', {
+                wordId: id,
+                progress: currentProgress,
+                userId: userId || null,
+                selectedMatches: selectedWords,
+                completed: isCompleted,
+            });
+
+            setProgress(currentProgress);
+            setCompleted(isCompleted);
+
+            if (isCompleted) {
+                message.success('Bạn đã ghép đúng tất cả các từ!', 1);
+            } else {
+                message.info(`Tiến độ của bạn là: ${currentProgress}%`, 1);
+            }
+        } catch (error) {
+            console.error('Error updating word matching progress:', error);
+            message.error('Đã xảy ra lỗi khi cập nhật tiến độ!', 1);
         }
     };
 
@@ -97,40 +135,20 @@ const WordMatchingPage = ({ id }: { id: string }) => {
             {questions.length > 0 && (
                 <>
                     {questions.map((lesson, questionIndex) => (
-                        <Card
-                            key={lesson._id}
-                            title={`Câu hỏi ${questionIndex + 1}`}
-                            className="mb-4"
-                        >
+                        <Card key={lesson._id} title={`Câu hỏi ${questionIndex + 1}`} className="mb-4">
                             <div className="flex flex-col gap-4">
                                 {lesson.words.map((word) => (
-                                    <div
-                                        key={word}
-                                        className="flex items-center gap-2"
-                                    >
+                                    <div key={word} className="flex items-center gap-2">
                                         <span>{word}</span>
                                         <Select
                                             placeholder="Chọn đáp án"
-                                            onChange={(value) =>
-                                                handleMatchChange(
-                                                    questionIndex,
-                                                    word,
-                                                    value,
-                                                )
-                                            }
-                                            disabled={isSubmitted}
+                                            onChange={(value) => handleMatchChange(questionIndex, word, value)}
+                                            disabled={result[questionIndex]?.[word] === true} // Disable if the answer is correct
                                             className="w-64"
-                                            value={
-                                                selectedWords[
-                                                    `${questionIndex}-${word}`
-                                                ]
-                                            }
+                                            value={selectedWords[`${questionIndex}-${word}`]}
                                         >
                                             {lesson.matches.map((match) => (
-                                                <Select.Option
-                                                    key={match}
-                                                    value={match}
-                                                >
+                                                <Select.Option key={match} value={match}>
                                                     {match}
                                                 </Select.Option>
                                             ))}
@@ -145,7 +163,6 @@ const WordMatchingPage = ({ id }: { id: string }) => {
                             className="menu-toggle-btn btn-primary font-semibold"
                             type="primary"
                             onClick={handleSubmit}
-                            disabled={isSubmitted}
                         >
                             Gửi câu trả lời
                         </Button>
@@ -154,25 +171,14 @@ const WordMatchingPage = ({ id }: { id: string }) => {
                         <div className="mt-4">
                             <h3>Kết quả:</h3>
                             {questions.map((lesson, questionIndex) => (
-                                <Card
-                                    key={lesson._id}
-                                    title={`Câu hỏi ${questionIndex + 1}`}
-                                >
+                                <Card key={lesson._id} title={`Câu hỏi ${questionIndex + 1}`}>
                                     {lesson.words.map((word) => (
                                         <Card key={word} title={`Từ: ${word}`}>
                                             <p>
-                                                <strong>Đáp án đã chọn:</strong>{' '}
-                                                {
-                                                    selectedWords[
-                                                        `${questionIndex}-${word}`
-                                                    ]
-                                                }
+                                                <strong>Đáp án đã chọn:</strong> {selectedWords[`${questionIndex}-${word}`]}
                                             </p>
                                             <p>
-                                                <strong>Kết quả:</strong>{' '}
-                                                {result[questionIndex]?.[word]
-                                                    ? 'Đúng'
-                                                    : 'Sai'}
+                                                <strong>Kết quả:</strong> {result[questionIndex]?.[word] ? 'Đúng' : 'Sai'}
                                             </p>
                                         </Card>
                                     ))}
@@ -180,6 +186,11 @@ const WordMatchingPage = ({ id }: { id: string }) => {
                             ))}
                         </div>
                     )}
+                    <Progress
+                        percent={progress}
+                        status={completed ? 'success' : 'active'}
+                        style={{ marginTop: 16 }}
+                    />
                 </>
             )}
         </div>

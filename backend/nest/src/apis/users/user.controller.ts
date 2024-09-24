@@ -1,6 +1,7 @@
 import {
     Body,
     Controller,
+    Delete,
     Get,
     Param,
     Post,
@@ -75,7 +76,7 @@ export class UserController {
 
     @Post('/create-user')
     @UseInterceptors(FileInterceptor('avatar'))
-    @UseGuards(AdminGuard)
+    // @UseGuards(AdminGuard)
     async registerAdmin(
         @Body() user: User,
         @UploadedFile() file: Express.Multer.File,
@@ -174,4 +175,30 @@ export class UserController {
             );
         }
     }
+
+    @Delete(':id')
+async deleteUserById(@Param('id') id: string): Promise<ResponseData<User>> {
+    try {
+        const deletedUser = await this.userService.deleteUserById(id);
+        if (!deletedUser) {
+            return new ResponseData<User>(
+                null,
+                HttpStatus.NOT_FOUND,
+                'User not found',
+            );
+        }
+        return new ResponseData<User>(
+            deletedUser,
+            HttpStatus.SUCCESS,
+            HttpMessage.SUCCESS,
+        );
+    } catch (error) {
+        return new ResponseData<User>(
+            null,
+            HttpStatus.ERROR,
+            HttpMessage.ERROR,
+        );
+    }
+}
+
 }

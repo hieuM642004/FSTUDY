@@ -88,6 +88,55 @@ export class Content {
 
 export const ContentSchema = SchemaFactory.createForClass(Content);
 @Schema({ timestamps: true })
+export class QuizProgress {
+  @Prop({ type: Types.ObjectId, ref: 'User', required: true })
+  userId: string;
+
+  @Prop({ type: Types.ObjectId, ref: 'Quiz', required: true })
+  quizId: string;
+
+  @Prop({ required: true, default: 0 })
+  progress: number; // Percentage of quiz completion
+
+  @Prop({ required: true, default: false })
+  completed: boolean;
+}
+export const QuizzProgressSchema = SchemaFactory.createForClass(QuizProgress);
+
+
+@Schema({ timestamps: true })
+export class WordMatchingProgress {
+  @Prop({ type: Types.ObjectId, ref: 'User', required: true })
+  userId: string;
+
+  @Prop({ type: Types.ObjectId, ref: 'WordMatching', required: true })
+  wordMatchingId: string;
+
+  @Prop({ required: true, default: 0 })
+  progress: number; // Percentage of completion
+
+  @Prop({ required: true, default: false })
+  completed: boolean;
+}
+export const WordMatchingProgressSchema = SchemaFactory.createForClass(WordMatchingProgress);
+
+@Schema({ timestamps: true })
+export class FillInTheBlankProgress {
+  @Prop({ type: Types.ObjectId, ref: 'User', required: true })
+  userId: string;
+
+  @Prop({ type: Types.ObjectId, ref: 'FillInTheBlank', required: true })
+  fillInTheBlankId: string;
+
+  @Prop({ required: true, default: 0 })
+  progress: number; // Percentage of completion
+
+  @Prop({ required: true, default: false })
+  completed: boolean;
+}
+export const FillProgressSchema = SchemaFactory.createForClass(FillInTheBlankProgress);
+
+@Schema({ timestamps: true })
 export class VideoProgress {
   @Prop({ type: Types.ObjectId, ref: 'User', required: true })
   userId: string;

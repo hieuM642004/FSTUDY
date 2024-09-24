@@ -139,4 +139,15 @@ export class UserService {
         return users;
     }
 
+    // delete user By Id
+
+    async deleteUserById(id: string): Promise<User> {
+        const deletedUser = await this.userModel.findByIdAndUpdate(
+            id,
+            { active: false },
+            { new: true }
+        );
+        return deletedUser;
+    }
+    
 }
