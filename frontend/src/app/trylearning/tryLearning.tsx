@@ -85,6 +85,20 @@ const TryLearningPages = ({ id }: { id: any }) => {
                                 });
                             }
                             break;
+                        case 'word_matching':
+                            if (content.word_matching?.length > 0) {
+                                childrenItems.push({
+                                    key: `word_matching-${content._id}`,
+                                    label: 'word_matching',
+                                    onClick: () => {
+                                        setSelectedKey(`word_matching`);
+                                        router.push(
+                                            `/trylearning/lessons-handle/wordmatching/${content._id}`,
+                                        );
+                                    },
+                                });
+                            }
+                            break;
                         default:
                             break;
                     }

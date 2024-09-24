@@ -77,6 +77,11 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
             icon: <UploadOutlined />,
             label: <Link href="/admin/">Đề thi</Link>,
         },
+        {
+            key: '4',
+            icon: <UserOutlined />,
+            label: <Link href="/admin/blog">Trang Blog</Link>,
+        },
     ];
 
     return (
