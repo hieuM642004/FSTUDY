@@ -17,13 +17,16 @@ import {
     Course,
     CourseType,
     FillInTheBlank,
+    FillInTheBlankProgress,
     Lesson,
     PaymentStatus,
     Purchase,
     Quiz,
+    QuizProgress,
     Video,
     VideoProgress,
     WordMatching,
+    WordMatchingProgress,
 } from './courseSchema/course.schema';
 import { ResponseData } from 'src/global/globalClass';
 import { HttpStatus } from 'src/global/globalEnum';
@@ -81,6 +84,13 @@ export class CourseService {
         private readonly userModel: mongoose.Model<User>,
         @InjectModel(VideoProgress.name)
         private videoProgressModel: mongoose.Model<VideoProgress>,
+        @InjectModel(QuizProgress.name)
+        private quizProgressModel: mongoose.Model<QuizProgress>,
+        @InjectModel(WordMatchingProgress.name)
+        private wordMatchingProgressModel: mongoose.Model<WordMatchingProgress>,
+        @InjectModel(FillInTheBlankProgress.name)
+        private fillInTheBlankProgressModel: mongoose.Model<FillInTheBlankProgress>,
+
         private readonly googleDriveUploader: GoogleDriveUploader,
         private readonly firebaseService: FirebaseService,
     ) {}
@@ -426,7 +436,9 @@ export class CourseService {
 
     // Video Progress
     async updateProgress(videoId: string, progress: number, userId: string) {
-        const existingProgress = await this.videoProgressModel.findOne({ videoId, userId }).exec();
+        const existingProgress = await this.videoProgressModel
+            .findOne({ videoId, userId })
+            .exec();
 
         if (existingProgress && progress <= existingProgress.progress) {
             return existingProgress;
@@ -442,8 +454,96 @@ export class CourseService {
             .exec();
     }
 
-    async getProgress(userId: string) {
+    async getVideoProgress(userId: string) {
         return this.videoProgressModel.find({ userId }).exec();
+    }
+    async updateQuizProgress(quizId: string, correctAnswers: number, totalQuestions: number, userId: string) {
+        const progress = (correctAnswers / totalQuestions) * 100; 
+        const completed = progress >= 100;
+
+        const existingProgress = await this.quizProgressModel
+            .findOne({ quizId, userId })
+            .exec();
+
+        if (existingProgress && progress <= existingProgress.progress) {
+            return existingProgress;
+        }
+
+        const update = { progress, completed };
+        const options = { upsert: true, new: true };
+
+        return this.quizProgressModel
+            .findOneAndUpdate({ quizId, userId }, update, options)
+            .exec();
+    }
+
+    async getQuizProgress(userId: string) {
+        return this.quizProgressModel.find({ userId }).exec();
+    }
+
+    async updateFillInTheBlankProgress(
+        fillInTheBlankId: string,
+        progress: number,
+        userId: string,
+    ) {
+        const existingProgress = await this.fillInTheBlankProgressModel
+            .findOne({ fillInTheBlankId, userId })
+            .exec();
+
+        if (existingProgress && progress <= existingProgress.progress) {
+            return existingProgress;
+        }
+
+        const completed = progress >= 100;
+        const update = { progress, completed };
+        const options = { upsert: true, new: true };
+
+        return this.fillInTheBlankProgressModel
+            .findOneAndUpdate({ fillInTheBlankId, userId }, update, options)
+            .exec();
+    }
+
+    async getFillInTheBlankProgress(userId: string) {
+        return this.fillInTheBlankProgressModel.find({ userId }).exec();
+    }
+    async updateWordMatchingProgress(
+        wordMatchingId: string,
+        progress: number,
+        userId: string,
+    ) {
+        const existingProgress = await this.wordMatchingProgressModel
+            .findOne({ wordMatchingId, userId })
+            .exec();
+
+        if (existingProgress && progress <= existingProgress.progress) {
+            return existingProgress;
+        }
+
+        const completed = progress >= 100;
+        const update = { progress, completed };
+        const options = { upsert: true, new: true };
+
+        return this.wordMatchingProgressModel
+            .findOneAndUpdate({ wordMatchingId, userId }, update, options)
+            .exec();
+    }
+
+    async getWordMatchingProgress(userId: string) {
+        return this.wordMatchingProgressModel.findOne({ userId }).exec();
+    }
+
+    async getAllProgress(userId: string) {
+        const videoProgress = await this.getVideoProgress(userId);
+        const quizProgress = await this.getQuizProgress(userId);
+        const fillInTheBlankProgress = await this.getFillInTheBlankProgress(userId);
+        const wordMatchingProgress = await this.getWordMatchingProgress(userId);
+    
+        return {
+            video: videoProgress,
+            quiz: quizProgress,
+            fillInTheBlank: fillInTheBlankProgress,
+            wordMatching: wordMatchingProgress,
+        };
     }
     //Content Service
     async createContent(createContentDto: createContentDto): Promise<Content> {
@@ -800,7 +900,7 @@ export class CourseService {
         const fileStream = Readable.from(file.buffer);
         createCourseDto.slug = generateSlug(createCourseDto.title);
         createCourseDto.discount = createCourseDto.discount || 0;
-    
+
         const fileId = await this.googleDriveUploader.uploadImage(
             fileStream,
             file.originalname,
@@ -811,11 +911,10 @@ export class CourseService {
             ...createCourseDto,
             thumbnail: thumbnail,
         };
-    
+
         const createdCourse = new this.courseModel(userWithAvatar);
         return await createdCourse.save();
     }
-    
 
     async findAllCourse(
         page: number = 1,
@@ -998,21 +1097,21 @@ export class CourseService {
         if (!userExists) {
             throw new InternalServerErrorException('User does not exist');
         }
-    
+
         const user = await this.userModel.findById(userId);
-    
+
         const course = await this.courseModel
             .findById(courseId)
             .select('price discount');
         if (!course) {
             throw new InternalServerErrorException('Course does not exist');
         }
-    
+
         const coursePrice = course.price;
         if (!coursePrice) {
             throw new InternalServerErrorException('Course price is not set');
         }
-        
+
         let finalPrice: number;
         const discountPrice = course.discount;
         if (discountPrice) {
@@ -1020,19 +1119,19 @@ export class CourseService {
         } else {
             finalPrice = coursePrice;
         }
-    
+
         const existingPurchase = await this.purchaseModel.findOne({
             user: userId,
             course: courseId,
             paymentStatus: { $in: ['COMPLETED', 'PENDING'] },
         });
-    
+
         if (existingPurchase) {
             throw new InternalServerErrorException(
                 'User has already registered for this course',
             );
         }
-    
+
         const purchaseKey = uuidv4();
         const newPurchase = new this.purchaseModel({
             user: userId,
@@ -1045,9 +1144,9 @@ export class CourseService {
             paymentMethod: 'Momo',
             paymentStatus: 'PENDING',
         });
-    
+
         const savedPurchase = await newPurchase.save();
-    
+
         // MoMo Payment integration
         const baseUrl = process.env.BASE_URL || 'http://localhost:4000';
         const accessKey = 'F8BBA842ECF85';
@@ -1057,18 +1156,18 @@ export class CourseService {
         const redirectUrl = `http://localhost:4000/course/callback/${user.email}/${purchaseKey}`;
         const ipnUrl = `${baseUrl}/course/callback`;
         const requestType = 'payWithMethod';
-        const amount = finalPrice.toString(); 
+        const amount = finalPrice.toString();
         const orderId = `${partnerCode}${new Date().getTime()}`;
         const requestId = orderId;
         const extraData = '';
-    
+
         // Generate signature
         const rawSignature = `accessKey=${accessKey}&amount=${amount}&extraData=${extraData}&ipnUrl=${ipnUrl}&orderId=${orderId}&orderInfo=${orderInfo}&partnerCode=${partnerCode}&redirectUrl=${redirectUrl}&requestId=${requestId}&requestType=${requestType}`;
         const signature = crypto
             .createHmac('sha256', secretKey)
             .update(rawSignature)
             .digest('hex');
-    
+
         const requestBody = {
             partnerCode,
             partnerName: 'Test',
@@ -1086,7 +1185,7 @@ export class CourseService {
             orderGroupId: '',
             signature,
         };
-    
+
         const options = {
             method: 'POST',
             url: 'https://test-payment.momo.vn/v2/gateway/api/create',
@@ -1095,7 +1194,7 @@ export class CourseService {
             },
             data: requestBody,
         };
-    
+
         try {
             const response = await axios(options);
             return {
@@ -1108,7 +1207,6 @@ export class CourseService {
             throw new InternalServerErrorException('MoMo payment error');
         }
     }
-    
 
     async createPurchaseAndPaymentUrl(
         userId: Types.ObjectId,
@@ -1120,25 +1218,24 @@ export class CourseService {
         if (!isValidObjectId(userId) || !isValidObjectId(courseId)) {
             throw new BadRequestException('Invalid UserId or CourseId');
         }
-    
+
         // Check if the user exists
         const userExists = await this.userModel.exists({ _id: userId });
         if (!userExists) {
             throw new InternalServerErrorException('User does not exist');
         }
-    
+
         // Check if the course exists and get its price
-        const course = await this.courseModel
-            .findById(courseId);
+        const course = await this.courseModel.findById(courseId);
         if (!course) {
             throw new InternalServerErrorException('Course does not exist');
         }
-    
+
         const coursePrice = course.price;
         if (!coursePrice) {
             throw new InternalServerErrorException('Course price is not set');
         }
-    
+
         // Calculate final price based on discount
         let finalPrice: number;
         const discountPrice = course.discount;
@@ -1147,7 +1244,7 @@ export class CourseService {
         } else {
             finalPrice = coursePrice;
         }
-    
+
         // Check if the user has already registered for this course
         const existingPurchase = await this.purchaseModel.findOne({
             user: userId,
@@ -1159,7 +1256,7 @@ export class CourseService {
                 'User has already registered for this course',
             );
         }
-    
+
         // Create a new purchase
         const purchaseKey = uuidv4();
         const newPurchase = new this.purchaseModel({
@@ -1174,7 +1271,7 @@ export class CourseService {
             paymentStatus: PaymentStatus.PENDING,
         });
         await newPurchase.save();
-    
+
         // Create the VNPay payment URL
         const user = await this.userModel.findById(userId);
         const tmnCode = process.env.VNP_TMN_CODE;
@@ -1187,7 +1284,7 @@ export class CourseService {
         const orderId = `${padZero(date.getHours())}${padZero(date.getMinutes())}${padZero(date.getSeconds())}`;
         const locale = 'vn';
         const currCode = 'VND';
-    
+
         let vnp_Params: any = {
             vnp_Version: '2.1.0',
             vnp_Command: 'pay',
@@ -1197,27 +1294,26 @@ export class CourseService {
             vnp_TxnRef: orderId,
             vnp_OrderInfo: 'thanhtoan',
             vnp_OrderType: 'billpayment',
-            vnp_Amount: finalPrice * 100, 
+            vnp_Amount: finalPrice * 100,
             vnp_ReturnUrl: returnUrl,
             vnp_IpAddr: ipAddr,
             vnp_CreateDate: createDate,
         };
-    
+
         if (bankCode) {
             vnp_Params['vnp_BankCode'] = bankCode;
         }
-    
+
         // Sort the parameters before signing
         vnp_Params = this.sortObject(vnp_Params);
         const signData = qs.stringify(vnp_Params);
         const hmac = crypto.createHmac('sha512', secretKey);
         const signed = hmac.update(signData, 'utf-8').digest('hex');
         vnp_Params['vnp_SecureHash'] = signed;
-    
+
         const paymentUrl = `${vnpUrl}?${qs.stringify(vnp_Params)}`;
         return paymentUrl;
     }
-    
 
     private sortObject(obj: any): any {
         const sorted: any = {};

@@ -7,6 +7,7 @@ import {
     HttpCode,
     HttpException,
     InternalServerErrorException,
+    NotFoundException,
     Param,
     Patch,
     Post,
@@ -55,9 +56,7 @@ import axios from 'axios';
 
 @Controller('course')
 export class CourseController {
-    constructor(
-        private readonly courseService: CourseService,
-    ) {}
+    constructor(private readonly courseService: CourseService) {}
 
     /**
      * Quizzes
@@ -160,34 +159,38 @@ export class CourseController {
      * Video Controllers
      *
      */
-   
 
-  
     @Post('video/create')
     @UseInterceptors(FileInterceptor('videoUrl'))
-    async uploadVideo(@UploadedFile() file: Express.Multer.File, @Body() createVideoDto: CreateVideoDto) {
-      try {
-        if (!file) {
-          throw new BadRequestException('No file uploaded');
+    async uploadVideo(
+        @UploadedFile() file: Express.Multer.File,
+        @Body() createVideoDto: CreateVideoDto,
+    ) {
+        try {
+            if (!file) {
+                throw new BadRequestException('No file uploaded');
+            }
+            const video = await this.courseService.createVideo(
+                createVideoDto,
+                file,
+            );
+            return { message: 'Video successfully uploaded', video };
+        } catch (error) {
+            if (error instanceof BadRequestException) {
+                throw new BadRequestException(error.message);
+            }
+            throw new InternalServerErrorException('Internal server error');
         }
-        const video = await this.courseService.createVideo(createVideoDto, file);
-        return { message: 'Video successfully uploaded', video };
-      } catch (error) {
-        if (error instanceof BadRequestException) {
-          throw new BadRequestException(error.message);
-        }
-        throw new InternalServerErrorException('Internal server error');
-      }
     }
 
     @Post('video/create')
-@UseInterceptors(FileInterceptor('videoUrl'))
-createVideo(
-    @Body() createVideoDto: CreateVideoDto,
-    @UploadedFile() file: Express.Multer.File,
-): Promise<Video> {
-    return this.courseService.createVideo(createVideoDto, file);
-}
+    @UseInterceptors(FileInterceptor('videoUrl'))
+    createVideo(
+        @Body() createVideoDto: CreateVideoDto,
+        @UploadedFile() file: Express.Multer.File,
+    ): Promise<Video> {
+        return this.courseService.createVideo(createVideoDto, file);
+    }
 
     @Get('video/')
     findAllVideo(): Promise<Video[]> {
@@ -213,24 +216,127 @@ createVideo(
     removeVideo(@Param('id') id: string) {
         return this.courseService.removeVideo(id);
     }
-   
+    // video progress
     @Post('update/progress')
     async updateProgress(
-        @Body() body: { videoId: string; currentTime: number; totalTime: number; userId: string }
+        @Body()
+        body: {
+            videoId: string;
+            currentTime: number;
+            totalTime: number;
+            userId: string;
+        },
     ) {
         const progressPercentage = (body.currentTime / body.totalTime) * 100;
 
         const updatedProgress = await this.courseService.updateProgress(
             body.videoId,
             progressPercentage,
-            body.userId
+            body.userId,
         );
         return updatedProgress;
     }
 
     @Get('progress/:userId')
-    async getProgress(@Param('userId') userId: string) {
-        return this.courseService.getProgress(userId);
+    async getVideoProgress(@Param('userId') userId: string) {
+        return this.courseService.getVideoProgress(userId);
+    }
+
+    // quizz progress
+    @Post('update/quiz-progress')
+    async updateQuizProgress(
+        @Body()
+        body: {
+            quizId: string;
+            correctAnswers: number;
+            totalQuestions: number;
+            userId: string;
+            progress: number;
+            completed: boolean;
+            selectedAnswers: number[];
+        },
+    ) {
+        const updatedProgress = await this.courseService.updateQuizProgress(
+            body.quizId,
+            body.correctAnswers,
+            body.totalQuestions,
+            body.userId,
+        );
+        return {
+            progress: updatedProgress.progress,
+            completed: updatedProgress.completed,
+            selectedAnswers: body.selectedAnswers,
+        };
+    }
+
+    @Get('quiz-progress/:userId/:quizId')
+    async getQuizProgress(
+        @Param('userId') userId: string,
+        @Param('quizId') quizId: string,
+    ) {
+        const progress = await this.courseService.getQuizProgress(userId);
+        return (
+            progress.find((p) => p.quizId === quizId) || {
+                progress: 0,
+                completed: false,
+                selectedAnswers: [],
+            }
+        );
+    }
+
+    @Post('update/fill-progress')
+    async updateFillProgress(
+        @Body() body: { fillId: string; progress: number; userId: string },
+    ) {
+        const updatedProgress =
+            await this.courseService.updateFillInTheBlankProgress(
+                body.fillId,
+                body.progress,
+                body.userId,
+            );
+        return updatedProgress;
+    }
+
+    @Get('fill-progress/:userId/:fillId')
+    async getFillProgress(
+        @Param('userId') userId: string,
+        @Param('fillId') fillId: string,
+    ) {
+        // Call method with only userId if that's what the service expects
+        const progress =
+            await this.courseService.getFillInTheBlankProgress(userId);
+        return (
+            progress.find((p) => p.fillInTheBlankId === fillId) || {
+                progress: 0,
+                completed: false,
+            }
+        );
+    }
+
+    @Post('update/word-progress')
+    async updateWordProgress(
+        @Body() body: { wordId: string; progress: number; userId: string },
+    ) {
+        const updatedProgress =
+            await this.courseService.updateWordMatchingProgress(
+                body.wordId,
+                body.progress,
+                body.userId,
+            );
+        return updatedProgress;
+    }
+
+    @Get('word-progress/:userId/:wordId')
+    async getWordProgress(
+        @Param('userId') userId: string,
+        @Param('wordId') wordId: string,
+    ) {
+        return this.courseService.getWordMatchingProgress(userId);
+    }
+
+    @Get('progressAll/:userId')
+    async getAllProgress(@Param('userId') userId: string) {
+        return this.courseService.getAllProgress(userId);
     }
     /**
      * Content Controllers
@@ -309,13 +415,16 @@ createVideo(
         @Param('id') contentId: string,
         @Body('dataId') dataId: string,
     ): Promise<Content> {
-        if (!Types.ObjectId.isValid(contentId) || !Types.ObjectId.isValid(dataId)) {
+        if (
+            !Types.ObjectId.isValid(contentId) ||
+            !Types.ObjectId.isValid(dataId)
+        ) {
             throw new Error('Invalid ID format');
         }
-    
+
         return this.courseService.addDataToContent(contentId, dataId);
     }
-    
+
     /**
      * Course Type
      *  */
@@ -433,10 +542,12 @@ createVideo(
     }
 
     @Get()
-    findAllCourse(@Query('page') page: number = 1, @Query('limit') limit: number = 10): Promise<Course[]> {
+    findAllCourse(
+        @Query('page') page: number = 1,
+        @Query('limit') limit: number = 10,
+    ): Promise<Course[]> {
         return this.courseService.findAllCourse(page, limit);
     }
-    
 
     @Get(':id')
     findOneCourse(@Param('id') id: string): Promise<Course> {
@@ -454,7 +565,11 @@ createVideo(
         @UploadedFile() file: Express.Multer.File,
     ): Promise<ResponseData<Course>> {
         try {
-            const updatedCourse = await this.courseService.updateCourse(id, updateCourseDto, file);
+            const updatedCourse = await this.courseService.updateCourse(
+                id,
+                updateCourseDto,
+                file,
+            );
             return new ResponseData<Course>(
                 updatedCourse,
                 HttpStatus.SUCCESS,
@@ -494,130 +609,136 @@ createVideo(
         return purchase;
     }
 
-
     @Post('purchase-vnpay/:courseId')
     async createPurchaseVNPAY(
-      @Param('courseId') courseId: string,
-      @Body('userId') userId: string,
-      @Body('bankCode') bankCode: string,
-      @Body('orderDescription') orderDescription: string,
-      @Body('orderType') orderType: string,
-      @Req() req: Request,
+        @Param('courseId') courseId: string,
+        @Body('userId') userId: string,
+        @Body('bankCode') bankCode: string,
+        @Body('orderDescription') orderDescription: string,
+        @Body('orderType') orderType: string,
+        @Req() req: Request,
     ) {
-      const ipAddr = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
-    //   const ipAddr = req.ip || req.headers['x-forwarded-for'] || '';
-      const paymentUrl = await this.courseService.createPurchaseAndPaymentUrl(
-        new Types.ObjectId(userId),
-        new Types.ObjectId(courseId),
-        bankCode,
-        ipAddr as string,
-      ); 
-  
-      return { paymentUrl };
+        const ipAddr =
+            req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+        //   const ipAddr = req.ip || req.headers['x-forwarded-for'] || '';
+        const paymentUrl = await this.courseService.createPurchaseAndPaymentUrl(
+            new Types.ObjectId(userId),
+            new Types.ObjectId(courseId),
+            bankCode,
+            ipAddr as string,
+        );
+
+        return { paymentUrl };
     }
     @Get('/callbackvnpay/:email/:key')
     async handlePostCallbackVnPay(
-        @Res() res: Response, 
+        @Res() res: Response,
         @Req() req: Request,
         @Param('email') email: string,
         @Param('key') key: string,
-    
     ) {
-        const { vnp_ResponseCode,  message , partnerCode , orderId , amount} = req.query;   
-         if (!vnp_ResponseCode || !email || !key) {
+        const { vnp_ResponseCode, message, partnerCode, orderId, amount } =
+            req.query;
+        if (!vnp_ResponseCode || !email || !key) {
             throw new BadRequestException('Missing required parameters');
         }
         if (vnp_ResponseCode === '00') {
             try {
-                await this.courseService.sendSuccessEmail(email as string, key as string);
-                // res.redirect(`${process.env.BASEURL_FE}/paid?email=${email}&message=${message}&partnerCode=${partnerCode}&orderId=${orderId}&amount=${amount}`);    
-                    } catch (error) {
+                await this.courseService.sendSuccessEmail(
+                    email as string,
+                    key as string,
+                );
+                // res.redirect(`${process.env.BASEURL_FE}/paid?email=${email}&message=${message}&partnerCode=${partnerCode}&orderId=${orderId}&amount=${amount}`);
+            } catch (error) {
                 throw new InternalServerErrorException('Error sending email');
             }
         } else {
             console.log('Payment failed or cancelled:', vnp_ResponseCode);
         }
-    
-        return res.status(204).json(req.body); 
+
+        return res.status(204).json(req.body);
     }
-    
-        @Get('/callback/:email/:key')
-        async handlePostCallback(
-            @Res() res: Response, 
-            @Req() req: Request, 
-            @Param('email') email: string,
-            @Param('key') transId: string,
-            @Query() query: { resultCode: string }) {
-                const { resultCode,  message , partnerCode , orderId , amount} = req.query;        
-            if (!resultCode || !email || !transId) {
-                throw new BadRequestException('Invalid parameters');
-            }
-            if (resultCode === '0') {
-                try {
-                    await this.courseService.sendSuccessEmail(email, transId);
-                    return res.redirect(`${process.env.BASEURL_FE}/paid?email=${email}&message=${message}&partnerCode=${partnerCode}&orderId=${orderId}&amount=${amount}`); 
-                } catch (error) {
-                    console.error('Failed to send success email:', error);
-                    throw new InternalServerErrorException('Error sending email');
-                }
-            }
-    
-            return res.status(204).json(req.body);
+
+    @Get('/callback/:email/:key')
+    async handlePostCallback(
+        @Res() res: Response,
+        @Req() req: Request,
+        @Param('email') email: string,
+        @Param('key') transId: string,
+        @Query() query: { resultCode: string },
+    ) {
+        const { resultCode, message, partnerCode, orderId, amount } = req.query;
+        if (!resultCode || !email || !transId) {
+            throw new BadRequestException('Invalid parameters');
         }
+        if (resultCode === '0') {
+            try {
+                await this.courseService.sendSuccessEmail(email, transId);
+                return res.redirect(
+                    `${process.env.BASEURL_FE}/paid?email=${email}&message=${message}&partnerCode=${partnerCode}&orderId=${orderId}&amount=${amount}`,
+                );
+            } catch (error) {
+                console.error('Failed to send success email:', error);
+                throw new InternalServerErrorException('Error sending email');
+            }
+        }
+
+        return res.status(204).json(req.body);
+    }
     @Get('purchase/:userId')
-    async getPurchasesByUserId(@Param('userId') userId: string): Promise<Purchase[]> {
+    async getPurchasesByUserId(
+        @Param('userId') userId: string,
+    ): Promise<Purchase[]> {
         const objectId = new Types.ObjectId(userId);
         return this.courseService.getPurchasesByUserId(objectId);
     }
     @Post('/check-status-transaction')
     async checkStatusTransaction(
-      @Body() checkStatusTransactionDto,
-      @Res() res: Response,
+        @Body() checkStatusTransactionDto,
+        @Res() res: Response,
     ) {
-      const { orderId } = checkStatusTransactionDto;
-  
-      // Setup MoMo API credentials and signature generation
-      const secretKey = 'K951B6PE1waDMi640xX08PD3vg6EkVlz';
-      const accessKey = 'F8BBA842ECF85';
-      const rawSignature = `accessKey=${accessKey}&orderId=${orderId}&partnerCode=MOMO&requestId=${orderId}`;
-  
-      const signature = crypto
-        .createHmac('sha256', secretKey)
-        .update(rawSignature)
-        .digest('hex');
-  
-      const requestBody = {
-        partnerCode: 'MOMO',
-        requestId: orderId,
-        orderId: orderId,
-        signature: signature,
-        lang: 'vi',
-      };
-  
-      try {
-        // Make the HTTP request to MoMo's API using axios
-        const result = await axios.post(
-          'https://test-payment.momo.vn/v2/gateway/api/query',
-          requestBody,
-          {
-            headers: {
-              'Content-Type': 'application/json',
-            },
-          },
-        );
+        const { orderId } = checkStatusTransactionDto;
 
-        return res.status(HttpStatus.SUCCESS).json(result.data);
-      } catch (error) {
-        // Handle errors
-        console.error('Error checking transaction status:', error.message);
-        return res.status(HttpStatus.ERROR).json({
-          message: 'Error checking transaction status',
-          error: error.message,
-        });
-      }
+        // Setup MoMo API credentials and signature generation
+        const secretKey = 'K951B6PE1waDMi640xX08PD3vg6EkVlz';
+        const accessKey = 'F8BBA842ECF85';
+        const rawSignature = `accessKey=${accessKey}&orderId=${orderId}&partnerCode=MOMO&requestId=${orderId}`;
+
+        const signature = crypto
+            .createHmac('sha256', secretKey)
+            .update(rawSignature)
+            .digest('hex');
+
+        const requestBody = {
+            partnerCode: 'MOMO',
+            requestId: orderId,
+            orderId: orderId,
+            signature: signature,
+            lang: 'vi',
+        };
+
+        try {
+            // Make the HTTP request to MoMo's API using axios
+            const result = await axios.post(
+                'https://test-payment.momo.vn/v2/gateway/api/query',
+                requestBody,
+                {
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                },
+            );
+
+            return res.status(HttpStatus.SUCCESS).json(result.data);
+        } catch (error) {
+            // Handle errors
+            console.error('Error checking transaction status:', error.message);
+            return res.status(HttpStatus.ERROR).json({
+                message: 'Error checking transaction status',
+                error: error.message,
+            });
+        }
     }
-
-
 
     @Post('complete/')
     async completePayment(@Body('key') purchaseKey: string) {

@@ -1,16 +1,19 @@
 'use client';
-
 import React, { useState, useEffect } from 'react';
 import {
     LeftOutlined,
     RightOutlined,
     BookOutlined,
     MenuOutlined,
+    CheckCircleOutlined,
+    CheckCircleTwoTone,
 } from '@ant-design/icons';
 import { MenuProps, Button, Menu, Drawer, Skeleton } from 'antd';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { nestApiInstance } from '../../constant/api';
+import {jwtDecode} from 'jwt-decode'; 
+import { getCookie } from 'cookies-next';
 
 const TryLearningPages = ({ id }: { id: any }) => {
     type MenuItem = Required<MenuProps>['items'][number];
@@ -19,8 +22,9 @@ const TryLearningPages = ({ id }: { id: any }) => {
     const [drawerVisible, setDrawerVisible] = useState(false);
     const [lessonsCourse, setLessonsCourse] = useState<any>(null);
     const [selectedKey, setSelectedKey] = useState<string | null>(null);
+    const [progressData, setProgressData] = useState<any>({});
+    const [userId, setUserId] = useState<string | null>(null); 
 
-    // Fetch data for the course
     const fetchLessonsCourse = async () => {
         try {
             const response = await nestApiInstance.get(`/course/${id}`);
@@ -30,27 +34,72 @@ const TryLearningPages = ({ id }: { id: any }) => {
         }
     };
 
+    const fetchProgressData = async () => {
+        if (userId) { 
+            try {
+                const response = await nestApiInstance.get(`/course/progressAll/${userId}`);
+                setProgressData(response.data);
+                console.log(response.data);
+                
+            } catch (error) {
+                console.error('Error fetching progress data:', error);
+            }
+        }
+    };
+
     useEffect(() => {
-        fetchLessonsCourse();
-    }, [id]);
+        const token = getCookie('token') as string; 
+        if (token) {
+            try {
+                const decoded: any = jwtDecode(token);
+                setUserId(decoded.id);
+            } catch (error) {
+                console.error('Error decoding token:', error);
+            }
+        } else {
+            setUserId(null);
+        }
+    }, []);
+
+    useEffect(() => {
+        if (userId) { 
+            fetchLessonsCourse();
+            fetchProgressData();
+        }
+    }, [id, userId]);
+
+    const getProgressStatus = (contentId: string, type: string) => {
+        const progress = progressData[type]?.find((item: any) => item[`${type}Id`] === contentId);
+        
+        if (progress) {
+            return progress.completed ? (
+                <CheckCircleTwoTone twoToneColor="#52c41a" /> 
+            ) : (
+                <CheckCircleOutlined />
+            );
+        }
+        return <CheckCircleOutlined />;
+    };
 
     const items: MenuItem[] =
         lessonsCourse?.lessons?.map((lesson: any, lessonIndex: number) => {
             const childrenItems: MenuItem[] = [];
 
-            lesson?.content?.forEach((content: any, contentIndex: number) => {
+            lesson?.content?.forEach((content: any) => {
                 Object.keys(content).forEach((contentType) => {
                     switch (contentType) {
                         case 'quiz':
                             if (content.quiz?.length > 0) {
                                 childrenItems.push({
-                                    key: `quiz`,
-                                    label: 'Quiz',
+                                    key: `quiz-${content._id}`,
+                                    label: (
+                                        <>
+                                            Quiz {getProgressStatus(content._id, 'quiz')}
+                                        </>
+                                    ),
                                     onClick: () => {
-                                        setSelectedKey(`quiz`);
-                                        router.push(
-                                            `/trylearning/lessons-handle/quizz/${content._id}`,
-                                        );
+                                        setSelectedKey(`quiz-${content._id}`);
+                                        router.push(`/trylearning/lessons-handle/quizz/${content._id}`);
                                     },
                                 });
                             }
@@ -58,15 +107,15 @@ const TryLearningPages = ({ id }: { id: any }) => {
                         case 'fill_in_the_blank':
                             if (content.fill_in_the_blank?.length > 0) {
                                 childrenItems.push({
-                                    key: `fill_in_the_blank`,
-                                    label: 'Fill in the Blank',
+                                    key: `fill_in_the_blank-${content._id}`,
+                                    label: (
+                                        <>
+                                            Fill in the Blank {getProgressStatus(content._id, 'fill_in_the_blank')}
+                                        </>
+                                    ),
                                     onClick: () => {
-                                        setSelectedKey(
-                                            `fill_in_the_blank-${content._id}`,
-                                        );
-                                        router.push(
-                                            `/trylearning/lessons-handle/fillInTheBlank/${content._id}`,
-                                        );
+                                        setSelectedKey(`fill_in_the_blank-${content._id}`);
+                                        router.push(`/trylearning/lessons-handle/fillInTheBlank/${content._id}`);
                                     },
                                 });
                             }
@@ -75,12 +124,30 @@ const TryLearningPages = ({ id }: { id: any }) => {
                             if (content.video?.length > 0) {
                                 childrenItems.push({
                                     key: `video-${content._id}`,
-                                    label: 'Video',
+                                    label: (
+                                        <>
+                                            Video {getProgressStatus(content._id, 'video')}
+                                        </>
+                                    ),
                                     onClick: () => {
-                                        setSelectedKey(`video`);
-                                        router.push(
-                                            `/trylearning/lessons-handle/video/${content._id}`,
-                                        );
+                                        setSelectedKey(`video-${content._id}`);
+                                        router.push(`/trylearning/lessons-handle/video/${content._id}`);
+                                    },
+                                });
+                            }
+                            break;
+                        case 'word_matching':
+                            if (content.word_matching?.length > 0) {
+                                childrenItems.push({
+                                    key: `word_matching-${content._id}`,
+                                    label: (
+                                        <>
+                                            Word Matching {getProgressStatus(content._id, 'word_matching')}
+                                        </>
+                                    ),
+                                    onClick: () => {
+                                        setSelectedKey(`word_matching-${content._id}`);
+                                        router.push(`/trylearning/lessons-handle/wordmatching/${content._id}`);
                                     },
                                 });
                             }
@@ -150,7 +217,6 @@ const TryLearningPages = ({ id }: { id: any }) => {
                 </Drawer>
             </div>
 
-            {/* Nội dung động thay đổi dựa trên bài học hoặc quiz */}
             <div className="content">
                 <div className="content-navigation">
                     <div className="content-navigation-left">
@@ -158,10 +224,10 @@ const TryLearningPages = ({ id }: { id: any }) => {
                             Danh sách bài học
                         </Link>{' '}
                         <RightOutlined />
-                        <Link href={`#`}>{selectedKey}</Link>
+                        <Link href="#">{selectedKey}</Link>
                     </div>
                 </div>
-                <div className="contetnt-sale">
+                <div className="content-sale">
                     <p>Ngày sale vv.............</p>{' '}
                 </div>
                 <div className="content-items"></div>
