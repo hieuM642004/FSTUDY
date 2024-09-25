@@ -11,8 +11,8 @@ import { useTypedSelector } from '@/hooks/useTypedSelector';
 import { fetchUserData } from '@/lib/redux/features/user/userSlice';
 import Link from 'next/link';
 
+import 'moment/locale/vi';
 const SOCKET_SERVER_URL = 'http://localhost:3002';
-
 moment.locale('vi');
 
 const {TextArea }=Input

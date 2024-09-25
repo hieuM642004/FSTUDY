@@ -65,7 +65,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
         {
             key: '1',
             icon: <UserOutlined />,
-            label: <Link href="/admin/course">Người dùng</Link>,
+            label: <Link href="/admin/user">Người dùng</Link>,
         },
         {
             key: '2',

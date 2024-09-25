@@ -46,7 +46,7 @@ function Table<T extends object>({
     };
 
     const actionColumn = {
-        title: 'Hành động',
+        title: '#',
         key: 'actions',
         render: (text: any, record: T) => (
             <>
