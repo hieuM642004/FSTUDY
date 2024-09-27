@@ -26,7 +26,7 @@ const VideoPage = ({ id }: { id: string }) => {
             const videoData = response.data;
 
             if (userId) {
-                const progressResponse = await nestApiInstance.get(`/course/progress/${userId}`);
+                const progressResponse = await nestApiInstance.get(`/course/video-progress/${userId}`);
                 const userProgress = progressResponse.data;
                 const updatedVideos = videoData.video.map((video: VideoData) => ({
                     ...video,
@@ -50,8 +50,8 @@ const VideoPage = ({ id }: { id: string }) => {
 
     const updateVideoProgress = async (videoId: string, currentTime: number, totalTime: number) => {
         try {
-            await nestApiInstance.post(`/course/update/progress`, {
-                videoId,
+            await nestApiInstance.post(`/course/update/video-progress`, {
+                videoId: id, // Use course._id for video progress
                 userId,
                 currentTime,
                 totalTime,
@@ -121,3 +121,4 @@ const VideoPage = ({ id }: { id: string }) => {
 };
 
 export default VideoPage;
+``

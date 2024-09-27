@@ -8,22 +8,27 @@ import {
     CheckCircleOutlined,
     CheckCircleTwoTone,
 } from '@ant-design/icons';
-import { MenuProps, Button, Menu, Drawer, Skeleton } from 'antd';
+import { MenuProps, Button, Menu, Drawer, Skeleton, Tooltip } from 'antd';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { nestApiInstance } from '../../constant/api';
 import {jwtDecode} from 'jwt-decode'; 
 import { getCookie } from 'cookies-next';
+interface ChildItem {
+    key: string;
+    label: React.ReactNode; // Use React.ReactNode for label to allow any valid JSX
+    onClick?: () => void; // Optional click handler
+}
 
 const TryLearningPages = ({ id }: { id: any }) => {
-    type MenuItem = Required<MenuProps>['items'][number];
     const router = useRouter();
     const [collapsed, setCollapsed] = useState(false);
     const [drawerVisible, setDrawerVisible] = useState(false);
     const [lessonsCourse, setLessonsCourse] = useState<any>(null);
     const [selectedKey, setSelectedKey] = useState<string | null>(null);
     const [progressData, setProgressData] = useState<any>({});
-    const [userId, setUserId] = useState<string | null>(null); 
+    const [userId, setUserId] = useState<string | null>(null);
+    const [userPurchased, setUserPurchased] = useState<boolean>(false);
 
     const fetchLessonsCourse = async () => {
         try {
@@ -35,20 +40,33 @@ const TryLearningPages = ({ id }: { id: any }) => {
     };
 
     const fetchProgressData = async () => {
-        if (userId) { 
+        if (userId) {
             try {
                 const response = await nestApiInstance.get(`/course/progressAll/${userId}`);
                 setProgressData(response.data);
+
                 console.log(response.data);
-                
             } catch (error) {
                 console.error('Error fetching progress data:', error);
             }
         }
     };
 
+    const checkUserPurchase = async () => {
+        if (userId) {
+            try {
+                const response = await nestApiInstance.get(`/course/check/${userId}/${id}`);
+                console.log(response.data);
+                
+                setUserPurchased(response.data.paymentStatus === 'COMPLETED');
+            } catch (error) {
+                console.error('Error checking user purchase:', error);
+            }
+        }
+    };
+
     useEffect(() => {
-        const token = getCookie('token') as string; 
+        const token = getCookie('token') as string;
         if (token) {
             try {
                 const decoded: any = jwtDecode(token);
@@ -62,109 +80,142 @@ const TryLearningPages = ({ id }: { id: any }) => {
     }, []);
 
     useEffect(() => {
-        if (userId) { 
+        if (userId) {
             fetchLessonsCourse();
             fetchProgressData();
+            checkUserPurchase();
         }
     }, [id, userId]);
 
     const getProgressStatus = (contentId: string, type: string) => {
-        const progress = progressData[type]?.find((item: any) => item[`${type}Id`] === contentId);
-        
-        if (progress) {
-            return progress.completed ? (
-                <CheckCircleTwoTone twoToneColor="#52c41a" /> 
-            ) : (
-                <CheckCircleOutlined />
-            );
+        let progressItem;
+
+        switch (type) {
+            case 'quiz':
+                progressItem = progressData.quiz?.find((item: any) => item.quizId === contentId);
+                break;
+            case 'fill_in_the_blank':
+                progressItem = progressData.fillInTheBlank?.find((item: any) => item.fillInTheBlankId === contentId);
+                break;
+            case 'video':
+                progressItem = progressData.video?.find((item: any) => item.videoId === contentId);
+                break;
+                case 'word_matching':
+                    const wordMatching = progressData.wordMatching;
+                    if (wordMatching?.wordMatchingId === contentId) {
+                        progressItem = wordMatching;
+                    }
+                    break;
+            default:
+                break;
         }
+        if (progressItem && progressItem.completed) {
+            return <CheckCircleTwoTone twoToneColor="#52c41a" />;
+        }
+
         return <CheckCircleOutlined />;
     };
 
-    const items: MenuItem[] =
-        lessonsCourse?.lessons?.map((lesson: any, lessonIndex: number) => {
-            const childrenItems: MenuItem[] = [];
+    const items = lessonsCourse?.lessons?.map((lesson: any, lessonIndex: number) => {
+        const childrenItems: ChildItem[] = []; // Explicitly set the type for childrenItems
 
-            lesson?.content?.forEach((content: any) => {
-                Object.keys(content).forEach((contentType) => {
-                    switch (contentType) {
-                        case 'quiz':
-                            if (content.quiz?.length > 0) {
-                                childrenItems.push({
-                                    key: `quiz-${content._id}`,
-                                    label: (
-                                        <>
-                                            Quiz {getProgressStatus(content._id, 'quiz')}
-                                        </>
-                                    ),
-                                    onClick: () => {
-                                        setSelectedKey(`quiz-${content._id}`);
-                                        router.push(`/trylearning/lessons-handle/quizz/${content._id}`);
-                                    },
-                                });
-                            }
-                            break;
-                        case 'fill_in_the_blank':
-                            if (content.fill_in_the_blank?.length > 0) {
-                                childrenItems.push({
-                                    key: `fill_in_the_blank-${content._id}`,
-                                    label: (
-                                        <>
-                                            Fill in the Blank {getProgressStatus(content._id, 'fill_in_the_blank')}
-                                        </>
-                                    ),
-                                    onClick: () => {
-                                        setSelectedKey(`fill_in_the_blank-${content._id}`);
-                                        router.push(`/trylearning/lessons-handle/fillInTheBlank/${content._id}`);
-                                    },
-                                });
-                            }
-                            break;
-                        case 'video':
-                            if (content.video?.length > 0) {
-                                childrenItems.push({
-                                    key: `video-${content._id}`,
-                                    label: (
-                                        <>
-                                            Video {getProgressStatus(content._id, 'video')}
-                                        </>
-                                    ),
-                                    onClick: () => {
-                                        setSelectedKey(`video-${content._id}`);
-                                        router.push(`/trylearning/lessons-handle/video/${content._id}`);
-                                    },
-                                });
-                            }
-                            break;
-                        case 'word_matching':
-                            if (content.word_matching?.length > 0) {
-                                childrenItems.push({
-                                    key: `word_matching-${content._id}`,
-                                    label: (
-                                        <>
-                                            Word Matching {getProgressStatus(content._id, 'word_matching')}
-                                        </>
-                                    ),
-                                    onClick: () => {
-                                        setSelectedKey(`word_matching-${content._id}`);
-                                        router.push(`/trylearning/lessons-handle/wordmatching/${content._id}`);
-                                    },
-                                });
-                            }
-                            break;
-                        default:
-                            break;
-                    }
-                });
-            });
-
+        // Check if the lesson is free or user has purchased the course
+        if (!lesson.isFree && !userPurchased) {
             return {
                 key: `sub${lessonIndex + 1}`,
-                label: lesson.title,
+                label: (
+                    <Tooltip title="Xin vui lòng kích hoạt khóa học">
+                        <span>{lesson.title} </span>
+                    </Tooltip>
+                ),
                 icon: <BookOutlined />,
-                children: childrenItems,
+                disabled: true,
             };
-        }) || [];
+        }
+
+        lesson?.content?.forEach((content: any) => {
+            Object.keys(content).forEach((contentType) => {
+                if (!userPurchased && !lesson.isFree) {
+                    return; 
+                }
+                switch (contentType) {
+                    case 'quiz':
+                        if (content.quiz?.length > 0) {
+                            childrenItems.push({
+                                key: `quiz-${content._id}`,
+                                label: (
+                                    <>
+                                        Quiz {getProgressStatus(content._id, 'quiz')}
+                                    </>
+                                ),
+                                onClick: () => {
+                                    setSelectedKey(`quiz-${content._id}`);
+                                    router.push(`/trylearning/lessons-handle/quizz/${content._id}`);
+                                },
+                            });
+                        }
+                        break;
+                    case 'fill_in_the_blank':
+                        if (content.fill_in_the_blank?.length > 0) {
+                            childrenItems.push({
+                                key: `fill_in_the_blank-${content._id}`,
+                                label: (
+                                    <>
+                                        Fill in the Blank {getProgressStatus(content._id, 'fill_in_the_blank')}
+                                    </>
+                                ),
+                                onClick: () => {
+                                    setSelectedKey(`fill_in_the_blank-${content._id}`);
+                                    router.push(`/trylearning/lessons-handle/fillInTheBlank/${content._id}`);
+                                },
+                            });
+                        }
+                        break;
+                    case 'video':
+                        if (content.video?.length > 0) {
+                            childrenItems.push({
+                                key: `video-${content._id}`,
+                                label: (
+                                    <>
+                                        Video {getProgressStatus(content._id, 'video')}
+                                    </>
+                                ),
+                                onClick: () => {
+                                    setSelectedKey(`video-${content._id}`);
+                                    router.push(`/trylearning/lessons-handle/video/${content._id}`);
+                                },
+                            });
+                        }
+                        break;
+                    case 'word_matching':
+                        if (content.word_matching?.length > 0) {
+                            childrenItems.push({
+                                key: `word_matching-${content._id}`,
+                                label: (
+                                    <>
+                                        Word Matching {getProgressStatus(content._id, 'word_matching')}
+                                    </>
+                                ),
+                                onClick: () => {
+                                    setSelectedKey(`word_matching-${content._id}`);
+                                    router.push(`/trylearning/lessons-handle/wordmatching/${content._id}`);
+                                },
+                            });
+                        }
+                        break;
+                    default:
+                        break;
+                }
+            });
+        });
+
+        return {
+            key: `sub${lessonIndex + 1}`,
+            label: lesson.title,
+            icon: <BookOutlined />,
+            children: childrenItems,
+        };
+    }) || [];
 
     const handleMenuClick = (e: any) => {
         setSelectedKey(e.key);
@@ -220,17 +271,22 @@ const TryLearningPages = ({ id }: { id: any }) => {
             <div className="content">
                 <div className="content-navigation">
                     <div className="content-navigation-left">
-                        <Link href={`/trylearning/${lessonsCourse._id}`}>
-                            Danh sách bài học
-                        </Link>{' '}
-                        <RightOutlined />
-                        <Link href="#">{selectedKey}</Link>
+                        <Link href={`/trylearning/course/${id}`}>
+                            <LeftOutlined />
+                        </Link>
+                        <h3>{lessonsCourse.title}</h3>
+                    </div>
+                    <div className="content-navigation-right">
+                        <RightOutlined onClick={toggleCollapsed} />
                     </div>
                 </div>
-                <div className="content-sale">
-                    <p>Ngày sale vv.............</p>{' '}
-                </div>
-                <div className="content-items"></div>
+
+                {/* Here, render the selected content or any other details you need */}
+                {selectedKey && (
+                    <div className="selected-content">
+                        {/* Content rendering logic based on selectedKey */}
+                    </div>
+                )}
             </div>
         </div>
     );

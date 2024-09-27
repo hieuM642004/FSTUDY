@@ -217,7 +217,7 @@ export class CourseController {
         return this.courseService.removeVideo(id);
     }
     // video progress
-    @Post('update/progress')
+    @Post('update/video-progress')
     async updateProgress(
         @Body()
         body: {
@@ -237,7 +237,7 @@ export class CourseController {
         return updatedProgress;
     }
 
-    @Get('progress/:userId')
+    @Get('video-progress/:userId')
     async getVideoProgress(@Param('userId') userId: string) {
         return this.courseService.getVideoProgress(userId);
     }
@@ -410,20 +410,25 @@ export class CourseController {
     ) {
         return this.courseService.addContentToLesson(lessonId, contentId);
     }
+    
     @Patch('content/add/:id')
-    async addData(
-        @Param('id') contentId: string,
-        @Body('dataId') dataId: string,
-    ): Promise<Content> {
-        if (
-            !Types.ObjectId.isValid(contentId) ||
-            !Types.ObjectId.isValid(dataId)
-        ) {
-            throw new Error('Invalid ID format');
-        }
-
-        return this.courseService.addDataToContent(contentId, dataId);
+async addData(
+    @Param('id') contentId: string,
+    @Body('dataIds') dataIds: string[], // Expect an array of data IDs
+): Promise<Content> {
+    // Validate each contentId and dataId
+    if (!Types.ObjectId.isValid(contentId)) {
+        throw new Error('Invalid content ID format');
     }
+
+    for (const dataId of dataIds) {
+        if (!Types.ObjectId.isValid(dataId)) {
+            throw new Error('Invalid data ID format: ' + dataId);
+        }
+    }
+
+    return this.courseService.addMultipleDataToContent(contentId, dataIds);
+}
 
     /**
      * Course Type
@@ -739,7 +744,13 @@ export class CourseController {
             });
         }
     }
-
+    @Get('check/:userId/:courseId')
+    async checkUserPurchase(
+        @Param('userId') userId: string,
+        @Param('courseId') courseId: string,
+    ): Promise<{ paymentStatus: string }> {
+        return this.courseService.checkUserPurchase(userId, courseId);
+    }
     @Post('complete/')
     async completePayment(@Body('key') purchaseKey: string) {
         const purchase = await this.courseService.completePurchase(purchaseKey);

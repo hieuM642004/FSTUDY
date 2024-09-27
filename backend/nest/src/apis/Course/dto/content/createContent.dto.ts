@@ -1,9 +1,11 @@
 import { IsEnum, IsMongoId, IsOptional, IsString } from "class-validator";
 
 export class createContentDto {
+    // @IsString()
+    // @IsEnum(['quiz', 'fill_in_the_blank', 'word_matching', 'video'])
+    // content_type: string;
     @IsString()
-    @IsEnum(['quiz', 'fill_in_the_blank', 'word_matching', 'video'])
-    content_type: string;
+    title: string;
   
     @IsOptional()
     @IsMongoId()
