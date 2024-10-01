@@ -174,4 +174,28 @@ export class UserController {
             );
         }
     }
+    @Put('/restore-user/:id')
+    async restoreUserById(@Param('id') id: string): Promise<ResponseData<User>> {
+        try {
+            const deletedUser = await this.userService.restoreUserById(id);
+            if (!deletedUser) {
+                return new ResponseData<User>(
+                    null,
+                    HttpStatus.NOT_FOUND,
+                    'User not found',
+                );
+            }
+            return new ResponseData<User>(
+                deletedUser,
+                HttpStatus.SUCCESS,
+                HttpMessage.SUCCESS,
+            );
+        } catch (error) {
+            return new ResponseData<User>(
+                null,
+                HttpStatus.ERROR,
+                HttpMessage.ERROR,
+            );
+        }
+    }
 }

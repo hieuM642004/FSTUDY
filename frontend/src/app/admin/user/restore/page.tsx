@@ -4,10 +4,13 @@ import 'moment/locale/vi';
 import Image from 'next/image';
 import moment from 'moment';
 import { message } from 'antd';
+import { Typography } from 'antd';
 
 import Table from '@/components/admin/Table/Table';
 import UserService from '@/services/user/UserService';
-import iconUser from '../../../../public/images/user_icon.webp';
+import iconUser from '../../../../../public/images/user_icon.webp';
+
+const { Title } = Typography;
 
 interface DataType {
     _id?: string | null;
@@ -61,7 +64,7 @@ const columns = [
     },
 ];
 
-function User() {
+function PageRestoreUser() {
     const [dataSource, setDataSource] = useState<DataType[] | undefined>(
         undefined,
     );
@@ -70,37 +73,23 @@ function User() {
     useEffect(() => {
         getAllUser();
     }, []);
-    const handleAdd = () => {
-        console.log('Add button clicked');
-    };
 
-    const handleEdit = (record: DataType) => {
-        console.log('Edit button clicked', record);
-    };
+    const handleRestore = async (record: DataType) => {
+        console.log(record);
 
-    const handleDelete = async (record: DataType) => {
-        if (record.role === 'admin' || record.typeLogin === 'google') {
-            console.log(1, record);
-            messageApi.open({
-                type: 'error',
-                content: 'Bạn không thể xóa tài khoản quản trị và google!',
-            });
-        } else {
-            console.log(2, record);
-            if (record._id) {
-                const res = await UserService.deleteUser(record._id);
-                if (res) {
-                    messageApi.open({
-                        type: 'success',
-                        content: 'XÓA THÀNH CÔNG!',
-                    });
-                    getAllUser();
-                } else {
-                    messageApi.open({
-                        type: 'error',
-                        content: 'XÓA THẤT BẠI!',
-                    });
-                }
+        if (record._id) {
+            const res = await UserService.restoreUser(record._id);
+            if (res) {
+                messageApi.open({
+                    type: 'success',
+                    content: 'KHÔI PHỤC THÀNH CÔNG!',
+                });
+                getAllUser();
+            } else {
+                messageApi.open({
+                    type: 'error',
+                    content: 'KHÔI PHỤC THẤT BẠI!',
+                });
             }
         }
     };
@@ -111,7 +100,7 @@ function User() {
 
             if (data?.users) {
                 const activeItems = data.users.filter(
-                    (item: any | any[]) => item.active === true,
+                    (item: any | any[]) => item.active === false,
                 );
                 setDataSource(activeItems);
             } else {
@@ -124,19 +113,15 @@ function User() {
 
     return (
         <div>
+            <Title keyboard level={3}>Mục đã xóa</Title>
             <Table<DataType>
                 columns={columns}
                 dataSource={dataSource}
-                onAdd={handleAdd}
-                onEdit={handleEdit}
-                onDelete={handleDelete}
-                addLink="/admin/user/actionuser"
-                editLink={(record) => `/admin/user/actionuser/${record._id}`}
-                restoreLink="/admin/user/restore"
+                onRestore={handleRestore}
             />
             {contextHolder}
         </div>
     );
 }
 
-export default User;
+export default PageRestoreUser;

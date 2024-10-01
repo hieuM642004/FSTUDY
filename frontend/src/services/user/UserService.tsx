@@ -77,6 +77,19 @@ class UserService {
             console.error('Error fetching register:', error);
         }
     }
+    @withTokenRefresh
+    static async restoreUser(id : string | null): Promise<string | undefined> {
+        try {
+            const response = await nestApiInstance.put(
+                `/users/restore-user/${id}`);
+                
+            if(response.status === 200){                 
+                return response.data;
+            }
+        } catch (error) {
+            console.error('Error fetching register:', error);
+        }
+    }
 }
 
 export default UserService;

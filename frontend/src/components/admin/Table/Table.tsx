@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { Table as AntTable, Button, Modal, TableProps } from 'antd';
-import { ExclamationCircleOutlined, PlusOutlined } from '@ant-design/icons';
+import { DeleteOutlined, ExclamationCircleOutlined, PlusOutlined } from '@ant-design/icons';
 import ButtonPrimary from '@/components/shared/ButtonPrimary/ButtonPrimary';
 import Link from 'next/link';
 
@@ -16,6 +16,8 @@ interface TableComponentProps<T> extends TableProps<T> {
     onDelete?: (record: T) => void;
     addLink?: string; 
     editLink?: (record: T) => string; 
+    restoreLink?: string; 
+    onRestore?: (record: T) => void;
 }
 
 function Table<T extends object>({
@@ -28,6 +30,8 @@ function Table<T extends object>({
     onDelete,
     addLink, 
     editLink, 
+    restoreLink,
+    onRestore,
     ...props
 }: TableComponentProps<T>) {
     const [selectedRecord, setSelectedRecord] = useState<T | null>(null);
@@ -44,7 +48,18 @@ function Table<T extends object>({
             },
         });
     };
-
+    const handleRestoreClick = (record: T) => {
+        Modal.confirm({
+            title: 'Bạn chắc chắn muốn khôi phục dữ liệu?',
+            icon: <ExclamationCircleOutlined />,
+            content: 'Hành động này không thể hoàn tác.',
+            onOk() {
+                if (onRestore) {
+                    onRestore(record);
+                }
+            },
+        });
+    };
     const actionColumn = {
         title: '#',
         key: 'actions',
@@ -72,6 +87,12 @@ function Table<T extends object>({
                         Delete
                     </Button>
                 )}
+                 {onRestore && (
+                    <Button type="primary" onClick={() => handleRestoreClick(record)}>
+                       Khôi phục
+                    </Button>
+                )}
+                
             </>
         ),
     };
@@ -93,6 +114,17 @@ function Table<T extends object>({
                         icon={<PlusOutlined className="text-white" />}
                     ></ButtonPrimary>
                 )
+            )}
+            {restoreLink ? (
+                <Link href={restoreLink} passHref className='ml-2'>
+                    <ButtonPrimary
+                        
+                        className="mb-2 bg-[#35509a]"
+                        icon={<DeleteOutlined  className="text-white" />}
+                    ></ButtonPrimary>
+                </Link>
+            ) : (
+             ''
             )}
             <AntTable
                 columns={
