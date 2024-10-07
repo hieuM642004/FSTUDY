@@ -547,7 +547,7 @@ export class CourseService {
     }
     //Content Service
     async createContent(createContentDto: createContentDto): Promise<Content> {
-        createContentDto.slug = generateSlug(createContentDto.content_type);
+        createContentDto.slug = generateSlug(createContentDto.title);
 
         const createdContent = new this.contentModel(createContentDto);
         return createdContent.save();
@@ -612,44 +612,41 @@ export class CourseService {
 
         return lesson;
     }
-    async addDataToContent(
+
+    async addMultipleDataToContent(
         contentId: string,
-        dataId: string,
+        dataIds: string[],
     ): Promise<Content> {
-        if (
-            !Types.ObjectId.isValid(contentId) ||
-            !Types.ObjectId.isValid(dataId)
-        ) {
-            throw new Error('Invalid ID format');
+        if (!Types.ObjectId.isValid(contentId)) {
+            throw new Error('Invalid content ID format');
         }
-
-        // Determine content type
-        const contentType = await this.inferContentType(dataId);
-
-        if (!contentType) {
-            throw new Error('Content type could not be determined');
-        }
-
-        const arrayFieldName = this.getArrayFieldName(contentType);
-
-        if (!arrayFieldName) {
-            throw new Error('Invalid content type');
-        }
-
-        // Update content with the determined content type
-        const updatedContent = await this.contentModel.findByIdAndUpdate(
-            contentId,
-            { $addToSet: { [arrayFieldName]: dataId } },
-            { new: true },
-        );
-
-        if (!updatedContent) {
+    
+        const content = await this.contentModel.findById(contentId);
+        if (!content) {
             throw new Error('Content not found');
         }
-
+        for (const dataId of dataIds) {
+            if (!Types.ObjectId.isValid(dataId)) {
+                throw new Error('Invalid data ID format');
+            }
+            const contentType = await this.inferContentType(dataId);
+            if (!contentType) {
+                throw new Error(`Content type could not be determined for data ID: ${dataId}`);
+            }
+            const arrayFieldName = this.getArrayFieldName(contentType);
+            if (!arrayFieldName) {
+                throw new Error(`Invalid content type for data ID: ${dataId}`);
+            }
+            if (!content[arrayFieldName].includes(dataId)) {
+                content[arrayFieldName].push(dataId);
+            }
+        }
+    
+        // Save updated content
+        const updatedContent = await content.save();
         return updatedContent;
     }
-
+    
     private async inferContentType(
         dataId: string,
     ): Promise<ContentType | null> {
@@ -1354,7 +1351,30 @@ export class CourseService {
             throw new Error('Failed to send password reset email');
         }
     }
-
+    async checkUserPurchase(userId: string, courseId: string): Promise<{ paymentStatus: string }> {
+        // Find the user by ID
+        const user = await this.userModel.findById(userId);
+        
+        // Handle case where user is not found
+        if (!user) {
+            throw new NotFoundException(`User with ID ${userId} not found`);
+        }
+    
+        // Find the purchase record for the given user and course
+        const purchase = await this.purchaseModel.findOne({ user: userId, course: courseId });
+    
+        // Log the user information for debugging
+        console.log('User Info:', user);
+    
+        // Handle case where purchase is not found
+        if (!purchase) {
+            return { paymentStatus: 'NOT_FOUND' }; // User has not purchased the course
+        }
+    
+        // Return the payment status from the found purchase record
+        return { paymentStatus: purchase.paymentStatus };
+    }
+    
     async completePurchase(purchaseKey: string): Promise<Purchase> {
         const purchase = await this.purchaseModel.findOneAndUpdate(
             { purchaseKey, paymentStatus: PaymentStatus.PENDING },
