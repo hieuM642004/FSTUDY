@@ -1,36 +1,49 @@
 'use client';
 
 import React from 'react';
-import { useRouter } from 'next/navigation';
 import { Button } from 'antd';
-import { ArrowLeftOutlined } from '@ant-design/icons';
+import { useRouter } from 'next/navigation';
+import './ButtonBack.scss';
 
-interface ButtonBackProps {
-  label?: string;
+interface OutlineButtonProps {
+  label: string;
+  to?: string;
   size?: 'large' | 'middle' | 'small';
   className?: string;
+  onClick?: () => void;
+  htmlType?: 'button' | 'reset' | 'submit' | undefined;
 }
 
 const sizeClassMap = {
   large: 'py-4 px-4 w-32 h-10',
   middle: 'py-2 px-3',
-  small: 'py-1 px-3',
+  small: ' py-1 px-3',
 };
 
-const ButtonBack: React.FC<ButtonBackProps> = ({
-  label = 'Back',
+const ButtonBack: React.FC<OutlineButtonProps> = ({
+  label,
+  to,
   size = 'middle',
   className = '',
+  onClick,
+  htmlType = 'button',
 }) => {
-  const router = useRouter();
-  let btnClass = `bg-white text-black !hover:bg-gray-100 font-semibold ${sizeClassMap[size]} ${className}`;
+  const router = useRouter(); 
 
-  const handleBack = () => {
-    router.back();
+  const handleClick = () => {
+    if (onClick) {
+      onClick();
+    } else if (to) {
+      router.push(to);
+    } else {
+      router.back();
+    }
   };
 
+  let btnClass = `btn-outline !hover:outline font-semibold ${sizeClassMap[size]} ${className}`;
+
   return (
-    <Button className={btnClass} onClick={handleBack} type="primary" icon={<ArrowLeftOutlined />}>
+    <Button className={btnClass} onClick={handleClick} htmlType={htmlType} type="default">
       {label}
     </Button>
   );

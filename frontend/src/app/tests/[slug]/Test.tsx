@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import ExamService from '@/services/ExamsService';
+import ExamService from '@/services/exams/ExamsService';
 import {
     ClockCircleOutlined,
     CommentOutlined,
@@ -74,7 +74,6 @@ function Test({ slug }: { slug: string }) {
             .join('&');
         const url = `/practice?exam=${exam?.slug}&${query}&time=${limit}`;
 
-        console.log('Luyện tập với các phần thi:', selectedSessionSlugs);
         router.push(url);
     };
 
@@ -95,11 +94,7 @@ function Test({ slug }: { slug: string }) {
                     <p className="text-sm">
                         {exam?.idSession?.length || 0} phần thi | {totalQuestions} câu hỏi
                     </p>
-                    <p className="italic text-red-500 mb-6">
-                        Chú ý: để được quy đổi sang scaled score (ví dụ trên
-                        thang điểm 990 cho TOEIC hoặc 9.0 cho IELTS), vui lòng
-                        chọn chế độ làm FULL TEST.
-                    </p>
+            
                     <div className="mb-1">
                         <p className="font-bold">Kết quả làm bài của bạn: </p>
                         <div>

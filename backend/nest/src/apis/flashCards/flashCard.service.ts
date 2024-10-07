@@ -30,7 +30,7 @@ export class FlashCardService {
     ) {}
     async getFlashCards(): Promise<FlashCard[]> {
         try {
-            return await this.flashCardModel.find();
+            return await this.flashCardModel.find().populate('userId').exec();
         } catch (error) {
             console.error(error);
         }

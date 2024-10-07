@@ -1,4 +1,4 @@
-import { ReactNode } from "react";
+
 
 export interface Exams{
     examType: string,
@@ -31,3 +31,5 @@ export interface RecordingProps {
     questionRefs: React.MutableRefObject<{ [key: string]: HTMLDivElement | null }>; 
     isDisabled?: boolean;
 }
+
+

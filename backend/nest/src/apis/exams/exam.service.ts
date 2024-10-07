@@ -147,17 +147,17 @@ export class ExamService {
 
     //Exam Session
     async findAllSessions(): Promise<ExamSession[]> {
-        return await this.examSessionModel.find().exec();
+        return await this.examSessionModel.find().populate('idExam').exec();
     }
 
     async findSessionById(identifier: string): Promise<ExamSession> {
         let session: ExamSession;
 
         if (mongoose.Types.ObjectId.isValid(identifier)) {
-            session = await this.examSessionModel.findById(identifier);
+            session = await this.examSessionModel.findById(identifier).populate('idExam');
             // .populate('idQuestions');
         } else {
-            session = await this.examSessionModel.findOne({ slug: identifier });
+            session = await this.examSessionModel.findOne({ slug: identifier }).populate('idExam');
             // .populate('idQuestions');
         }
         if (!session) {
@@ -251,7 +251,7 @@ export class ExamService {
 
     //Group Question
     async findAllQuestionGroups(): Promise<QuestionGroup[]> {
-        return await this.questionGroupModel.find().exec();
+        return await this.questionGroupModel.find().populate('examSession').exec();
     }
     async findQuestionGroupById(id: string): Promise<QuestionGroup> {
         const questionGroup = await this.questionGroupModel.findById(id).exec();
@@ -352,13 +352,13 @@ export class ExamService {
             throw new NotFoundException('QuestionGroup not found.');
         }
     
-        if (existingQuestionGroup.audioUrl) {
-            await this.firebaseService.deleteFileFromFirebase(existingQuestionGroup.audioUrl);
-        }
+        // if (existingQuestionGroup.audioUrl) {
+        //     await this.firebaseService.deleteFileFromFirebase(existingQuestionGroup.audioUrl);
+        // }
     
-        if (existingQuestionGroup.imageUrl) {
-            await this.firebaseService.deleteFileFromFirebase(existingQuestionGroup.imageUrl);
-        }
+        // if (existingQuestionGroup.imageUrl) {
+        //     await this.firebaseService.deleteFileFromFirebase(existingQuestionGroup.imageUrl);
+        // }
     
         await this.examSessionModel
             .updateMany(
@@ -366,6 +366,9 @@ export class ExamService {
                 { $pull: { idQuestionGroups: existingQuestionGroup._id } },
             )
             .exec();
+            await Promise.all(existingQuestionGroup.questions.map(async (questionId) => {
+                await this.deleteQuestion(questionId.toString());
+            }));
         return await this.questionGroupModel.findByIdAndDelete(id).exec();
     }
     
@@ -387,7 +390,7 @@ export class ExamService {
         createQuestionDto: CreateQuestionDto,
     ): Promise<Question> {
         try {
-            // Fetch the QuestionGroup
+            console.log('Question',createQuestionDto);
             const questionGroup = await this.questionGroupModel
                 .findById(createQuestionDto.questionGroup)
                 .populate({
@@ -403,7 +406,6 @@ export class ExamService {
                 throw new NotFoundException('QuestionGroup not found.');
             }
 
-            // Ensure we are working with the correct Exam ID
             const examSession =
                 questionGroup.examSession as unknown as ExamSession;
             const examId = examSession?.idExam; 
@@ -441,7 +443,7 @@ export class ExamService {
 
             // Create the new question
             const question = await this.questionModel.create(createQuestionDto);
-
+            
             // Update the QuestionGroup with the new question
             await this.questionGroupModel
                 .updateOne(
@@ -483,12 +485,7 @@ export class ExamService {
             throw new NotFoundException('Question not found.');
         }
 
-        await this.questionGroupModel
-            .updateMany(
-                { _id: existingQuestion.questionGroup },
-                { $pull: { questions: existingQuestion._id } },
-            )
-            .exec();
+     
         return await this.questionModel.findByIdAndDelete(id).exec();
     }
 }

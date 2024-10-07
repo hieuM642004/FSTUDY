@@ -8,11 +8,13 @@ import Tab from '@/components/client/Tabs/Tabs';
 import WapperItemCard from '@/components/client/WapperItemCard/WapperItemCard';
 import Recording from './Recording/Recording';
 import RecordingList from './RecordingList/RecordingList';
-import ExamService from '@/services/ExamsService';
+import ExamService from '@/services/exams/ExamsService';
 import ConfirmExit from './ConfirmExit/ConfirmExit';
 import CountDownWithSubmit from './CountDownWithSubmit/CountDownWithSubmit';
-
-const TakeTheTest: React.FC = () => {
+interface TakeTheTestProps {
+    isEditable?: boolean;
+  }
+const TakeTheTest: React.FC<TakeTheTestProps> = ({isEditable=false}) => {
     const [dataselection, setDataselection] = useState<any>({});
     const [items, setItems] = useState<any[]>([]);
     const [recording, setRecording] = useState<{
@@ -157,6 +159,7 @@ const TakeTheTest: React.FC = () => {
                     activeQuestions={activeQuestions}
                     onQuestionClick={handleQuestionClick}
                     questionRefs={questionRefs}
+                    isEditable={isEditable}
                 />
             ),
         }));
@@ -222,12 +225,12 @@ const TakeTheTest: React.FC = () => {
                     </WapperItemCard>
                 </Col>
 
-                <Col xs={24} sm={24} md={8} lg={8} xl={4}>
+                <Col xs={24} sm={24} md={8} lg={8} xl={4} >
                     <div
                         className="bg-white rounded-lg p-4 shadow-lg border-2 
                         mb-10 md:w-[16%] ml-3 md:fixed block min-h-[500px] bottom-0 top-[126px] right-2"
                     >
-                        <div className="flex justify-center flex-col items-center text-lg mb-2">
+                        <div className={`flex justify-center flex-col items-center text-lg mb-2 ${isEditable ? 'hidden' : ''}`}>
                             <div className=" text-center font-bold">
                                 Thời gian làm bài
                             </div>
@@ -243,6 +246,7 @@ const TakeTheTest: React.FC = () => {
                             list={recording}
                             activeQuestions={activeQuestions}
                             onQuestionClick={handleQuestionClick}
+                            
                         />
                     </div>
                 </Col>

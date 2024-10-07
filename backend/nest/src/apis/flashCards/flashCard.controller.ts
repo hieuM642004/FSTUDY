@@ -24,7 +24,7 @@ import { UpdateWordReviewDto } from './dto/UpdateWordReviewDto';
 export class FlashCardController {
     constructor(private flashCardService: FlashCardService) {}
     @Get()
-    @UseGuards(AuthGuard('jwt'))
+    // @UseGuards(AuthGuard('jwt'))
     async getFlashCards(): Promise<ResponseData<FlashCard[]>> {
         try {
             const flashCards = await this.flashCardService.getFlashCards();

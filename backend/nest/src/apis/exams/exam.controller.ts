@@ -335,6 +335,7 @@ export class ExamController {
         files: { image?: Express.Multer.File[]; audio?: Express.Multer.File[] },
     ): Promise<ResponseData<QuestionGroup>> {
         try {
+            console.log(files,createQuestionGroupDto)
             const imageFile = files?.image ? files.image[0] : null;
             const audioFile = files?.audio ? files.audio[0] : null;
             const newQuestionGroup = await this.examService.createQuestionGroup(

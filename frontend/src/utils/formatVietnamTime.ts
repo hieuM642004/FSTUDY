@@ -3,8 +3,7 @@ export const formatVietnamTime = (dt: Date) => {
       console.error("Date is undefined or null");
       return "Invalid Date";
     }
-  
-    console.log("Before formatting:", dt);
+
     const formatted = new Date(dt)
       .toLocaleString('vi', {
         dateStyle: 'short',
@@ -15,7 +14,6 @@ export const formatVietnamTime = (dt: Date) => {
       .reverse()
       .join(' ');
   
-    console.log("After formatting:", formatted);
     return formatted;
   };
   

@@ -1,13 +1,7 @@
 'use client';
 import React, { useState, useEffect } from 'react';
-import {
-    MenuFoldOutlined,
-    MenuUnfoldOutlined,
-    UploadOutlined,
-    UserOutlined,
-    VideoCameraOutlined,
-} from '@ant-design/icons';
-import { Button, Layout, Menu, theme } from 'antd';
+import { MenuFoldOutlined, MenuUnfoldOutlined } from '@ant-design/icons';
+import { Button, Layout, theme } from 'antd';
 import Link from 'next/link';
 import { useTypedSelector } from '@/hooks/useTypedSelector';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
@@ -18,6 +12,7 @@ import { useRouter } from 'next/navigation';
 
 const { Header, Sider, Content } = Layout;
 import './AdminLayout.scss';
+import MenuAdmin from '@/components/admin/Menu/Menu';
 const AdminLayout = ({ children }: { children: React.ReactNode }) => {
     const [collapsed, setCollapsed] = useState(false);
     const [isAdmin, setIsAdmin] = useState(false);
@@ -61,29 +56,6 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
         },
     ];
 
-    const items = [
-        {
-            key: '1',
-            icon: <UserOutlined />,
-            label: <Link href="/admin/course">Người dùng</Link>,
-        },
-        {
-            key: '2',
-            icon: <VideoCameraOutlined />,
-            label: <Link href="/admin/">Khóa học</Link>,
-        },
-        {
-            key: '3',
-            icon: <UploadOutlined />,
-            label: <Link href="/admin/">Đề thi</Link>,
-        },
-        {
-            key: '4',
-            icon: <UserOutlined />,
-            label: <Link href="/admin/blog">Trang Blog</Link>,
-        },
-    ];
-
     return (
         <Layout style={{ minHeight: '100vh' }}>
             <Sider trigger={null} collapsible collapsed={collapsed}>
@@ -97,12 +69,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
                         FSTUDY
                     </Link>
                 </div>
-                <Menu
-                    theme="dark"
-                    mode="inline"
-                    defaultSelectedKeys={['1']}
-                    items={items}
-                />
+                <MenuAdmin />
             </Sider>
             <Layout>
                 <Header

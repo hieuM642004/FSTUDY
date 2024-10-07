@@ -4,7 +4,7 @@
 import React, { useState, useEffect } from 'react';
 import { Row, Col,Spin } from 'antd';
 import Target from '@/components/client/Target/Target';
-import ExamService from '@/services/ExamsService';
+import ExamService from '@/services/exams/ExamsService';
 import AnswerDetailModal from './AnswerDetailModal/AnswerDetailModal';
 import { renderAnswers } from './renderAnswers';
 import {

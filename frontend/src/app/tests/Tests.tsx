@@ -6,7 +6,7 @@ import { Input,Spin } from 'antd';
 import ButtonPrimary from '@/components/shared/ButtonPrimary/ButtonPrimary';
 import IELTSCard from '../../components/client/IELTSCard/IELTSCard';
 import Pagination from '../../components/shared/Pagination/Pagination';
-import ExamService from '@/services/ExamsService';
+import ExamService from '@/services/exams/ExamsService';
 import { Exams } from '@/types/Exams';
 import Target from '@/components/client/Target/Target';
 import './Tests.scss';

@@ -54,7 +54,7 @@ class AuthService {
                 dataEmail,
             );
             return response.data;
-        } catch (error ) {
+        } catch (error:any ) {
             console.error('Error fetching login:', error);
             return error.response.status;
         }

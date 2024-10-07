@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, memo } from 'react';
 import ButtonPrimary from '@/components/shared/ButtonPrimary/ButtonPrimary';
 import ConfirmModal from '@/components/shared/ModalComfirm/ModalComfirm';
-import ExamService from '@/services/ExamsService';
+import ExamService from '@/services/exams/ExamsService';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { isArray } from 'lodash';

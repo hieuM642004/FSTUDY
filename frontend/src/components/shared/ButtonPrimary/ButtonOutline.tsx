@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Button } from 'antd';
-
+import './ButtonOuline.scss';
 interface OutlineButtonProps {
     label: string;
     to?: string;
@@ -25,7 +25,7 @@ const ButtonOutline: React.FC<OutlineButtonProps> = ({
     onClick,
     htmlType = "button",
 }) => {
-    let btnClass = `btn-outline font-semibold ${sizeClassMap[size]} ${className}`;
+    let btnClass = `btn-outline !hover:outline font-semibold ${sizeClassMap[size]} ${className}`;
 
     return (
         <Button className={btnClass} onClick={onClick} htmlType={htmlType} type="default" href={to}>

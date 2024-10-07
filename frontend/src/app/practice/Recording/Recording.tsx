@@ -1,13 +1,18 @@
 'use client';
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Input, Radio, Space, Row, Col } from 'antd';
+import { Input, Radio, Space, Row, Col, Tooltip } from 'antd';
 import type { RadioChangeEvent } from 'antd';
+import Link from 'next/link';
 
 import { RecordingProps, Question } from '@/types/Exams';
 
-const Recording: React.FC<RecordingProps> = React.memo(
-    ({ questionsGroup, dataselection, activeQuestions }) => {
+interface ExtendedRecordingProps extends RecordingProps {
+    isEditable?: boolean; 
+}
+
+const Recording: React.FC<ExtendedRecordingProps> = React.memo(
+    ({ questionsGroup, dataselection, activeQuestions, isEditable = false }) => {
         const { TextArea } = Input;
 
         const [localDataselection, setLocalDataselection] = useState<
@@ -27,6 +32,7 @@ const Recording: React.FC<RecordingProps> = React.memo(
             };
             window.addEventListener('beforeunload', handleBeforeUnload);
         }, []);
+
         const onChange = useCallback(
             (
                 e:
@@ -36,9 +42,7 @@ const Recording: React.FC<RecordingProps> = React.memo(
             ) => {
                 const value = e.target.value;
 
-                const safeActiveQuestions: number[] = Array.isArray(
-                    activeQuestions,
-                )
+                const safeActiveQuestions: number[] = Array.isArray(activeQuestions)
                     ? activeQuestions
                     : [];
 
@@ -78,6 +82,7 @@ const Recording: React.FC<RecordingProps> = React.memo(
             },
             [setLocalDataselection, dataselection, activeQuestions],
         );
+
         const renderInputField = useCallback(
             (question: Question) => {
                 switch (question.questionType) {
@@ -126,81 +131,119 @@ const Recording: React.FC<RecordingProps> = React.memo(
 
         const renderedQuestionsGroup = useMemo(() => {
             return questionsGroup?.map((group: any) => (
-                <div key={group.sessionId}>
-                    <div className="grid grid-cols-2 gap-2">
-                        {(group?.passageText ||
-                            group?.imageUrl ||
-                            group?.audioUrl) && (
-                            <div>
-                                {group?.imageUrl && (
-                                    <img
-                                        src={group.imageUrl}
-                                        alt="question"
-                                        className="w-full h-auto border-zinc-950 mt-2 object-cover"
-                                    />
-                                )}
-                                {group?.passageText && (
-                                    <p className="font-bold">
-                                        {group.passageText}
-                                    </p>
-                                )}
-                                {group?.questions.length === 1 &&
-                                    group?.audioUrl && (
-                                        <audio
-                                            src={group?.audioUrl}
-                                            controls
-                                            className="w-full mt-2"
+                <div key={group.sessionId} className={`mb-4 ${isEditable ? 'hover:border hover:border-blue-500 p-2' : ''}`}>
+                    {isEditable ? (
+                    <Tooltip title={'Chỉnh sửa câu hỏi'}>
+                            <Link href={`/admin/exams/group-questions/edit/${group._id}`} passHref>
+                                <div className="cursor-pointer">
+                                    <div className="grid grid-cols-2 gap-2">
+                                        {(group?.passageText ||
+                                            group?.imageUrl ||
+                                            group?.audioUrl) && (
+                                            <div>
+                                                {group?.imageUrl && (
+                                                    <img
+                                                        src={group.imageUrl}
+                                                        alt="question"
+                                                        className="w-full h-auto border-zinc-950 mt-2 object-cover"
+                                                    />
+                                                )}
+                                                {group?.passageText && (
+                                                    <p className="font-bold">
+                                                        {group.passageText}
+                                                    </p>
+                                                )}
+                                                {group?.questions.length === 1 &&
+                                                    group?.audioUrl && (
+                                                        <audio
+                                                            src={group?.audioUrl}
+                                                            controls
+                                                            className="w-full mt-2"
+                                                        />
+                                                    )}
+                                            </div>
+                                        )}
+    
+                                        {group?.questions.length > 1 && (
+                                            <div>
+                                                {group?.questions.map((question: Question) => (
+                                                    <div key={question._id} className="mb-4">
+                                                        <div className="flex items-center">
+                                                            <button className="rounded-full bg-[#e8f2ff] p-1 text-[#35509a] text-xl font-semibold w-10 h-10 flex items-center justify-center">
+                                                                {question.order}
+                                                            </button>
+                                                            {renderInputField(question)}
+                                                            {question.audioUrl && (
+                                                                <audio
+                                                                    src={question.audioUrl}
+                                                                    controls
+                                                                    className="ml-4 w-full"
+                                                                />
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </Link>
+                    </Tooltip>
+                    ) : (
+                        <div className="grid grid-cols-2 gap-2">
+                            {(group?.passageText ||
+                                group?.imageUrl ||
+                                group?.audioUrl) && (
+                                <div>
+                                    {group?.imageUrl && (
+                                        <img
+                                            src={group.imageUrl}
+                                            alt="question"
+                                            className="w-full h-auto border-zinc-950 mt-2 object-cover"
                                         />
                                     )}
-                            </div>
-                        )}
-
-                        {group?.questions.length > 1 && (
-                            <div>
-                                {group?.questions.map((question: Question) => (
-                                    <div key={question._id} className="mb-4">
-                                        <div className="flex items-center">
-                                            <button className="rounded-full bg-[#e8f2ff] p-1 text-[#35509a] text-xl font-semibold w-10 h-10 flex items-center justify-center">
-                                                {question.order}
-                                            </button>
-                                            {renderInputField(question)}
-                                            {question.audioUrl && (
-                                                <audio
-                                                    src={question.audioUrl}
-                                                    controls
-                                                    className="ml-4 w-full"
-                                                />
-                                            )}
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-
-                    {group?.questions.length === 1 && (
-                        <Row gutter={[16, 16]} className="mb-6">
-                            
-                            <Col span={12}>
-                                <div className="flex items-center">
-                                    <button className="rounded-full bg-[#e8f2ff] p-1 text-[#35509a] text-xl font-semibold w-10 h-10 flex items-center justify-center">
-                                        {group.questions[0].order}
-                                    </button>
-                                    {renderInputField(group.questions[0])}
+                                    {group?.passageText && (
+                                        <p className="font-bold">
+                                            {group.passageText}
+                                        </p>
+                                    )}
+                                    {group?.questions.length === 1 &&
+                                        group?.audioUrl && (
+                                            <audio
+                                                src={group?.audioUrl}
+                                                controls
+                                                className="w-full mt-2"
+                                            />
+                                        )}
                                 </div>
-                                {group.questions[0]?.audioUrl && (
-                                    <audio
-                                        src={group.questions[0]?.audioUrl}
-                                        controls
-                                        className="w-full mt-2"
-                                    />
-                                )}
-                            </Col>
-                        </Row>
+                            )}
+
+                            {group?.questions.length > 1 && (
+                                <div>
+                                    {group?.questions.map((question: Question) => (
+                                        <div key={question._id} className="mb-4">
+                                            <div className="flex items-center">
+                                                <button className="rounded-full bg-[#e8f2ff] p-1 text-[#35509a] text-xl font-semibold w-10 h-10 flex items-center justify-center">
+                                                    {question.order}
+                                                </button>
+                                                {renderInputField(question)}
+                                                {question.audioUrl && (
+                                                    <audio
+                                                        src={question.audioUrl}
+                                                        controls
+                                                        className="ml-4 w-full"
+                                                    />
+                                                )}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
                     )}
                 </div>
             ));
-        }, [questionsGroup, renderInputField]);
+        }, [questionsGroup, renderInputField, isEditable]);
 
         return <>{renderedQuestionsGroup}</>;
     },

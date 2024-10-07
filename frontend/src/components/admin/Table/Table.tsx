@@ -1,10 +1,16 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Table as AntTable, Button, Modal, TableProps } from 'antd';
-import { ExclamationCircleOutlined, PlusOutlined } from '@ant-design/icons';
-import ButtonPrimary from '@/components/shared/ButtonPrimary/ButtonPrimary';
+import { Table as AntTable, Button, Modal, TableProps, Tooltip } from 'antd';
+import {
+    DeleteOutlined,
+    EditOutlined,
+    ExclamationCircleOutlined,
+    PlusOutlined,
+} from '@ant-design/icons';
 import Link from 'next/link';
+
+import ButtonPrimary from '@/components/shared/ButtonPrimary/ButtonPrimary';
 
 interface TableComponentProps<T> extends TableProps<T> {
     columns: TableProps<T>['columns'];
@@ -14,8 +20,9 @@ interface TableComponentProps<T> extends TableProps<T> {
     onAdd?: () => void;
     onEdit?: (record: T) => void;
     onDelete?: (record: T) => void;
-    addLink?: string; 
-    editLink?: (record: T) => string; 
+    addLink?: string;
+    editLink?: (record: T) => string;
+    filter?: React.ReactNode;
 }
 
 function Table<T extends object>({
@@ -26,8 +33,9 @@ function Table<T extends object>({
     onAdd,
     onEdit,
     onDelete,
-    addLink, 
-    editLink, 
+    addLink,
+    editLink,
+    filter,
     ...props
 }: TableComponentProps<T>) {
     const [selectedRecord, setSelectedRecord] = useState<T | null>(null);
@@ -42,6 +50,8 @@ function Table<T extends object>({
                     onDelete(record);
                 }
             },
+            okText: 'Đồng ý',
+            cancelText: 'Huỷ',
         });
     };
 
@@ -49,58 +59,74 @@ function Table<T extends object>({
         title: 'Hành động',
         key: 'actions',
         render: (text: any, record: T) => (
-            <>
+            <div className="flex space-x-2">
                 {editLink ? (
                     <Link href={editLink(record)} passHref>
-                        <Button type="primary" style={{ marginRight: 8 }}>
-                            Edit
+                        <Button
+                            type="primary"
+                            className="flex items-center justify-center p-2 md:p-3"
+                        >
+                            <EditOutlined />
                         </Button>
                     </Link>
                 ) : (
                     onEdit && (
                         <Button
                             type="primary"
-                            style={{ marginRight: 8 }}
+                            className="flex items-center justify-center p-2 md:p-3"
                             onClick={() => onEdit(record)}
                         >
-                            Edit
+                            <EditOutlined />
                         </Button>
                     )
                 )}
                 {onDelete && (
-                    <Button danger onClick={() => handleDeleteClick(record)}>
-                        Delete
-                    </Button>
+                    <Tooltip title="Xóa">
+                        <Button
+                            danger
+                            className="flex items-center justify-center p-2 md:p-3"
+                            onClick={() => handleDeleteClick(record)}
+                        >
+                            <DeleteOutlined />
+                        </Button>
+                    </Tooltip>
                 )}
-            </>
+            </div>
         ),
     };
 
     return (
         <>
-            {addLink ? (
-                <Link href={addLink} passHref>
-                    <ButtonPrimary
-                        className="mb-2 bg-[#35509a]"
-                        icon={<PlusOutlined className="text-white" />}
-                    ></ButtonPrimary>
-                </Link>
-            ) : (
-                onAdd && (
-                    <ButtonPrimary
-                        onClick={onAdd}
-                        className="mb-2 bg-[#35509a]"
-                        icon={<PlusOutlined className="text-white" />}
-                    ></ButtonPrimary>
-                )
-            )}
+            <div className="flex items-center space-x-4 mb-2">
+                {addLink ? (
+                    <Link href={addLink} passHref>
+                        <Tooltip title="Thêm">
+                            <ButtonPrimary
+                                className="bg-[#35509a]"
+                                icon={<PlusOutlined className="text-white" />}
+                            ></ButtonPrimary>
+                        </Tooltip>
+                    </Link>
+                ) : (
+                    onAdd && (
+                        <Tooltip title="Thêm">
+                            <ButtonPrimary
+                                onClick={onAdd}
+                                className="bg-[#35509a]"
+                                icon={<PlusOutlined className="text-white" />}
+                            ></ButtonPrimary>
+                        </Tooltip>
+                    )
+                )}
+                {filter && <div>{filter}</div>}
+            </div>
             <AntTable
                 columns={
                     Array.isArray(columns)
                         ? [...columns, actionColumn]
                         : [actionColumn]
                 }
-                dataSource={dataSource}
+                dataSource={Array.isArray(dataSource) ? dataSource : []}
                 pagination={pagination}
                 rowKey={rowKey}
                 {...props}

@@ -2,7 +2,7 @@
 import React, { useState, useEffect, memo } from 'react';
 import { Table, Card } from 'antd';
 import Link from 'next/link';
-import ExamService from '@/services/ExamsService';
+import ExamService from '@/services/exams/ExamsService';
 import { useAuth } from '@/hooks/useAuth';
 
 const ExamResults: React.FC<{ id?: string }> = ({ id }) => {

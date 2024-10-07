@@ -13,7 +13,7 @@ export default interface FlashCardInterface {
     isPublic: boolean;
     reviewInterval: number;
     reviewCount: number;
-    
+    userId:any
 }
 
 export interface ExampleResponse {
