@@ -1,5 +1,5 @@
 'use client';
-import { Form, Input, Select } from 'antd';
+import { Form, Input } from 'antd';
 import Link from 'next/link';
 
 import WapperItemCard from '@/components/client/WapperItemCard/WapperItemCard';
@@ -7,7 +7,6 @@ import ButtonOutline from '@/components/shared/ButtonPrimary/ButtonOutline';
 import ButtonPrimary from '@/components/shared/ButtonPrimary/ButtonPrimary';
 import AuthService from '@/services/auth/AuthService';
 
-const { Option } = Select;
 
 const formItemLayout = {
     labelCol: {
@@ -40,13 +39,7 @@ function Register() {
 
     };
 
-    const prefixSelector = (
-        <Form.Item name="prefix" noStyle>
-            <Select style={{ width: 70 }}>
-                <Option value="84">+84</Option>
-            </Select>
-        </Form.Item>
-    );
+  
 
     return (
         <>
@@ -147,24 +140,7 @@ function Register() {
                             <Input.Password placeholder="nhập xác nhận mật khẩu" />
                         </Form.Item>
 
-                        {/* <Form.Item
-                            name="phone"
-                            label="Số điện thoại"
-                            rules={[
-                                {
-                                    required: true,
-                                    type: 'string',
-                                    pattern: /(84|0[3|5|7|8|9])+([0-9]{8})\b/g,
-                                    message: 'Số điện thoại không hợp lệ!',
-                                },
-                            ]}
-                        >
-                            <Input
-                                addonBefore={prefixSelector}
-                                style={{ width: '100%' }}
-                                placeholder="nhập số điện thoại"
-                            />
-                        </Form.Item> */}
+                       
 
                         <ButtonPrimary
                             htmlType="submit"

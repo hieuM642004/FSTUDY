@@ -21,39 +21,42 @@ export class UserService {
             const checkExists = await this.userModel.findOne({
                 email: user.email,
             });
-    
+
             if (checkExists) {
                 throw 'Email already exists';
             }
-    
+
             const hashedPassword = await bcrypt.hash(user.password, 10);
             const userWithHashedPassword = {
                 ...user,
-                typeLogin : TypeLogin.BASIC,
+                typeLogin: TypeLogin.BASIC,
                 password: hashedPassword,
             };
-    
+
             const fileStream = Readable.from(file.buffer);
             const fileId = await this.googleDriveUploader.uploadImage(
                 fileStream,
                 file.originalname,
                 '1eHh70ah2l2JuqHQlA1riebJZiRS9L20q',
             );
-    
+
             const avatarUrl = this.googleDriveUploader.getThumbnailUrl(fileId);
             const userWithAvatar = {
                 ...userWithHashedPassword,
                 avatar: avatarUrl,
             };
-    
+
             const createdUser = new this.userModel(userWithAvatar);
             const savedUser = await createdUser.save();
-    
-            const refreshToken = jwt.sign({ userWithAvatar}, process.env.JWT_SECRET);
+
+            const refreshToken = jwt.sign(
+                { userWithAvatar },
+                process.env.JWT_SECRET,
+            );
             savedUser.refreshToken = refreshToken;
-    
+
             await savedUser.save();
-    
+
             return savedUser;
         } catch (error) {
             console.error('Error creating user:', error);
@@ -73,34 +76,35 @@ export class UserService {
             if (!checkuser) {
                 throw new NotFoundException('User not found.');
             }
-            let newDataUser : object ={
+            let newDataUser: object = {
                 ...user,
-            }
-            if(user.password){
+            };
+            if (user.password) {
                 const hashedPassword = await bcrypt.hash(user.password, 10);
-                newDataUser ={
+                newDataUser = {
                     ...user,
                     password: hashedPassword,
-                }
+                };
             }
-            if(file){
-            const fileStream = Readable.from(file.buffer);
-            const fileId = await this.googleDriveUploader.uploadImage(
-                fileStream,
-                file.originalname,
-                '1eHh70ah2l2JuqHQlA1riebJZiRS9L20q',
+            if (file) {
+                const fileStream = Readable.from(file.buffer);
+                const fileId = await this.googleDriveUploader.uploadImage(
+                    fileStream,
+                    file.originalname,
+                    '1eHh70ah2l2JuqHQlA1riebJZiRS9L20q',
+                );
+                const avatarUrl =
+                    this.googleDriveUploader.getThumbnailUrl(fileId);
+                newDataUser = {
+                    ...user,
+                    avatar: avatarUrl,
+                };
+            }
+            const res = await this.userModel.findByIdAndUpdate(id, newDataUser);
+            const refreshToken = jwt.sign(
+                { newDataUser },
+                process.env.JWT_SECRET,
             );
-            const avatarUrl = this.googleDriveUploader.getThumbnailUrl(fileId);
-             newDataUser ={
-                ...user,
-                avatar: avatarUrl,
-             }
-            }            
-             const res = await this.userModel.findByIdAndUpdate(
-                id,
-                newDataUser,
-            );
-            const refreshToken = jwt.sign({ newDataUser}, process.env.JWT_SECRET);
             res.refreshToken = refreshToken;
             return await res.save();
         } catch (error) {
@@ -141,13 +145,17 @@ export class UserService {
 
     // delete user By Id
 
-    async deleteUserById(id: string): Promise<User> {
+    async deleteUserById(id: string): Promise<any> {
+        const deletedUser = await this.userModel.findByIdAndUpdate(id, {
+            active: false,
+        });
+    }
+    async restoreUserById(id: string): Promise<User> {
         const deletedUser = await this.userModel.findByIdAndUpdate(
             id,
-            { active: false },
-            { new: true }
+            { active: true },
+            { new: true },
         );
         return deletedUser;
     }
-    
 }

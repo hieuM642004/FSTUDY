@@ -34,7 +34,10 @@ export class UserController {
     // @UseGuards(AdminGuard)
     async getAllUsers(
         @Query('page') page: number = 1,
-        @Query('limit') limit: number = process.env.PAGE_LIMIT ? parseInt(process.env.PAGE_LIMIT) : 10,
+        @Query('limit')
+        limit: number = process.env.PAGE_LIMIT
+            ? parseInt(process.env.PAGE_LIMIT)
+            : 10,
     ): Promise<
         ResponseData<{
             users: User[];
@@ -100,7 +103,7 @@ export class UserController {
         }
     }
 
-      // Router update user by id
+    // Router update user by id
 
     @Put('/update-user/:id')
     @UseInterceptors(FileInterceptor('avatar'))
@@ -133,7 +136,7 @@ export class UserController {
         }
     }
 
-      // Router get user by id
+    // Router get user by id
 
     // @UsePipes(new ValidationPipe())
     @Get(':id')
@@ -154,12 +157,14 @@ export class UserController {
             );
         }
     }
-      // Router search by name or email
+    // Router search by name or email
 
     @UsePipes(new ValidationPipe())
     @Post('search')
     @UseGuards(AdminGuard)
-    async searchUserByEmail(@Body('key') email:string): Promise<ResponseData<User>> {
+    async searchUserByEmail(
+        @Body('key') email: string,
+    ): Promise<ResponseData<User>> {
         try {
             const users = await this.userService.searchUserByEmail(email);
             return new ResponseData<User>(
@@ -177,28 +182,54 @@ export class UserController {
     }
 
     @Delete(':id')
-async deleteUserById(@Param('id') id: string): Promise<ResponseData<User>> {
-    try {
-        const deletedUser = await this.userService.deleteUserById(id);
-        if (!deletedUser) {
+    async deleteUserById(@Param('id') id: string): Promise<ResponseData<User>> {
+        try {
+            const deletedUser = await this.userService.deleteUserById(id);
+            if (!deletedUser) {
+                return new ResponseData<User>(
+                    null,
+                    HttpStatus.NOT_FOUND,
+                    'User not found',
+                );
+            }
+            return new ResponseData<User>(
+                deletedUser,
+                HttpStatus.SUCCESS,
+                HttpMessage.SUCCESS,
+            );
+        } catch (error) {
             return new ResponseData<User>(
                 null,
-                HttpStatus.NOT_FOUND,
-                'User not found',
+                HttpStatus.ERROR,
+                HttpMessage.ERROR,
             );
         }
-        return new ResponseData<User>(
-            deletedUser,
-            HttpStatus.SUCCESS,
-            HttpMessage.SUCCESS,
-        );
-    } catch (error) {
-        return new ResponseData<User>(
-            null,
-            HttpStatus.ERROR,
-            HttpMessage.ERROR,
-        );
     }
-}
 
+    @Put('/restore-user/:id')
+    async restoreUserById(
+        @Param('id') id: string,
+    ): Promise<ResponseData<User>> {
+        try {
+            const deletedUser = await this.userService.restoreUserById(id);
+            if (!deletedUser) {
+                return new ResponseData<User>(
+                    null,
+                    HttpStatus.NOT_FOUND,
+                    'User not found',
+                );
+            }
+            return new ResponseData<User>(
+                deletedUser,
+                HttpStatus.SUCCESS,
+                HttpMessage.SUCCESS,
+            );
+        } catch (error) {
+            return new ResponseData<User>(
+                null,
+                HttpStatus.ERROR,
+                HttpMessage.ERROR,
+            );
+        }
+    }
 }

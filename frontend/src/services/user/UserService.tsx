@@ -1,6 +1,6 @@
 import { nestApiInstance } from '@/constant/api';
 import withTokenRefresh from '@/decorator/withAuth';
-import { UpdateUser } from '@/types/user/User';
+import type { CreatedUSer, UpdateUser } from '@/types/user/User';
 
 class UserService {
     @withTokenRefresh
@@ -38,7 +38,58 @@ class UserService {
             console.error('Error fetching register:', error);
         }
     }
-    
+    // role admin
+    @withTokenRefresh
+    static async getAllUser({page = 1 , limit = 0 } : string| any[] |any): Promise<string | undefined> {
+        try {
+            const response = await nestApiInstance.get(
+                `/users?page=${page}&limit=${limit}` );
+            if(response.status === 200){                 
+                return response.data.data;
+            }
+        } catch (error) {
+            console.error('Error fetching register:', error);
+        }
+    }   
+    @withTokenRefresh
+    static async createUser(dataUser : CreatedUSer): Promise<string | undefined> {
+        try {
+            const response = await nestApiInstance.post(
+                `/users/create-user`, dataUser);
+                
+            if(response.status === 201){                 
+                return response.data.data;
+            }
+        } catch (error) {
+            console.error('Error fetching register:', error);
+        }
+    }
+    @withTokenRefresh
+    static async deleteUser(id : string | null): Promise<string | undefined> {
+        try {
+            const response = await nestApiInstance.delete(
+                `/users/${id}`);
+                
+            if(response.status === 200){                 
+                return response.data;
+            }
+        } catch (error) {
+            console.error('Error fetching register:', error);
+        }
+    }
+    @withTokenRefresh
+    static async restoreUser(id : string | null): Promise<string | undefined> {
+        try {
+            const response = await nestApiInstance.put(
+                `/users/restore-user/${id}`);
+                
+            if(response.status === 200){                 
+                return response.data;
+            }
+        } catch (error) {
+            console.error('Error fetching register:', error);
+        }
+    }
 }
 
 export default UserService;

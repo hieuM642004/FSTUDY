@@ -4,3 +4,10 @@ export interface UpdateUser {
     birthday: Date;
     avatar: string ;
 }
+export interface CreatedUSer {
+    fullname: string;
+    avatar: string;
+    email: string;
+    password: string ;
+    role: string ;
+}
