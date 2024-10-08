@@ -447,7 +447,7 @@ export class CourseService {
     }
     //Content Service
     async createContent(createContentDto: createContentDto): Promise<Content> {
-        createContentDto.slug = generateSlug(createContentDto.content_type);
+        createContentDto.slug = generateSlug(createContentDto.title);
 
         const createdContent = new this.contentModel(createContentDto);
         return createdContent.save();
@@ -512,43 +512,76 @@ export class CourseService {
 
         return lesson;
     }
-    async addDataToContent(
+    async addMultipleDataToContent(
         contentId: string,
-        dataId: string,
+        dataIds: string[],
     ): Promise<Content> {
-        if (
-            !Types.ObjectId.isValid(contentId) ||
-            !Types.ObjectId.isValid(dataId)
-        ) {
-            throw new Error('Invalid ID format');
+        if (!Types.ObjectId.isValid(contentId)) {
+            throw new Error('Invalid content ID format');
         }
-
-        // Determine content type
-        const contentType = await this.inferContentType(dataId);
-
-        if (!contentType) {
-            throw new Error('Content type could not be determined');
-        }
-
-        const arrayFieldName = this.getArrayFieldName(contentType);
-
-        if (!arrayFieldName) {
-            throw new Error('Invalid content type');
-        }
-
-        // Update content with the determined content type
-        const updatedContent = await this.contentModel.findByIdAndUpdate(
-            contentId,
-            { $addToSet: { [arrayFieldName]: dataId } },
-            { new: true },
-        );
-
-        if (!updatedContent) {
+    
+        const content = await this.contentModel.findById(contentId);
+        if (!content) {
             throw new Error('Content not found');
         }
-
+        for (const dataId of dataIds) {
+            if (!Types.ObjectId.isValid(dataId)) {
+                throw new Error('Invalid data ID format');
+            }
+            const contentType = await this.inferContentType(dataId);
+            if (!contentType) {
+                throw new Error(`Content type could not be determined for data ID: ${dataId}`);
+            }
+            const arrayFieldName = this.getArrayFieldName(contentType);
+            if (!arrayFieldName) {
+                throw new Error(`Invalid content type for data ID: ${dataId}`);
+            }
+            if (!content[arrayFieldName].includes(dataId)) {
+                content[arrayFieldName].push(dataId);
+            }
+        }
+    
+        // Save updated content
+        const updatedContent = await content.save();
         return updatedContent;
     }
+    // async addDataToContent(
+    //     contentId: string,
+    //     dataId: string,
+    // ): Promise<Content> {
+    //     if (
+    //         !Types.ObjectId.isValid(contentId) ||
+    //         !Types.ObjectId.isValid(dataId)
+    //     ) {
+    //         throw new Error('Invalid ID format');
+    //     }
+
+    //     // Determine content type
+    //     const contentType = await this.inferContentType(dataId);
+
+    //     if (!contentType) {
+    //         throw new Error('Content type could not be determined');
+    //     }
+
+    //     const arrayFieldName = this.getArrayFieldName(contentType);
+
+    //     if (!arrayFieldName) {
+    //         throw new Error('Invalid content type');
+    //     }
+
+    //     // Update content with the determined content type
+    //     const updatedContent = await this.contentModel.findByIdAndUpdate(
+    //         contentId,
+    //         { $addToSet: { [arrayFieldName]: dataId } },
+    //         { new: true },
+    //     );
+
+    //     if (!updatedContent) {
+    //         throw new Error('Content not found');
+    //     }
+
+    //     return updatedContent;
+    // }
 
     private async inferContentType(
         dataId: string,

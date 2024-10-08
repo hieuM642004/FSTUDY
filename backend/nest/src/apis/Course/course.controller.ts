@@ -265,6 +265,7 @@ createVideo(
     removeContent(@Param('id') id: string) {
         return this.courseService.removeContent(id);
     }
+    
 
     /**
      * Lesson Controller
@@ -307,13 +308,20 @@ createVideo(
     @Patch('content/add/:id')
     async addData(
         @Param('id') contentId: string,
-        @Body('dataId') dataId: string,
+        @Body('dataIds') dataIds: string[], // Expect an array of data IDs
     ): Promise<Content> {
-        if (!Types.ObjectId.isValid(contentId) || !Types.ObjectId.isValid(dataId)) {
-            throw new Error('Invalid ID format');
+        // Validate each contentId and dataId
+        if (!Types.ObjectId.isValid(contentId)) {
+            throw new Error('Invalid content ID format');
         }
-    
-        return this.courseService.addDataToContent(contentId, dataId);
+
+        for (const dataId of dataIds) {
+            if (!Types.ObjectId.isValid(dataId)) {
+                throw new Error('Invalid data ID format: ' + dataId);
+            }
+        }
+
+        return this.courseService.addMultipleDataToContent(contentId, dataIds);
     }
     
     /**

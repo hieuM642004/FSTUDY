@@ -73,6 +73,10 @@ export const VideoSchema = SchemaFactory.createForClass(Video);
 
 @Schema({ timestamps: true })
 export class Content {
+
+    @Prop()
+    title: string;
+
     @Prop([{ type: SchemaTypes.ObjectId, ref: 'Quiz' }])
     quiz?: Types.ObjectId[];
 

@@ -69,7 +69,7 @@ function Courses({ data }: any) {
                                                                 <div>
                                                                     <Image
                                                                         src={
-                                                                            course.thumbnail
+                                                                            course?.thumbnail
                                                                         }
                                                                         width={
                                                                             0

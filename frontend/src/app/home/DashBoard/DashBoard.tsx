@@ -13,12 +13,12 @@ const Dashboard = () => {
     const [userCourse, SetUserCourse] = useState<[] | any>();
     const [listCourse, SetListCourse] = useState<[] | any>();
     const dataUser = useTypedSelector((state: RootState) => state.user);
-    
+
     useEffect(() => {
         dispatch(fetchUserData());
         if (dataUser) {
             getUserCourse();
-        }else{
+        } else {
             getAllCourse();
         }
     }, [dispatch]);
@@ -35,9 +35,9 @@ const Dashboard = () => {
                     userId,
                 });
                 console.log('response', response);
-                if(response){
+                if (response) {
                     SetUserCourse(response);
-                }else{
+                } else {
                     getAllCourse();
                 }
             } else {
@@ -55,7 +55,7 @@ const Dashboard = () => {
             console.log(error);
         }
     };
-    
+
     return (
         <div className=" bg-blue-50 p-10">
             <div className="max-w-7xl m-auto">
@@ -165,8 +165,11 @@ const Dashboard = () => {
                         )}
                     </>
                 ) : (
-                    <><h2 className='text-xl font-semibold #35509a  mb-2'>TOÀN BỘ KHÓA HỌC</h2>
-                      <div className="flex flex-wrap">
+                    <>
+                        <h2 className="text-xl font-semibold #35509a  mb-2">
+                            TOÀN BỘ KHÓA HỌC
+                        </h2>
+                        <div className="flex flex-wrap">
                             {listCourse?.length > 0 &&
                                 listCourse?.map(
                                     (item: string | any, index: number) => {
@@ -181,10 +184,7 @@ const Dashboard = () => {
                                                     <div className="bg-gray-100 p-4 rounded-lg">
                                                         <div className="flex justify-between items-center mb-2 text-black">
                                                             <span className="font-semibold">
-                                                                {
-                                                                    item
-                                                                        .title
-                                                                }
+                                                                {item.title}
                                                             </span>
                                                             <span className="bg-orange-400 rounded-lg p-1 text-white">
                                                                 Học thử
@@ -201,8 +201,7 @@ const Dashboard = () => {
                                                         <div className="text-gray-600">
                                                             Tiếp tục bài học:{' '}
                                                             {
-                                                                item
-                                                                    .detail_short_description
+                                                                item.detail_short_description
                                                             }
                                                         </div>
                                                     </div>
@@ -214,7 +213,6 @@ const Dashboard = () => {
                         </div>
                     </>
                 )}
-                
             </div>
         </div>
     );

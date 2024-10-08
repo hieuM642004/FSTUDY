@@ -70,7 +70,57 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
         {
             key: '2',
             icon: <VideoCameraOutlined />,
-            label: <Link href="/admin/">Khóa học</Link>,
+            label: 'Khóa học',
+            children: [
+                {
+                    key: '17',
+                    label: <Link href="/admin/course/instruct">Hướng dẫn</Link>,
+                },
+                {
+                    key: '9',
+                    label: <Link href="/admin/course/quizzes">Quizzes</Link>,
+                },
+                {
+                    key: '10',
+                    label: (
+                        <Link href="/admin/course/word-matching">
+                            Word matchings
+                        </Link>
+                    ),
+                },
+                {
+                    key: '11',
+                    label: (
+                        <Link href="/admin/course/fill-in-the-blank">
+                            Fill in the blanks
+                        </Link>
+                    ),
+                },
+                {
+                    key: '12',
+                    label: <Link href="/admin/course/videos">Videos</Link>,
+                },
+                {
+                    key: '13',
+                    label: <Link href="/admin/course/contents">Contents</Link>,
+                },
+                {
+                    key: '14',
+                    label: <Link href="/admin/course/lessons">Lessons</Link>,
+                },
+                {
+                    key: '15',
+                    label: (
+                        <Link href="/admin/course/course-type">
+                            Course Types
+                        </Link>
+                    ),
+                },
+                {
+                    key: '16',
+                    label: <Link href="/admin/course/courses">Courses</Link>,
+                },
+            ],
         },
         {
             key: '3',
