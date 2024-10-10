@@ -15,6 +15,9 @@ export class UpdateExamResultDto {
 
     @IsOptional()
     readonly completionTime: string;
+    @IsOptional()
+    
+    readonly type: string;
 
     @IsOptional()
     readonly idUser: string;

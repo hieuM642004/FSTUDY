@@ -42,6 +42,7 @@ export class CommentGateway
   }
 }
   @SubscribeMessage('requestComments')
+
   async handleRequestComments(client: Socket, { idBlog, idCourse }: { idBlog?: string, idCourse?: string }) {
     try {      
       const query: any = {};

@@ -7,6 +7,7 @@ import {
     EditOutlined,
     ExclamationCircleOutlined,
     PlusOutlined,
+    UndoOutlined, // Icon cho khôi phục
 } from '@ant-design/icons';
 import Link from 'next/link';
 
@@ -20,6 +21,7 @@ interface TableComponentProps<T> extends TableProps<T> {
     onAdd?: () => void;
     onEdit?: (record: T) => void;
     onDelete?: (record: T) => void;
+    onRestore?: (record: T) => void; 
     addLink?: string;
     editLink?: (record: T) => string;
     filter?: React.ReactNode;
@@ -33,13 +35,12 @@ function Table<T extends object>({
     onAdd,
     onEdit,
     onDelete,
+    onRestore, // Nhận hàm onRestore
     addLink,
     editLink,
     filter,
     ...props
 }: TableComponentProps<T>) {
-    const [selectedRecord, setSelectedRecord] = useState<T | null>(null);
-
     const handleDeleteClick = (record: T) => {
         Modal.confirm({
             title: 'Bạn chắc chắn muốn xóa?',
@@ -51,7 +52,22 @@ function Table<T extends object>({
                 }
             },
             okText: 'Đồng ý',
-            cancelText: 'Huỷ',
+            cancelText: 'Hủy',
+        });
+    };
+
+    const handleRestoreClick = (record: T) => {
+        Modal.confirm({
+            title: 'Bạn chắc chắn muốn khôi phục dữ liệu?',
+            icon: <ExclamationCircleOutlined />,
+            content: 'Hành động này không thể hoàn tác.',
+            onOk() {
+                if (onRestore) {
+                    onRestore(record);
+                }
+            },
+            okText: 'Khôi phục',
+            cancelText: 'Hủy',
         });
     };
 
@@ -88,6 +104,17 @@ function Table<T extends object>({
                             onClick={() => handleDeleteClick(record)}
                         >
                             <DeleteOutlined />
+                        </Button>
+                    </Tooltip>
+                )}
+                {onRestore && (
+                    <Tooltip title="Khôi phục">
+                        <Button
+                            type="primary"
+                            className="flex items-center justify-center p-2 md:p-3"
+                            onClick={() => handleRestoreClick(record)}
+                        >
+                            <UndoOutlined />
                         </Button>
                     </Tooltip>
                 )}

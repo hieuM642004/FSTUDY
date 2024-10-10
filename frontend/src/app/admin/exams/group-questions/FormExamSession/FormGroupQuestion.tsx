@@ -461,17 +461,11 @@ function FormGroupQuestions({ id }: FormGroupQuestionsProps) {
                         <Select
                             value={question.questionType}
                             onChange={(value) =>
-                                handleQuestionChange(
-                                    index,
-                                    'questionType',
-                                    value,
-                                )
+                                handleQuestionChange(index, 'questionType', value)
                             }
                         >
                             <Option value="multiple-choice">Trắc nghiệm</Option>
-                            <Option value="fill-in-the-blank">
-                                Điền vào chỗ trống
-                            </Option>
+                            <Option value="fill-in-the-blank">Điền vào chỗ trống</Option>
                             <Option value="short-answer">Trả lời ngắn</Option>
                         </Select>
                     </Form.Item>
@@ -482,6 +476,11 @@ function FormGroupQuestions({ id }: FormGroupQuestionsProps) {
                             index={index}
                             onChangeQuestion={handleQuestionChange}
                         />
+                    ) : question.questionType === 'short-answer' ? (
+                        <>
+                          
+                            <p className='my-3 italic text-yellow-500'>Điểm số phần thi do AI thực hiện</p>
+                        </>
                     ) : (
                         <MultipleChoice
                             question={question}
@@ -492,11 +491,7 @@ function FormGroupQuestions({ id }: FormGroupQuestionsProps) {
                                 handleExplanationChange(index, explanation)
                             }
                             onChangeOption={(optionIndex, optionValue) =>
-                                handleOptionChange(
-                                    index,
-                                    optionIndex,
-                                    optionValue,
-                                )
+                                handleOptionChange(index, optionIndex, optionValue)
                             }
                         />
                     )}

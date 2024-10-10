@@ -52,11 +52,9 @@ const Tests: React.FC = () => {
             const formattedTests = testsData?.data.map((exam: any) => ({
                 title: exam.title,
                 examType: exam.examType,
+                description: exam.description,
                 slug: exam.slug,
-                durition: exam.idSession.reduce(
-                    (acc: number, session: any) => acc + (session.duration || 0),
-                    0,
-                ),
+                durition: exam.durition,
                 idSession: exam.idSession.map((session: any) => ({
                     title: session.title,
                     description: session.description,
@@ -167,7 +165,7 @@ const Tests: React.FC = () => {
                                             idSession={test.idSession}
                                             durition={test.durition}
                                             examType={test.examType}
-                                            description={''}
+                                            description={test.description}
                                             slug={test.slug}
                                         />
                                     ))}

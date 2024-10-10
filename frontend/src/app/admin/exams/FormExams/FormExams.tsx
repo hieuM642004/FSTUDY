@@ -13,6 +13,8 @@ function FormExam({ id }: { id?: string }) {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [isUpdate, setIsUpdate] = useState(false);
+  const [examType, setExamType] = useState<string>('toeic');
+  const [skills, setSkills] = useState<string[]>(['Reading', 'Listening']);
 
   useEffect(() => {
     if (id) {
@@ -22,6 +24,8 @@ function FormExam({ id }: { id?: string }) {
         try {
           const examData = await ExamsService.getAllExamById(id);
           form.setFieldsValue(examData);
+          setExamType(examData.examType); // Cập nhật giá trị loại bài thi
+          updateSkills(examData.examType);
         } catch (error) {
           notification.error({
             message: 'Thất bại',
@@ -40,14 +44,12 @@ function FormExam({ id }: { id?: string }) {
     setLoading(true);
     try {
       if (isUpdate) {
-        // Update existing exam
         await ExamsService.updateExam(id || '', values);
         notification.success({
           message: 'Thành công',
           description: 'Bài thi đã được cập nhật thành công!',
         });
       } else {
-        // Add new exam
         await ExamsService.addExam(values);
         notification.success({
           message: 'Thành công',
@@ -65,26 +67,39 @@ function FormExam({ id }: { id?: string }) {
     }
   };
 
+  const updateSkills = (type: string) => {
+    if (type === 'toeic') {
+      setSkills(['Reading', 'Listening']);
+    } else if (type === 'ielst') {
+      setSkills(['Reading', 'Listening', 'Speaking', 'Writing']);
+    }
+  };
+
+  const handleExamTypeChange = (value: string) => {
+    setExamType(value);
+    updateSkills(value);
+  };
+
   return (
     <Form
       form={form}
       layout="vertical"
       onFinish={onFinish}
-      initialValues={{ examType: 'toeic', durition: '30 phút' }} 
-    className='shadow'
+      initialValues={{ examType: 'toeic', durition: '30 phút' }}
+      className="shadow"
     >
-    <div className='p-4'>
+      <div className="p-4">
         <Form.Item
           label="Loại bài thi"
           name="examType"
           rules={[{ required: true, message: 'Vui lòng chọn loại bài thi' }]}
         >
-          <Select placeholder="Chọn loại bài thi">
+          <Select placeholder="Chọn loại bài thi" onChange={handleExamTypeChange}>
             <Option value="toeic">TOEIC</Option>
             <Option value="ielst">IELST</Option>
           </Select>
         </Form.Item>
-  
+
         <Form.Item
           label="Tiêu đề"
           name="title"
@@ -92,15 +107,22 @@ function FormExam({ id }: { id?: string }) {
         >
           <Input placeholder="Nhập tiêu đề bài thi" />
         </Form.Item>
-  
+
         <Form.Item
-          label="Mô tả"
-          name="description"
-          rules={[{ required: true, message: 'Vui lòng nhập mô tả' }]}
-        >
-          <Input.TextArea placeholder="Nhập mô tả bài thi" />
-        </Form.Item>
-  
+  label="Mô tả"
+  name="description"
+  rules={[{ required: true, message: 'Vui lòng chọn mô tả' }]}
+>
+  <Select placeholder="Chọn mô tả">
+    {skills.map((skill) => (
+      <Option key={skill} value={skill}>
+        {skill}
+      </Option>
+    ))}
+  </Select>
+</Form.Item>
+
+
         <Form.Item
           label="Thời gian"
           name="durition"
@@ -113,12 +135,12 @@ function FormExam({ id }: { id?: string }) {
             <Option value="90 phút">90 phút</Option>
           </Select>
         </Form.Item>
-  
+
         <Form.Item>
-          <ButtonPrimary htmlType="submit" loading={loading} label={isUpdate ? 'Cập nhật bài thi' : 'Thêm bài thi'}></ButtonPrimary>
-          <ButtonBack label='Hủy' className='ml-2'/>
+          <ButtonPrimary htmlType="submit" loading={loading} label={isUpdate ? 'Cập nhật bài thi' : 'Thêm bài thi'} />
+          <ButtonBack label="Hủy" className="ml-2" />
         </Form.Item>
-    </div>
+      </div>
     </Form>
   );
 }

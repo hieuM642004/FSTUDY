@@ -15,6 +15,8 @@ import { CommentModule1 } from './apis/socket/comments/comment.module';
 import { ExamModule } from './apis/exams/exam.module';
 import { ExamResultModule } from './apis/exams/examResult/examResult.module';
 import { ScheduleModule } from '@nestjs/schedule';
+import { aiModule } from './apis/AI/ai.module';
+aiModule
 
 @Module({
     imports: [
@@ -26,6 +28,7 @@ import { ScheduleModule } from '@nestjs/schedule';
         FlashCardModule,
         CommentModule1,
         ExamModule,
+        aiModule,
         ExamResultModule,
         ConfigModule.forRoot({ envFilePath: '.env', isGlobal: true }),
         MongooseModule.forRoot(process.env.MONGODB_URI),

@@ -14,14 +14,13 @@ interface ExtendedRecordingProps extends RecordingProps {
 const Recording: React.FC<ExtendedRecordingProps> = React.memo(
     ({ questionsGroup, dataselection, activeQuestions, isEditable = false }) => {
         const { TextArea } = Input;
-
         const [localDataselection, setLocalDataselection] = useState<
             Record<string, string | number | null>
         >({});
         const [answerList, setAnswerList] = useState<
             Array<{ order: number; value: string | number | null }>
         >(() => JSON.parse(localStorage.getItem('answerList') || '[]'));
-
+        
         useEffect(() => {
             localStorage.setItem('answerList', JSON.stringify(answerList));
         }, [answerList]);
@@ -31,6 +30,9 @@ const Recording: React.FC<ExtendedRecordingProps> = React.memo(
                 localStorage.removeItem('answerList');
             };
             window.addEventListener('beforeunload', handleBeforeUnload);
+            return () => {
+                window.removeEventListener('beforeunload', handleBeforeUnload);
+            };
         }, []);
 
         const onChange = useCallback(
@@ -41,48 +43,56 @@ const Recording: React.FC<ExtendedRecordingProps> = React.memo(
                 questionId: string,
             ) => {
                 const value = e.target.value;
-
-                const safeActiveQuestions: number[] = Array.isArray(activeQuestions)
-                    ? activeQuestions
-                    : [];
-
-                if (!safeActiveQuestions.includes(Number(questionId))) {
-                    setLocalDataselection((prev) => {
-                        const updatedSelection = {
-                            ...prev,
-                            [questionId]: value as string | number | null,
-                        };
-
-                        dataselection(updatedSelection);
-
-                        return updatedSelection;
-                    });
-
-                    setAnswerList((prev) => {
-                        const updatedList = [...prev];
-                        const existingIndex = updatedList.findIndex(
-                            (item) => item.order === Number(questionId),
-                        );
-
+        
+                setLocalDataselection((prev) => {
+                    const updatedSelection = {
+                        ...prev,
+                        [questionId]: value as string | number | null,
+                    };
+        
+                    dataselection(updatedSelection);
+        
+                    return updatedSelection;
+                });
+        
+                setAnswerList((prev) => {
+                    const updatedList = [...prev];
+        
+                    // Tìm câu hỏi hiện tại để lấy order
+                    const currentQuestion = questionsGroup
+                        .flatMap(group => group.questions)
+                        .find(question => question._id === questionId);
+        
+                    const currentOrder = currentQuestion ? currentQuestion.order : null;
+        
+                    // Kiểm tra xem có mục nào cùng order trong updatedList không
+                    const existingIndex = updatedList.findIndex(
+                        (item) => item.order === currentOrder
+                    );
+        
+                    if (currentOrder !== null) {
                         if (existingIndex >= 0) {
+                            // Nếu đã tồn tại, cập nhật giá trị
                             updatedList[existingIndex] = {
-                                order: Number(questionId),
+                                order: currentOrder,
                                 value,
                             };
                         } else {
+                            // Nếu chưa tồn tại, thêm mới
                             updatedList.push({
-                                order: Number(questionId),
+                                order: currentOrder,
                                 value,
                             });
                         }
-
-                        return updatedList;
-                    });
-                }
+                    }
+        
+                    return updatedList;
+                });
             },
-            [setLocalDataselection, dataselection, activeQuestions],
+            [setLocalDataselection, dataselection, questionsGroup],
         );
-
+        
+        
         const renderInputField = useCallback(
             (question: Question) => {
                 switch (question.questionType) {
@@ -90,7 +100,7 @@ const Recording: React.FC<ExtendedRecordingProps> = React.memo(
                         return (
                             <Radio.Group
                                 className="ml-3"
-                                onChange={(e) => onChange(e, question.order)}
+                                onChange={(e) => onChange(e, question._id)}
                                 id={`radio-group-${question.order}`}
                             >
                                 <Space direction="vertical">
@@ -98,7 +108,7 @@ const Recording: React.FC<ExtendedRecordingProps> = React.memo(
                                         (option: string, index: number) => (
                                             <Radio
                                                 key={index}
-                                                value={index + 1}
+                                                value={option} 
                                             >
                                                 {option}
                                             </Radio>
@@ -110,9 +120,9 @@ const Recording: React.FC<ExtendedRecordingProps> = React.memo(
                     case 'fill-in-the-blank':
                         return (
                             <Input
-                                placeholder="Type your answer here"
+                                placeholder="Nhập đáp án"
                                 className="ml-1"
-                                onChange={(e) => onChange(e, question.order)}
+                                onChange={(e) => onChange(e, question._id)} 
                             />
                         );
                     case 'short-answer':
@@ -120,8 +130,8 @@ const Recording: React.FC<ExtendedRecordingProps> = React.memo(
                         return (
                             <TextArea
                                 rows={4}
-                                placeholder="Add additional comments here"
-                                onChange={(e) => onChange(e, question.order)}
+                                placeholder="Nhập đáp án"
+                                onChange={(e) => onChange(e, question._id)} 
                             />
                         );
                 }
@@ -131,15 +141,14 @@ const Recording: React.FC<ExtendedRecordingProps> = React.memo(
 
         const renderedQuestionsGroup = useMemo(() => {
             return questionsGroup?.map((group: any) => (
-                <div key={group.sessionId} className={`mb-4 ${isEditable ? 'hover:border hover:border-blue-500 p-2' : ''}`}>
+                <div key={group._id} className={`mb-4 ${isEditable ? 'hover:border hover:border-blue-500 p-2' : ''}`}>
                     {isEditable ? (
-                    <Tooltip title={'Chỉnh sửa câu hỏi'}>
+                        <Tooltip title={'Chỉnh sửa câu hỏi'}>
                             <Link href={`/admin/exams/group-questions/edit/${group._id}`} passHref>
                                 <div className="cursor-pointer">
                                     <div className="grid grid-cols-2 gap-2">
                                         {(group?.passageText ||
-                                            group?.imageUrl ||
-                                            group?.audioUrl) && (
+                                            group?.imageUrl) && (
                                             <div>
                                                 {group?.imageUrl && (
                                                     <img
@@ -153,20 +162,12 @@ const Recording: React.FC<ExtendedRecordingProps> = React.memo(
                                                         {group.passageText}
                                                     </p>
                                                 )}
-                                                {group?.questions.length === 1 &&
-                                                    group?.audioUrl && (
-                                                        <audio
-                                                            src={group?.audioUrl}
-                                                            controls
-                                                            className="w-full mt-2"
-                                                        />
-                                                    )}
                                             </div>
                                         )}
     
-                                        {group?.questions.length > 1 && (
+                                        {group?.questions.length > 0 && (
                                             <div>
-                                                {group?.questions.map((question: Question) => (
+                                                {group.questions.map((question: Question) => (
                                                     <div key={question._id} className="mb-4">
                                                         <div className="flex items-center">
                                                             <button className="rounded-full bg-[#e8f2ff] p-1 text-[#35509a] text-xl font-semibold w-10 h-10 flex items-center justify-center">
@@ -188,12 +189,10 @@ const Recording: React.FC<ExtendedRecordingProps> = React.memo(
                                     </div>
                                 </div>
                             </Link>
-                    </Tooltip>
+                        </Tooltip>
                     ) : (
                         <div className="grid grid-cols-2 gap-2">
-                            {(group?.passageText ||
-                                group?.imageUrl ||
-                                group?.audioUrl) && (
+                            {(group?.passageText || group?.imageUrl) && (
                                 <div>
                                     {group?.imageUrl && (
                                         <img
@@ -207,20 +206,12 @@ const Recording: React.FC<ExtendedRecordingProps> = React.memo(
                                             {group.passageText}
                                         </p>
                                     )}
-                                    {group?.questions.length === 1 &&
-                                        group?.audioUrl && (
-                                            <audio
-                                                src={group?.audioUrl}
-                                                controls
-                                                className="w-full mt-2"
-                                            />
-                                        )}
                                 </div>
                             )}
 
-                            {group?.questions.length > 1 && (
+                            {group?.questions.length > 0 && (
                                 <div>
-                                    {group?.questions.map((question: Question) => (
+                                    {group.questions.map((question: Question) => (
                                         <div key={question._id} className="mb-4">
                                             <div className="flex items-center">
                                                 <button className="rounded-full bg-[#e8f2ff] p-1 text-[#35509a] text-xl font-semibold w-10 h-10 flex items-center justify-center">

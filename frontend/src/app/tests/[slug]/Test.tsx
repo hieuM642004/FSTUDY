@@ -72,9 +72,10 @@ function Test({ slug }: { slug: string }) {
         const query = selectedSessionSlugs
             .map((slug) => `part=${slug}`)
             .join('&');
-        const url = `/practice?exam=${exam?.slug}&${query}&time=${limit}`;
-
-        router.push(url);
+          
+                const url = `/practice?exam=${exam?.slug}&${query}&time=${limit}`;
+                router.push(url);
+           
     };
 
     return (
@@ -82,13 +83,14 @@ function Test({ slug }: { slug: string }) {
             <Row gutter={[16, 16]}>
                 <Col xs={24} sm={24} md={16} lg={18} xl={19}>
                     <span className="bg-blue-100 text-blue-800 text-xs font-semibold mr-2 px-2.5 py-0.5 rounded">
-                        #{exam?.examType}
+                        #{exam?.examType} |  #{exam?.description}
                     </span>
-                    <h2 className="font-bold text-4xl text-balance my-2">
-                        {exam && exam?.title}
-                    </h2>
+                    <h2 className="font-bold text-2xl sm:text-xl md:text-3xl lg:text-4xl my-2 break-words">
+    {exam && exam?.title}
+</h2>
+
                     <p className="text-sm">
-                        <ClockCircleOutlined /> {exam?.duration} phút | <EyeOutlined /> {10} |{' '}
+                        <ClockCircleOutlined /> {exam?.durition} phút | <EyeOutlined /> {10} |{' '}
                         <CommentOutlined /> {10}
                     </p>
                     <p className="text-sm">

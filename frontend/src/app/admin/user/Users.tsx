@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import 'moment/locale/vi';
 import Image from 'next/image';
 import moment from 'moment';
-import { message } from 'antd';
+import { message, Button } from 'antd';
 
 import Table from '@/components/admin/Table/Table';
 import UserService from '@/services/user/UserService';
@@ -62,14 +62,13 @@ const columns = [
 ];
 
 function User() {
-    const [dataSource, setDataSource] = useState<DataType[] | undefined>(
-        undefined,
-    );
+    const [dataSource, setDataSource] = useState<DataType[] | undefined>(undefined);
     const [messageApi, contextHolder] = message.useMessage();
 
     useEffect(() => {
         getAllUser();
     }, []);
+
     const handleAdd = () => {
         console.log('Add button clicked');
     };
@@ -80,13 +79,11 @@ function User() {
 
     const handleDelete = async (record: DataType) => {
         if (record.role === 'admin' || record.typeLogin === 'google') {
-            console.log(1, record);
             messageApi.open({
                 type: 'error',
                 content: 'Bạn không thể xóa tài khoản quản trị và google!',
             });
         } else {
-            console.log(2, record);
             if (record._id) {
                 const res = await UserService.deleteUser(record._id);
                 if (res) {
@@ -104,15 +101,32 @@ function User() {
             }
         }
     };
+
+    const handleRestore = async (record: DataType) => {
+        if (record._id) {
+            const res = await UserService.restoreUser(record._id); 
+            if (res) {
+                messageApi.open({
+                    type: 'success',
+                    content: 'KHÔI PHỤC THÀNH CÔNG!',
+                });
+                getAllUser();
+            } else {
+                messageApi.open({
+                    type: 'error',
+                    content: 'KHÔI PHỤC THẤT BẠI!',
+                });
+            }
+        }
+    };
+
     const getAllUser = async () => {
         try {
             const res = await UserService.getAllUser({});
             const data = typeof res === 'string' ? JSON.parse(res) : res;
 
             if (data?.users) {
-                const activeItems = data.users.filter(
-                    (item: any | any[]) => item.active === true,
-                );
+                const activeItems = data.users.filter((item: any) => item.active === true);
                 setDataSource(activeItems);
             } else {
                 setDataSource([]);
@@ -122,6 +136,12 @@ function User() {
         }
     };
 
+    const filterComponent = (
+        <Button type="primary" onClick={() => console.log('Filter clicked')}>
+            Filter
+        </Button>
+    );
+
     return (
         <div>
             <Table<DataType>
@@ -130,9 +150,10 @@ function User() {
                 onAdd={handleAdd}
                 onEdit={handleEdit}
                 onDelete={handleDelete}
+                onRestore={handleRestore} 
                 addLink="/admin/user/actionuser"
-                editLink={(record) => `/admin/user/actionuser/${record._id}`}
-                restoreLink="/admin/user/restore"
+                editLink={(record:any) => `/admin/user/actionuser/${record._id}`}
+                filter={filterComponent} 
             />
             {contextHolder}
         </div>

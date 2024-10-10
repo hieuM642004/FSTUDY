@@ -112,7 +112,7 @@ function FormExamSession({ id }: { id?: string }) {
             <Form.Item
                 label="Mô tả"
                 name="description"
-                rules={[{ required: true, message: 'Vui lòng nhập mô tả' }]}
+               
             >
                 <Input.TextArea placeholder="Nhập mô tả phiên thi" />
             </Form.Item>

@@ -6,7 +6,6 @@ import ConfirmModal from '@/components/shared/ModalComfirm/ModalComfirm';
 import ExamService from '@/services/exams/ExamsService';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
-import { isArray } from 'lodash';
 
 const CountDownWithSubmit = ({
     timeStart,
@@ -88,6 +87,7 @@ const CountDownWithSubmit = ({
             incorrectAnswers: answers.incorrectAnswers,
             skippedAnswers: answers.skippedAnswers,
             completionTime: answers.pausedTimeFormatted,
+            type: answers.type,
             idUser: userId,
         };
 
@@ -99,76 +99,68 @@ const CountDownWithSubmit = ({
 
     const filterListAnswer = async () => {
         const pausedTimeFormatted = toMMSS(pausedTimeRef.current || 0);
-        const userAnswers = JSON.parse(
-            localStorage.getItem('answerList') || '[]',
-        );
+        const userAnswers = JSON.parse(localStorage.getItem('answerList') || '[]');
         const answerList = listAnswer;
-
+    
         const correctAnswers: any[] = [];
         const incorrectAnswers: any[] = [];
         const skippedAnswers: any[] = [];
-        let session: any = [];
-
+        let session: string[] = [];
+    let type=''
         Object.keys(answerList).forEach((sessionId) => {
             session.push(sessionId);
             answerList[sessionId].forEach((item: any) => {
                 item.questions.forEach((question: any) => {
                     const userAnswer = userAnswers.find(
-                        (ans: any) => ans.order === question.order,
+                        (ans: any) => ans.order === question.order
                     );
-
+    
                     if (userAnswer) {
                         let isCorrect = false;
                         let selectedOptions: string[] = [];
 
-                        if (question?.questionType === 'multiple-choice') {
-                            selectedOptions = [
-                                question?.options[userAnswer.value - 1],
-                            ];
-                            isCorrect = question?.correctAnswer.includes(
-                                selectedOptions[0],
-                            );
-                        } else if (
-                            question?.questionType === 'fill-in-the-blank'
-                        ) {
-                            selectedOptions = [userAnswer?.value];
-                            if (isArray(question?.correctAnswer)) {
-                                isCorrect = question?.correctAnswer.some(
-                                    (correct: any) =>
-                                        correct
-                                            .toString()
-                                            .trim()
-                                            .toLowerCase() ===
-                                        userAnswer?.value
-                                            .toString()
-                                            .trim()
-                                            .toLowerCase(),
-                                );
-                            } else {
-                                isCorrect =
-                                    question?.correctAnswer
-                                        .toString()
-                                        .trim()
-                                        .toLowerCase() ===
-                                    userAnswer?.value
-                                        .toString()
-                                        .trim()
-                                        .toLowerCase();
+                        if (question.questionType === 'multiple-choice') {
+                           
+                            const selectedIndex = question.options.indexOf(userAnswer.value);
+                            selectedOptions = [userAnswer.value]; 
+    
+                          
+                            if (selectedIndex !== -1 && question.correctAnswer === userAnswer.value) {
+                                isCorrect = true;
                             }
+                        } 
+                       
+                        else if (question.questionType === 'fill-in-the-blank') {
+                            selectedOptions = [userAnswer.value];
+                            isCorrect = Array.isArray(question.correctAnswer)
+                                ? question.correctAnswer.some((correct: any) =>
+                                    correct.trim().toLowerCase() ===
+                                    userAnswer.value.trim().toLowerCase()
+                                )
+                                : question.correctAnswer.trim().toLowerCase() ===
+                                userAnswer.value.trim().toLowerCase();
                         }
-
+                        
+                        else if (question.questionType === 'short-answer') {
+                            selectedOptions = [userAnswer.value];
+                            isCorrect = question.correctAnswer.trim().toLowerCase() ===
+                                userAnswer.value.trim().toLowerCase();
+                                type = 'writing';
+                        }
+    
                         const answer = {
-                            questionId: question?._id,
+                            questionId: question._id,
                             selectedOptions,
                             isCorrect,
                         };
-
+    
                         if (isCorrect) {
                             correctAnswers.push(answer);
                         } else {
                             incorrectAnswers.push(answer);
                         }
                     } else {
+                       
                         const skippedAnswer = {
                             questionId: question._id,
                             selectedOptions: [],
@@ -179,16 +171,18 @@ const CountDownWithSubmit = ({
                 });
             });
         });
-
+    
         return {
             session,
             pausedTimeFormatted,
             correctAnswers,
             incorrectAnswers,
             skippedAnswers,
+            type
         };
     };
-
+    
+    
     const handleCancel = () => {
         setIsModalVisible(false);
         resumeTimer();

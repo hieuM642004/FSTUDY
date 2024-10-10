@@ -61,7 +61,7 @@ const TakeTheTest: React.FC<TakeTheTestProps> = ({isEditable=false}) => {
                 ...data,
             },
         }));
-
+    
         const selectedKeys = Object.keys(data).map(Number);
         setActiveQuestions((prev) => {
             const updatedActiveQuestions = Array.from(
@@ -71,6 +71,8 @@ const TakeTheTest: React.FC<TakeTheTestProps> = ({isEditable=false}) => {
             return updatedActiveQuestions;
         });
     };
+    
+
 
     const handleQuestionClick = (sessionId: string, order: number) => {
         setActiveQuestions((prev) => {

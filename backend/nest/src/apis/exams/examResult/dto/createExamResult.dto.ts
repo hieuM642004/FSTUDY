@@ -17,5 +17,8 @@ export class CreateExamResultDto {
     readonly completionTime: string;
 
     @IsOptional()
+    readonly type: string;
+
+    @IsOptional()
     readonly idUser: string;
 }

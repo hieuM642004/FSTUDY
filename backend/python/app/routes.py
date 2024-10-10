@@ -4,6 +4,8 @@ from flask import Blueprint, jsonify, request, send_file
 from googleapiclient.discovery import build
 from google.oauth2.service_account import Credentials
 from googleapiclient.discovery import build
+from openai import OpenAI
+import pytesseract
 from youtube_transcript_api import YouTubeTranscriptApi
 from youtube_transcript_api.formatters import JSONFormatter
 from pydub import AudioSegment
@@ -19,11 +21,13 @@ from googleapiclient.discovery import build
 from youtube_transcript_api import YouTubeTranscriptApi
 import nltk
 from nltk.corpus import wordnet, stopwords
-from googletrans import Translator
 import speech_recognition as sr
 import firebase_admin
 from firebase_admin import credentials, storage
 from gtts import gTTS
+from PIL import Image
+from pathlib import Path
+
 nltk.download('punkt')
 nltk.download('wordnet')
 generate_response_api = Blueprint('generate_response_api', __name__)
@@ -406,3 +410,111 @@ def conversation():
         "next_step": step + 1,
         "expected_user_response": expected_user_response
     })
+
+
+
+
+#Hanlde score IELST WRITING
+
+client = OpenAI(api_key='sk-MKz2Dk9E3vabI0oedOammOmBVoCW_FuyCOOFuRyO5xT3BlbkFJQJfnGdh3kv5QQ15KvAlYeEvhHJ3iEW6jRSF_9aP50A')
+
+def download_image(image_url, save_path):
+    response = requests.get(image_url)
+    if response.status_code == 200:
+        with open(save_path, 'wb') as f:
+            f.write(response.content)
+    else:
+        raise Exception(f"Failed to download image from {image_url}. Status code: {response.status_code}")
+
+def extract_text_from_image(image_path):
+    api_url = 'https://api.ocr.space/parse/image'
+    
+    with open(image_path, 'rb') as image_file:
+        response = requests.post(
+            api_url,
+            files={image_file.name: image_file},
+            data={'apikey': 'K84559091288957', 'language': 'eng'}
+        )
+        
+        result = response.json()
+        if result['IsErroredOnProcessing']:
+            raise Exception(f"Error extracting text from image: {result['ErrorMessage']}")
+        
+        return result['ParsedResults'][0]['ParsedText']
+
+def analyze_answer_with_gpt(user_answer, exam_text):
+    prompt = f"""
+    You are an IELTS examiner. The exam text is: '{exam_text}'.
+    The user's answer is: '{user_answer}'.
+    Please grade this answer based on the following IELTS criteria: 
+    - Task Response 
+    - Coherence and Cohesion 
+    - Lexical Resource 
+    - Grammatical Range and Accuracy.
+    
+    Provide a score for each criterion (out of 9).
+
+   Additionally:
+    - Highlight any grammatical, spelling, or meaning errors in the user's answer using yellow background color in HTML (e.g., <span style="background-color: yellow;">error</span>).
+    - After each highlighted error, display the corrected version immediately after the error, using green background color in HTML (e.g., <span style="background-color: green;">correction</span>).
+    - Explain each highlighted error, mentioning why it is incorrect and how it can be improved.
+    - Avoid repeating the same content or corrections multiple times. Only mention recurring patterns once and indicate that they appear throughout the answer.
+    - Provide a summary at the end, including overall strengths and areas for improvement.
+    - Return the modified version of the user's answer with the errors highlighted in yellow and corrections in green, but avoid duplicating sentences in the response.
+    - Translate the following section titles into Vietnamese in parentheses immediately after the English title, and make both the original English title and the Vietnamese translation bold:
+      - "Task Response" as "Task Response (Phản hồi nhiệm vụ)"
+      - "Coherence and Cohesion" as "Coherence and Cohesion (Mạch lạc và liên kết)"
+      - "Lexical Resource" as "Lexical Resource (Nguồn từ vựng)"
+      - "Grammatical Range and Accuracy" as "Grammatical Range and Accuracy (Phạm vi và độ chính xác ngữ pháp)"
+      - "Highlighted Errors and Explanations" as "Highlighted Errors and Explanations (Các lỗi nổi bật và giải thích)"
+      - "Summary" as "Summary (Tóm tắt)"
+      - "Modified Answer with Highlighted Errors" as "Modified Answer with Highlighted Errors (Câu trả lời đã chỉnh sửa với lỗi được đánh dấu)"
+    """
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {
+                    "role": "user",
+                    "content": prompt,
+                },
+            ]
+        )
+        return response.choices[0].message.content.strip()
+    except Exception as e:
+        raise Exception(f"Error analyzing text with GPT: {str(e)}")
+
+
+
+@generate_response_api.route('/process_exam', methods=['POST'])
+def process_exam():
+    if 'exam_text' not in request.form or 'user_answer' not in request.form or 'exam_image_url' not in request.form:
+        return jsonify({'error': 'Missing required data'}), 400
+
+    exam_text = request.form['exam_text']  
+    user_answer = request.form['user_answer']  
+    exam_image_url = request.form['exam_image_url']  
+
+    temp_dir = Path('temp') 
+    temp_dir.mkdir(exist_ok=True)  
+    image_path = temp_dir / 'downloaded_exam_image.jpg'  
+
+    try:
+      
+        download_image(exam_image_url, image_path)
+
+        extracted_text_from_image = extract_text_from_image(image_path)
+
+        
+        combined_exam_text = exam_text + " " + extracted_text_from_image
+
+
+        analysis_result = analyze_answer_with_gpt(user_answer, combined_exam_text)
+
+   
+        os.remove(image_path)
+
+        return jsonify({'result': analysis_result}), 200
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500

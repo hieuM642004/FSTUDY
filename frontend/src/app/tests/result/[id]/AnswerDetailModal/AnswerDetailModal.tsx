@@ -1,6 +1,7 @@
 import React from 'react';
 import { Collapse, Modal } from 'antd';
 import { isArray } from 'lodash';
+import { CheckCircleFilled, CheckCircleOutlined } from '@ant-design/icons';
 
 const AnswerDetailModal = ({ question, isVisible, onCancel }: any) => {
     const isCorrectAnswer = (option: string) => {
@@ -84,7 +85,7 @@ const AnswerDetailModal = ({ question, isVisible, onCancel }: any) => {
                             }`}
                         >
                             {option}
-                            {isCorrectAnswer(option) && <span> (Đúng)</span>}
+                            {isCorrectAnswer(option) && <span> <CheckCircleFilled className='text-green-600'/></span>}
                         </div>
                     ),
                 )}
