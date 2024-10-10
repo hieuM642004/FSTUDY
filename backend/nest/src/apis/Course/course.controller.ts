@@ -371,6 +371,7 @@ export class CourseController {
     removeContent(@Param('id') id: string) {
         return this.courseService.removeContent(id);
     }
+    
 
     /**
      * Lesson Controller
@@ -412,23 +413,25 @@ export class CourseController {
     }
     
     @Patch('content/add/:id')
-async addData(
-    @Param('id') contentId: string,
-    @Body('dataIds') dataIds: string[], // Expect an array of data IDs
-): Promise<Content> {
-    // Validate each contentId and dataId
-    if (!Types.ObjectId.isValid(contentId)) {
-        throw new Error('Invalid content ID format');
-    }
-
-    for (const dataId of dataIds) {
-        if (!Types.ObjectId.isValid(dataId)) {
-            throw new Error('Invalid data ID format: ' + dataId);
+    async addData(
+        @Param('id') contentId: string,
+        @Body('dataIds') dataIds: string[], // Expect an array of data IDs
+    ): Promise<Content> {
+        // Validate each contentId and dataId
+        if (!Types.ObjectId.isValid(contentId)) {
+            throw new Error('Invalid content ID format');
         }
+    
+        for (const dataId of dataIds) {
+            if (!Types.ObjectId.isValid(dataId)) {
+                throw new Error('Invalid data ID format: ' + dataId);
+            }
+        }
+    
+        // Call the service to add multiple data to the content
+        return this.courseService.addMultipleDataToContent(contentId, dataIds);
     }
-
-    return this.courseService.addMultipleDataToContent(contentId, dataIds);
-}
+    
 
     /**
      * Course Type

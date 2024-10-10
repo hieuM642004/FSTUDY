@@ -646,7 +646,45 @@ export class CourseService {
         const updatedContent = await content.save();
         return updatedContent;
     }
-    
+
+    // async addDataToContent(
+    //     contentId: string,
+    //     dataId: string,
+    // ): Promise<Content> {
+    //     if (
+    //         !Types.ObjectId.isValid(contentId) ||
+    //         !Types.ObjectId.isValid(dataId)
+    //     ) {
+    //         throw new Error('Invalid ID format');
+    //     }
+
+    //     // Determine content type
+    //     const contentType = await this.inferContentType(dataId);
+
+    //     if (!contentType) {
+    //         throw new Error('Content type could not be determined');
+    //     }
+
+    //     const arrayFieldName = this.getArrayFieldName(contentType);
+
+    //     if (!arrayFieldName) {
+    //         throw new Error('Invalid content type');
+    //     }
+
+    //     // Update content with the determined content type
+    //     const updatedContent = await this.contentModel.findByIdAndUpdate(
+    //         contentId,
+    //         { $addToSet: { [arrayFieldName]: dataId } },
+    //         { new: true },
+    //     );
+
+    //     if (!updatedContent) {
+    //         throw new Error('Content not found');
+    //     }
+
+    //     return updatedContent;
+    // }
+
     private async inferContentType(
         dataId: string,
     ): Promise<ContentType | null> {
