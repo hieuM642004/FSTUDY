@@ -200,7 +200,7 @@ function Result({ id }: { id: string }) {
                                                         .length / 2,
                                                 ),
                                             )
-                                            .map((session, sessionIndex) => (
+                                            .map((session:any, sessionIndex:any) => (
                                                 <div key={session.sessionId}>
                                                     <h2 className="font-semibold text-lg">{`Recording ${
                                                         sessionIndex + 1
@@ -231,7 +231,7 @@ function Result({ id }: { id: string }) {
                                                         .length / 2,
                                                 ),
                                             )
-                                            .map((session, sessionIndex) => (
+                                            .map((session:any, sessionIndex:any) => (
                                                 <div key={session.sessionId}>
                                                     <h2 className="font-semibold text-lg">{`Recording ${
                                                         sessionIndex +

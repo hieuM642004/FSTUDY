@@ -63,16 +63,71 @@ function MenuAdmin() {
         },
         {
             key: '4',
+            icon: <VideoCameraOutlined />,
+            label: 'Khóa học nâng cao',
+            children: [
+                {
+                    key: '4-1',
+                    label: <Link href="/admin/course/instruct">Hướng dẫn</Link>,
+                },
+                {
+                    key: '4-2',
+                    label: <Link href="/admin/course/quizzes">Quizzes</Link>,
+                },
+                {
+                    key: '4-3',
+                    label: (
+                        <Link href="/admin/course/word-matching">
+                            Word matchings
+                        </Link>
+                    ),
+                },
+                {
+                    key: '4-4',
+                    label: (
+                        <Link href="/admin/course/fill-in-the-blank">
+                            Fill in the blanks
+                        </Link>
+                    ),
+                },
+                {
+                    key: '4-5',
+                    label: <Link href="/admin/course/videos">Videos</Link>,
+                },
+                {
+                    key: '4-6',
+                    label: <Link href="/admin/course/contents">Contents</Link>,
+                },
+                {
+                    key: '4-7',
+                    label: <Link href="/admin/course/lessons">Lessons</Link>,
+                },
+                {
+                    key: '4-8',
+                    label: (
+                        <Link href="/admin/course/course-type">
+                            Course Types
+                        </Link>
+                    ),
+                },
+                {
+                    key: '4-9',
+                    label: <Link href="/admin/course/courses">Courses</Link>,
+                },
+            ],
+        },
+        {
+            key: '5',
             icon: <AppstoreOutlined />,
             label: <Link href="/admin/flashcards">Flashcards</Link>,
         },
         {
-            key: '5',
+            key: '6',
             icon: <ReconciliationOutlined />,
             label: <Link href="/admin/speaking/edit">Dữ liệu giao tiếp</Link>,
         },
         {
-            key: '6',
+            key: '7',
             icon: <UserOutlined />,
             label: <Link href="/admin/blog">Trang Blog</Link>,
         },
