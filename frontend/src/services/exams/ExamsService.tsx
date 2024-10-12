@@ -115,6 +115,24 @@ class ExamService {
             throw error;
         }
     }
+    static async getResultUserAndExamById(idExam?: any, idUser?: any) {
+        try {
+            const result = await nestApiInstance.get(`exam-result/user/${idUser}/exam/${idExam}`);
+            return result.data.data;
+        } catch (error) {
+            throw error;
+        }
+    }
+    
+    static async getResultUserById(idUser?: any) {
+        try {
+            const result = await nestApiInstance.get(`exam-result/user/${idUser}`);
+            return result.data.data;
+        } catch (error) {
+            throw error;
+        }
+    }
+    
 
     static async getResultById(id: any) {
         try {

@@ -6,6 +6,8 @@ import ConfirmModal from '@/components/shared/ModalComfirm/ModalComfirm';
 import ExamService from '@/services/exams/ExamsService';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
+import { useTypedSelector } from '@/hooks/useTypedSelector';
+import { RootState } from '@/lib/redux/store';
 
 const CountDownWithSubmit = ({
     timeStart,
@@ -20,8 +22,7 @@ const CountDownWithSubmit = ({
     const pausedTimeRef = useRef<number | null>(null);
     const elapsedTimeRef = useRef<number>(0);
     const router = useRouter();
-    const { userId } = useAuth();
-
+    const dataUser = useTypedSelector((state: RootState) => state.user);
     const updateCount = () => {
         setCount(() => {
             const elapsedTime = Math.floor(
@@ -88,7 +89,7 @@ const CountDownWithSubmit = ({
             skippedAnswers: answers.skippedAnswers,
             completionTime: answers.pausedTimeFormatted,
             type: answers.type,
-            idUser: userId,
+            idUser: dataUser.id,
         };
 
         const result = await ExamService.submitExam(data);

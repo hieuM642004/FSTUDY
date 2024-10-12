@@ -4,27 +4,37 @@ import { Table, Card } from 'antd';
 import Link from 'next/link';
 import ExamService from '@/services/exams/ExamsService';
 import { useAuth } from '@/hooks/useAuth';
+import { useTypedSelector } from '@/hooks/useTypedSelector';
+import { RootState } from '@/lib/redux/store';
 
 const ExamResults: React.FC<{ id?: string }> = ({ id }) => {
-    
     const [result, setResult] = useState([]);
-    const {isLoggedIn,userId}=useAuth();
+    const { isLoggedIn, userId } = useAuth();
+    const dataUser = useTypedSelector((state: RootState) => state.user);
+
     useEffect(() => {
         const getResultExam = async () => {
             try {
-                const data = await ExamService.getResultExamById(id);
-                const userResults = data.filter((item: any) => item?.idUser?._id === userId);
-
-                const formattedResults = userResults.map((item: any, index: number) => ({
-                    key: index + 1,
-                    id: item._id,
-                    date: new Date(item.createdAt).toLocaleDateString(),
-                    courses: item.examSessionId?.map((session: any) => session?.title).join(', ') || 'N/A',
-                    results: `${item.correctAnswers.length}/${item.correctAnswers.length + item.incorrectAnswers.length + item.skippedAnswers.length}`,
-                    time: item.completionTime ? `${item.completionTime}` : 'N/A',
-                }));
+                let data;
+                if (id) {
+                  
+                    data = await ExamService.getResultUserAndExamById(id, dataUser.id);
+                } else {
+                  
+                    data = await ExamService.getResultUserById(dataUser.id);
+                }
                 
-                setResult(formattedResults);
+                // Mapping data to match table structure
+                const formattedData = data.map((item: any) => ({
+                    key: item._id,
+                    date: new Date(item.createdAt).toLocaleDateString(),
+                    examSessionId: item.examSessionId[0]?.title || 'N/A',
+                    idExam: item.examSessionId[0]?.idExam._id || '',
+                    results: `${item.accuracy}%`,
+                    completionTime: item.completionTime,
+                    id: item._id
+                }));
+                setResult(formattedData);
             } catch (error) {
                 console.log(error);
             }
@@ -40,8 +50,11 @@ const ExamResults: React.FC<{ id?: string }> = ({ id }) => {
         },
         {
             title: 'Phần thi',
-            dataIndex: 'courses',
-            key: 'courses',
+            dataIndex: 'examSessionId',
+            key: 'examSessionId',
+            render: (text: any, record: any) => (
+                <Link href={`/tests/${record.idExam}`}>{text}</Link>
+            ),
         },
         {
             title: 'Kết quả',
@@ -50,8 +63,8 @@ const ExamResults: React.FC<{ id?: string }> = ({ id }) => {
         },
         {
             title: 'Thời gian làm bài',
-            dataIndex: 'time',
-            key: 'time',
+            dataIndex: 'completionTime',
+            key: 'completionTime',
         },
         {
             title: '',
@@ -66,18 +79,17 @@ const ExamResults: React.FC<{ id?: string }> = ({ id }) => {
         <>
             {
                 isLoggedIn && (
-                  <div className="mb-4">
-                <Table
-                    dataSource={result}
-                    columns={columns}
-                    pagination={false}
-                    bordered
-                />
-            </div>  
+                    <div className="mb-4">
+                        <Table
+                            dataSource={result}
+                            columns={columns}
+                            pagination={false}
+                            bordered
+                        />
+                    </div>
                 )
             }
         </>
-        
     );
 };
 

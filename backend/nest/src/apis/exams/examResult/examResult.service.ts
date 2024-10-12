@@ -136,7 +136,67 @@ export class ExamResultService {
             throw new Error('An error occurred while fetching the exam result');
         }
     }
-
+    async findExamResultByUserIdAndExamId(userId: string, examId: string): Promise<ExamResult[]> {
+        const examSessions = await this.examSessionModel
+            .find({ idExam: examId }) 
+            .exec();
+    
+        return await this.examResultModel
+            .find({
+                idUser: userId, 
+                examSessionId: { $in: examSessions.map((session) => session._id) }, 
+            })
+            .populate({
+                path: 'examSessionId',
+                populate: {
+                    path: 'idExam',
+                    model: 'Exams',
+                    select: 'examType title _id',
+                },
+            })
+            .populate({
+                path: 'correctAnswers.questionId',
+                select: 'questionText options',
+            })
+            .populate({
+                path: 'incorrectAnswers.questionId',
+                select: 'questionText options',
+            })
+            .populate({
+                path: 'skippedAnswers.questionId',
+                select: 'questionText options',
+            })
+            .populate({ path: 'idUser', select: 'fullname' })
+            .exec();
+    }
+    async findExamResultByUserId(userId: string): Promise<ExamResult[]> {
+        return await this.examResultModel
+            .find({ idUser: userId }) 
+            .populate({
+                path: 'examSessionId',
+                populate: {
+                    path: 'idExam',
+                    model: 'Exams',
+                    select: 'examType title',
+                },
+            })
+            .populate({
+                path: 'correctAnswers.questionId',
+                select: 'questionText options',
+            })
+            .populate({
+                path: 'incorrectAnswers.questionId',
+                select: 'questionText options',
+            })
+            .populate({
+                path: 'skippedAnswers.questionId',
+                select: 'questionText options',
+            })
+            .populate({ path: 'idUser', select: 'fullname' })
+            .exec();
+    }
+    
+    
     async findExamResultById(id: String): Promise<ExamResult> {
         return await this.examResultModel
             .findById(id)

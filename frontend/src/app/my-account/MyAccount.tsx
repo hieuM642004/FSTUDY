@@ -100,20 +100,10 @@ const PageMyAccountInfo: React.FC = () => {
                         >
                             Kết quả luyện thi
                         </button>
-                        <button
-                            onClick={() => handleChangePage('posts')}
-                            className={`pb-2 ${
-                                activeTab === 'posts'
-                                    ? 'text-blue-600 border-b-2 border-blue-600'
-                                    : 'text-gray-500'
-                            }`}
-                        >
-                            Posts
-                        </button>
+                        
                     </div>
                 </div>
                 {activeTab === 'courses' && <PageMyCourses />}
-                {activeTab === 'posts' && <PageMyPosts />}
                 {activeTab === 'examresults' && <PageMyStatistics />}
             </div>
         </>
