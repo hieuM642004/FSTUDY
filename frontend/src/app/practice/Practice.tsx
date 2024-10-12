@@ -36,6 +36,7 @@ const TakeTheTest: React.FC<TakeTheTestProps> = ({isEditable=false}) => {
 
     useEffect(() => {
         const savedQuestions = localStorage.getItem('activeQuestions');
+        console.log('savedQuestions', savedQuestions);
         if (savedQuestions) {
             setActiveQuestions(JSON.parse(savedQuestions));
         } else {
@@ -106,6 +107,23 @@ const TakeTheTest: React.FC<TakeTheTestProps> = ({isEditable=false}) => {
         localStorage.setItem('activeQuestions', JSON.stringify(updatedArray));
     };
 
+    const handleActiveQuestionChange = (questionId: number) => {
+        setActiveQuestions((prev) => {
+           
+            if (!prev.includes(questionId)) {
+                const updatedActiveQuestions = [...prev, questionId];
+    
+                localStorage.setItem('activeQuestions', JSON.stringify(updatedActiveQuestions));
+    
+                return updatedActiveQuestions;
+            }
+    
+
+            return prev;
+        });
+    };
+    
+
     useEffect(() => {
         fetchQuestions();
     }, [parts]);
@@ -159,6 +177,7 @@ const TakeTheTest: React.FC<TakeTheTestProps> = ({isEditable=false}) => {
                     sessionId={sessionId}
                     dataselection={handleDataselection}
                     activeQuestions={activeQuestions}
+                    onActiveQuestionChange={handleActiveQuestionChange}
                     onQuestionClick={handleQuestionClick}
                     questionRefs={questionRefs}
                     isEditable={isEditable}

@@ -27,7 +27,7 @@ from firebase_admin import credentials, storage
 from gtts import gTTS
 from PIL import Image
 from pathlib import Path
-
+import google.generativeai as genai
 nltk.download('punkt')
 nltk.download('wordnet')
 generate_response_api = Blueprint('generate_response_api', __name__)
@@ -416,7 +416,11 @@ def conversation():
 
 #Hanlde score IELST WRITING
 
-client = OpenAI(api_key='sk-MKz2Dk9E3vabI0oedOammOmBVoCW_FuyCOOFuRyO5xT3BlbkFJQJfnGdh3kv5QQ15KvAlYeEvhHJ3iEW6jRSF_9aP50A')
+# Comment out the OpenAI client configuration
+# client = OpenAI(api_key='sk-MKz2Dk9E3vabI0oedOammOmBVoCW_FuyCOOFuRyO5xT3BlbkFJQJfnGdh3kv5QQ15KvAlYeEvhHJ3iEW6jRSF_9aP50A')
+
+# Use Gemini configuration instead
+genai.configure(api_key='AIzaSyD-cOAi8GRgGHOzBe9e1TMCymT28ZIHcJs')
 
 def download_image(image_url, save_path):
     response = requests.get(image_url)
@@ -442,7 +446,7 @@ def extract_text_from_image(image_path):
         
         return result['ParsedResults'][0]['ParsedText']
 
-def analyze_answer_with_gpt(user_answer, exam_text):
+def analyze_answer_with_gemini(user_answer, exam_text):
     prompt = f"""
     You are an IELTS examiner. The exam text is: '{exam_text}'.
     The user's answer is: '{user_answer}'.
@@ -471,21 +475,14 @@ def analyze_answer_with_gpt(user_answer, exam_text):
       - "Modified Answer with Highlighted Errors" as "Modified Answer with Highlighted Errors (Câu trả lời đã chỉnh sửa với lỗi được đánh dấu)"
     """
     try:
-        response = client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=[
-                {
-                    "role": "user",
-                    "content": prompt,
-                },
-            ]
-        )
-        return response.choices[0].message.content.strip()
+        # Use the new model from Gemini
+        model = genai.GenerativeModel("gemini-1.5-flash")
+        response = model.generate_content(prompt)
+        return response.text.strip()
     except Exception as e:
-        raise Exception(f"Error analyzing text with GPT: {str(e)}")
+        raise Exception(f"Error analyzing text with Gemini: {str(e)}")
 
-
-
+# The rest of the code remains unchanged
 @generate_response_api.route('/process_exam', methods=['POST'])
 def process_exam():
     if 'exam_text' not in request.form or 'user_answer' not in request.form or 'exam_image_url' not in request.form:
@@ -505,11 +502,11 @@ def process_exam():
 
         extracted_text_from_image = extract_text_from_image(image_path)
 
-        
+
         combined_exam_text = exam_text + " " + extracted_text_from_image
 
 
-        analysis_result = analyze_answer_with_gpt(user_answer, combined_exam_text)
+        analysis_result = analyze_answer_with_gemini(user_answer, combined_exam_text)
 
    
         os.remove(image_path)
