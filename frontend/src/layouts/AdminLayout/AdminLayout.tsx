@@ -1,6 +1,7 @@
 'use client';
 import React, { useState, useEffect } from 'react';
 import {
+    CommentOutlined,
     MenuFoldOutlined,
     MenuUnfoldOutlined,
     UploadOutlined,
@@ -76,6 +77,11 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
             key: '3',
             icon: <UploadOutlined />,
             label: <Link href="/admin/">Đề thi</Link>,
+        },
+        {
+            key: '4',
+            icon: <CommentOutlined />,
+            label: <Link href="/admin/comment">Bình luận</Link>,
         },
     ];
 
