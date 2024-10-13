@@ -7,6 +7,12 @@ import { ExamResult } from './ExamResultSchema/examResult.schema';
 @Controller('exam-result')
 export class ExamResultController {
     constructor(private readonly examResultService: ExamResultService) {}
+    //Static
+    @Get('count-exam-result')
+    async countResult() {
+        return await this.examResultService.countResult();
+    }
+
     @Get()
     async findAllExamResult() {
         try {
@@ -45,7 +51,8 @@ export class ExamResultController {
     @Get('user/:userId')
     async findExamResultByUser(@Param('userId') userId: string) {
         try {
-            const results = await this.examResultService.findExamResultByUserId(userId);
+            const results =
+                await this.examResultService.findExamResultByUserId(userId);
             return new ResponseData<ExamResult>(
                 results,
                 HttpStatus.SUCCESS,
@@ -62,10 +69,14 @@ export class ExamResultController {
     @Get('user/:userId/exam/:examId')
     async findExamResultByUserAndExam(
         @Param('userId') userId: string,
-        @Param('examId') examId: string
+        @Param('examId') examId: string,
     ) {
         try {
-            const results = await this.examResultService.findExamResultByUserIdAndExamId(userId, examId);
+            const results =
+                await this.examResultService.findExamResultByUserIdAndExamId(
+                    userId,
+                    examId,
+                );
             return new ResponseData<ExamResult>(
                 results,
                 HttpStatus.SUCCESS,
@@ -79,13 +90,12 @@ export class ExamResultController {
             );
         }
     }
-    
-
 
     @Get('group-question/:id')
     async findExamResultByIdGrouped(@Param('id') id: string) {
         try {
-            const results = await this.examResultService.findExamResultByIdGrouped(id);
+            const results =
+                await this.examResultService.findExamResultByIdGrouped(id);
             return new ResponseData<ExamResult>(
                 results,
                 HttpStatus.SUCCESS,
@@ -102,7 +112,8 @@ export class ExamResultController {
     @Get('exam/:id')
     async findExamResultByExam(@Param('id') id: string) {
         try {
-            const results = await this.examResultService.findExamResultByExamId(id);
+            const results =
+                await this.examResultService.findExamResultByExamId(id);
             return new ResponseData<ExamResult>(
                 results,
                 HttpStatus.SUCCESS,
@@ -120,7 +131,8 @@ export class ExamResultController {
     @Post('create-exam-result')
     async createExamResult(@Body() examResult: ExamResult) {
         try {
-            const results = await this.examResultService.createExamResult(examResult);
+            const results =
+                await this.examResultService.createExamResult(examResult);
             return new ResponseData<ExamResult>(
                 results,
                 HttpStatus.SUCCESS,
@@ -135,7 +147,7 @@ export class ExamResultController {
         }
     }
     @Delete('delete-exam-result')
-    async deleteExamResult(@Param('id') id:string) {
+    async deleteExamResult(@Param('id') id: string) {
         try {
             const results = await this.examResultService.deleteExamResult(id);
             return new ResponseData<ExamResult>(

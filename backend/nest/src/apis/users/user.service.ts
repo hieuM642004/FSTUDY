@@ -15,6 +15,11 @@ export class UserService {
         private readonly userModel: mongoose.Model<User>,
         private readonly googleDriveUploader: GoogleDriveUploader,
     ) {}
+    //Statics
+    async staticUsers(): Promise<number> {
+        return await this.userModel.countDocuments().exec();
+    }
+
     // Create New use function
     async createUser(user: User, file: Express.Multer.File): Promise<User> {
         try {

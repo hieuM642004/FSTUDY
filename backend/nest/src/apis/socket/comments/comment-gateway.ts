@@ -35,7 +35,6 @@ export class CommentGateway
     handleDisconnect(client: Socket) {
         console.log('Client disconnected:', client.id);
     }
-
     @SubscribeMessage('joinRoom')
     handleJoinRoom(
         client: Socket,
@@ -46,25 +45,36 @@ export class CommentGateway
             client.join(room);
         }
     }
-
     @SubscribeMessage('requestComments')
     async handleRequestComments(
         client: Socket,
         { idBlog, idCourse }: { idBlog?: string; idCourse?: string },
     ) {
         try {
-            const query: any = {};
-            if (idBlog) query.idBlog = idBlog;
-            if (idCourse) query.idCourse = idCourse;
-
-            const comments = await this.commentModel
-                .find(query)
-                .populate('idUser')
-                .exec();
+            let comments;
+            if (!idBlog && !idCourse) {
+                // fetch all comments
+                comments = await this.commentModel
+                    .find()
+                    .populate('idUser')
+                    .exec();
+            } else {
+                // fetch comments based on idBlog or idCourse
+                const query: any = {};
+                if (idBlog) query.idBlog = idBlog;
+                if (idCourse) query.idCourse = idCourse;
+                comments = await this.commentModel
+                    .find(query)
+                    .populate('idUser')
+                    .exec();
+            }
 
             const room = idBlog || idCourse;
             if (room) {
                 this.server.to(room).emit('comments', comments);
+            } else {
+                // Emit comments to the client directly if no room is joined
+                client.emit('comments', comments);
             }
         } catch (error) {
             console.error('Error fetching comments:', error);

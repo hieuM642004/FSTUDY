@@ -561,6 +561,16 @@ export class CourseController {
     findOneCourse(@Param('id') id: string): Promise<Course> {
         return this.courseService.findOneCourse(id);
     }
+    @Get('statistics/count-all-course')
+    async countCourse(): Promise<number> {
+        try {
+            return await this.courseService.countCourse();
+        } catch (error) {
+            console.error('Error counting courses:', error);
+            throw new InternalServerErrorException('Failed to count courses');
+        }
+    }
+    
     @Get('search/:slug')
     findOneCourseBySlug(@Param('slug') slug: string): Promise<Course> {
         return this.courseService.findOneCourseBySlug(slug);
@@ -603,6 +613,24 @@ export class CourseController {
         @Body('lesson') contentId: string,
     ) {
         return this.courseService.addLessontoCourse(lessonId, contentId);
+    }
+    @Get('statistics/count-all-course-has-sell')
+    async countCourseHasSell(): Promise<number> {
+        try {
+            return await this.courseService.countCourseHasSell();
+        } catch (error) {
+            console.error('Error counting courses:', error);
+            throw new InternalServerErrorException('Failed to count courses');
+        }
+    }
+    @Get('statistics/total-purchase')
+    async totalPurchase(): Promise<string> {
+        try {
+            return await this.courseService.totalPurchase();
+        } catch (error) {
+            console.error('Error counting courses:', error);
+            throw new InternalServerErrorException('Failed to count courses');
+        }
     }
 
     @Post('purchase/:courseId')

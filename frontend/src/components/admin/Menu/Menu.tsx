@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { Menu } from 'antd';
 import {
     AppstoreOutlined,
+    CommentOutlined,
     ContainerOutlined,
     ReconciliationOutlined,
     UserOutlined,
@@ -29,7 +30,7 @@ function MenuAdmin() {
         {
             key: '1',
             icon: <UserOutlined />,
-            label: <Link href="/admin/user">Người dùng</Link>,
+            label: <Link href="/admin">Dashboard</Link>,
         },
         {
             key: '2',
@@ -130,6 +131,16 @@ function MenuAdmin() {
             key: '7',
             icon: <UserOutlined />,
             label: <Link href="/admin/blog">Trang Blog</Link>,
+        },
+        {
+            key: '8',
+            icon: <CommentOutlined />,
+            label: <Link href="/admin/comment">Bình luận</Link>,
+        },
+        {
+            key: '9',
+            icon: <UserOutlined />,
+            label: <Link href="/admin/user">Người dùng</Link>,
         },
     ];
 

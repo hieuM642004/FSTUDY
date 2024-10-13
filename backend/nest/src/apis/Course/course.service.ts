@@ -95,6 +95,67 @@ export class CourseService {
         private readonly firebaseService: FirebaseService,
     ) {}
     /**
+     * Static
+     *  */
+    // count all courses
+    async countCourse(): Promise<number> {
+        try {
+            return await this.courseModel.countDocuments().exec();
+        } catch (error) {
+            console.error('Error querying countDocuments:', error); 
+            throw error;
+        }
+    }
+    // count all courses
+    async countCourseHasSell(): Promise<number> {
+        try {
+            return await this.purchaseModel.countDocuments().exec();
+        } catch (error) {
+            console.error('Error querying countDocuments:', error); 
+            throw error;
+        }
+    }
+    async totalPurchase(): Promise<string> {
+        try {
+            const result = await this.purchaseModel.aggregate([
+                {
+                    $lookup: {
+                        from: 'courses',
+                        localField: 'course',
+                        foreignField: '_id',
+                        as: 'courseDetails',
+                    },
+                },
+                {
+                    $unwind: '$courseDetails',
+                },
+                {
+                    $group: {
+                        _id: null,
+                        totalAmount: { $sum: '$courseDetails.price' },
+                    },
+                },
+            ]);
+    
+            if (result.length === 0) {
+                return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(0);
+            }
+    
+            const totalAmount = result[0].totalAmount;
+            return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(totalAmount);
+        } catch (error) {
+            console.error('Error querying total purchase amount:', error);
+            throw error;
+        }
+    }
+    
+    
+    
+
+
+
+
+    /**
      * Service of Course Type form here
      *  */
     // Quiz Service

@@ -37,6 +37,9 @@ export class ExamService {
         private readonly googleDriveUploader: GoogleDriveUploader,
         private readonly firebaseService: FirebaseService,
     ) {}
+    async countAllExams(): Promise<number> {
+        return await this.examModel.countDocuments().exec();
+    }
     async findAllExams(): Promise<Exams[]> {
         return await this.examModel.find().populate('idSession').exec();
     }

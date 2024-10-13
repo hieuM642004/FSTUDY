@@ -25,9 +25,7 @@ import { UpdateExamSessionDto } from './dto/examSession/updateExamSession.dto';
 import { CreateExamSessionDto } from './dto/examSession/createExamSession.dto';
 import { CreateQuestionDto } from './dto/questions/createQuestion.dto';
 import { UpdateQuestionDto } from './dto/questions/updateQuestion.dto';
-import {
-    FileFieldsInterceptor,
-} from '@nestjs/platform-express';
+import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { PaginatedResult } from './interfaces/paginatedResult';
 import { CreateQuestionGroupDto } from './dto/questionGroup/createQuestionGroup.dto';
 import { UpdateQuestionGroupDto } from './dto/questionGroup/updateQuestionGroup.dto';
@@ -35,6 +33,12 @@ import { UpdateQuestionGroupDto } from './dto/questionGroup/updateQuestionGroup.
 @Controller('exams')
 export class ExamController {
     constructor(readonly examService: ExamService) {}
+
+    //Static exam
+    @Get('static-exam')
+    async countAllExams(): Promise<number> {
+        return await this.examService.countAllExams();
+    }
 
     @Get()
     async findAllExams(): Promise<ResponseData<Exams[]>> {
@@ -201,7 +205,8 @@ export class ExamController {
         @Query('slug') sessionSlugs: string[],
     ): Promise<ResponseData<ExamSession>> {
         try {
-            const session = await this.examService.getQuestionsBySessionIds(sessionSlugs);
+            const session =
+                await this.examService.getQuestionsBySessionIds(sessionSlugs);
             return new ResponseData<ExamSession>(
                 session,
                 HttpStatus.SUCCESS,
@@ -335,7 +340,7 @@ export class ExamController {
         files: { image?: Express.Multer.File[]; audio?: Express.Multer.File[] },
     ): Promise<ResponseData<QuestionGroup>> {
         try {
-            console.log(files,createQuestionGroupDto)
+            console.log(files, createQuestionGroupDto);
             const imageFile = files?.image ? files.image[0] : null;
             const audioFile = files?.audio ? files.audio[0] : null;
             const newQuestionGroup = await this.examService.createQuestionGroup(

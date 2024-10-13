@@ -27,6 +27,11 @@ import { AuthGuard } from '@nestjs/passport';
 @Controller('users')
 export class UserController {
     constructor(private readonly userService: UserService) {}
+    //Static
+    @Get('/static-users')
+    async staticUsers(): Promise<number> {
+        return await this.userService.staticUsers();
+    }
 
     // Router get all user panigation
     @UsePipes(new ValidationPipe())

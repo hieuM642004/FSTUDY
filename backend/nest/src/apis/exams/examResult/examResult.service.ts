@@ -12,6 +12,10 @@ export class ExamResultService {
         @InjectModel(ExamSession.name)
         private readonly examSessionModel: mongoose.Model<ExamSession>,
     ) {}
+    //Static
+    async countResult(): Promise<number> {
+        return await this.examResultModel.countDocuments().exec();
+    }
 
     async findAllExamResult(): Promise<ExamResult[]> {
         return await this.examResultModel
@@ -136,15 +140,20 @@ export class ExamResultService {
             throw new Error('An error occurred while fetching the exam result');
         }
     }
-    async findExamResultByUserIdAndExamId(userId: string, examId: string): Promise<ExamResult[]> {
+    async findExamResultByUserIdAndExamId(
+        userId: string,
+        examId: string,
+    ): Promise<ExamResult[]> {
         const examSessions = await this.examSessionModel
-            .find({ idExam: examId }) 
+            .find({ idExam: examId })
             .exec();
-    
+
         return await this.examResultModel
             .find({
-                idUser: userId, 
-                examSessionId: { $in: examSessions.map((session) => session._id) }, 
+                idUser: userId,
+                examSessionId: {
+                    $in: examSessions.map((session) => session._id),
+                },
             })
             .populate({
                 path: 'examSessionId',
@@ -171,7 +180,7 @@ export class ExamResultService {
     }
     async findExamResultByUserId(userId: string): Promise<ExamResult[]> {
         return await this.examResultModel
-            .find({ idUser: userId }) 
+            .find({ idUser: userId })
             .populate({
                 path: 'examSessionId',
                 populate: {
@@ -195,8 +204,7 @@ export class ExamResultService {
             .populate({ path: 'idUser', select: 'fullname' })
             .exec();
     }
-    
-    
+
     async findExamResultById(id: String): Promise<ExamResult> {
         return await this.examResultModel
             .findById(id)
