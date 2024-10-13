@@ -15,15 +15,13 @@ import { nestApiInstance } from '../../../constant/api';
 function BlogDetail({ id }: string | any) {
     const [blogDetail, setBlogDetail] = useState<any>([]);
     const [blogs, setBlogs] = useState<any[]>([]);
-    const [blogId, setBlogId] = useState<any[]>([]);
+    const [blogId, setBlogId] = useState<string>('');
     useEffect(() => {
         const fetchBlogs = async () => {
             try {
-                const res = await nestApiInstance.get(`/blog/${id}`);
-                setBlogDetail(res.data.data.blogs);
-                if (res) {
-                    setBlogId(res.data.data.blogs._id);
-                }
+                const res = await nestApiInstance.get(`/blog/${id}`);                
+                setBlogDetail(res.data.data);
+                setBlogId(res.data.data._id);
             } catch (error) {
                 console.error('Failed to fetch blogs:', error);
             }

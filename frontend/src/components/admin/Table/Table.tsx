@@ -7,10 +7,9 @@ import {
     EditOutlined,
     ExclamationCircleOutlined,
     PlusOutlined,
-    UndoOutlined, // Icon cho khôi phục
+    UndoOutlined, // Icon for restore
 } from '@ant-design/icons';
 import Link from 'next/link';
-
 import ButtonPrimary from '@/components/shared/ButtonPrimary/ButtonPrimary';
 
 interface TableComponentProps<T> extends TableProps<T> {
@@ -21,10 +20,13 @@ interface TableComponentProps<T> extends TableProps<T> {
     onAdd?: () => void;
     onEdit?: (record: T) => void;
     onDelete?: (record: T) => void;
-    onRestore?: (record: T) => void; 
+    onRestore?: (record: T) => void;
     addLink?: string;
     editLink?: (record: T) => string;
     filter?: React.ReactNode;
+    restoreLink?: string;
+    report?: boolean;
+    onShowModal?: (record: T) => void;
 }
 
 function Table<T extends object>({
@@ -35,40 +37,36 @@ function Table<T extends object>({
     onAdd,
     onEdit,
     onDelete,
-    onRestore, // Nhận hàm onRestore
+    onRestore,
     addLink,
     editLink,
     filter,
+    restoreLink,
+    report,
+    onShowModal,
     ...props
 }: TableComponentProps<T>) {
     const handleDeleteClick = (record: T) => {
-        Modal.confirm({
-            title: 'Bạn chắc chắn muốn xóa?',
-            icon: <ExclamationCircleOutlined />,
-            content: 'This action cannot be undone.',
-            onOk() {
-                if (onDelete) {
-                    onDelete(record);
-                }
-            },
-            okText: 'Đồng ý',
-            cancelText: 'Hủy',
-        });
-    };
-
-    const handleRestoreClick = (record: T) => {
-        Modal.confirm({
-            title: 'Bạn chắc chắn muốn khôi phục dữ liệu?',
-            icon: <ExclamationCircleOutlined />,
-            content: 'Hành động này không thể hoàn tác.',
-            onOk() {
-                if (onRestore) {
-                    onRestore(record);
-                }
-            },
-            okText: 'Khôi phục',
-            cancelText: 'Hủy',
-        });
+        if (report && onShowModal) {
+            onShowModal(record);
+        } else {
+            Modal.confirm({
+                title: onRestore
+                    ? 'Bạn chắc chắn muốn khôi phục dữ liệu?'
+                    : 'Bạn chắc chắn muốn xóa?',
+                icon: <ExclamationCircleOutlined />,
+                content: 'Hành động này không thể hoàn tác.',
+                onOk() {
+                    if (onRestore) {
+                        onRestore(record);
+                    } else if (onDelete) {
+                        onDelete(record);
+                    }
+                },
+                okText: onRestore ? 'Khôi phục' : 'Xóa',
+                cancelText: 'Hủy',
+            });
+        }
     };
 
     const actionColumn = {
@@ -96,25 +94,14 @@ function Table<T extends object>({
                         </Button>
                     )
                 )}
-                {onDelete && (
-                    <Tooltip title="Xóa">
+                {(onDelete || onRestore) && (
+                    <Tooltip title={onRestore ? 'Khôi phục' : 'Xóa'}>
                         <Button
-                            danger
-                            className="flex items-center justify-center p-2 md:p-3"
+                            danger={!onRestore}
+                            type={onRestore ? 'primary' : undefined}
                             onClick={() => handleDeleteClick(record)}
                         >
-                            <DeleteOutlined />
-                        </Button>
-                    </Tooltip>
-                )}
-                {onRestore && (
-                    <Tooltip title="Khôi phục">
-                        <Button
-                            type="primary"
-                            className="flex items-center justify-center p-2 md:p-3"
-                            onClick={() => handleRestoreClick(record)}
-                        >
-                            <UndoOutlined />
+                            {onRestore ? <UndoOutlined /> : <DeleteOutlined />}
                         </Button>
                     </Tooltip>
                 )}
@@ -145,6 +132,16 @@ function Table<T extends object>({
                         </Tooltip>
                     )
                 )}
+                {restoreLink ? (
+                    <Link href={restoreLink} passHref className="ml-2">
+                        <Tooltip title="Khôi phục">
+                            <ButtonPrimary
+                                className="bg-[#35509a]"
+                                icon={<UndoOutlined className="text-white" />}
+                            ></ButtonPrimary>
+                        </Tooltip>
+                    </Link>
+                ) : null}
                 {filter && <div>{filter}</div>}
             </div>
             <AntTable

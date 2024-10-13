@@ -9,10 +9,11 @@ import HandleComment from './HandleComment';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { useTypedSelector } from '@/hooks/useTypedSelector';
 import { fetchUserData } from '@/lib/redux/features/user/userSlice';
+import { SOCKET_SERVER_URL } from '@/constant/api';
 import Link from 'next/link';
 
 import 'moment/locale/vi';
-const SOCKET_SERVER_URL = 'http://localhost:3002';
+
 moment.locale('vi');
 
 const {TextArea }=Input
@@ -56,7 +57,6 @@ function Comment({ idBlog = null, idCourse = null }: string | any) {
     const socketRef: any = useRef(null);
     useEffect(() => {
         dispatch(fetchUserData());
-        console.log('check dataUser?.id', dataUser?.id);
 
         // Connect to Socket.IO server
         socketRef.current = io(SOCKET_SERVER_URL);
@@ -209,43 +209,16 @@ function Comment({ idBlog = null, idCourse = null }: string | any) {
             <h3 className="font-bold text-xl mb-3">Bình Luận</h3>
             {dataUser?.id !== null ? (
                 <>
-                    {/* <div className="flex mb-4">
-                        <textarea
-                            name="content"
-                            rows={1}
-                            className="py-[6px] pl-6 pr-3 w-[100%] border rounded-l-xl"
-                            placeholder="Chia sẻ cảm nghĩ của bạn ..."
-                            value={content}
-                            onChange={handleContentChange}
-                        ></textarea>
-                        <div className="rounded-r-xl">
-                            <button
-                                onClick={handleSubmit}
-                                className="bg-[#35509a] rounded-r-xl text-white py-[6px] px-3 h-full"
-                            >
-                                Gửi
-                            </button>
-                        </div>
-                    </div> */}
-                </>
-            ) : (
-                <>
-                    <Link href="/login" className="italic text-[#355097]">
-                        Vui lòng đăng nhập để bình luận.
-                    </Link>
-                </>
-            )}
-
-            <div className="flex mb-4">
-                <TextArea
-                    name="content"
-                    rows={1}
-                    className="py-[6px] pl-6 pr-3 w-[100%] border rounded-l-lg"
-                    placeholder="Chia sẻ cảm nghĩ của bạn ..."
-                    value={content}
-                    onChange={handleContentChange}
-                ></TextArea>
-                <div className="rounded-r-xl ">
+                   <div className="flex mb-4">
+                    <TextArea
+                        name="content"
+                        rows={1}
+                        className="py-[6px] pl-6 pr-3 w-[100%] border rounded-l-lg"
+                        placeholder="Chia sẻ cảm nghĩ của bạn ..."
+                        value={content}
+                        onChange={handleContentChange}
+                    ></TextArea>
+                    <div className="rounded-r-xl ">
                     <button
                         onClick={handleSubmit}
                         className="bg-[#35509a] rounded-r-xl text-white py-[6px] px-3 h-full"
@@ -254,6 +227,14 @@ function Comment({ idBlog = null, idCourse = null }: string | any) {
                     </button>
                 </div>
             </div>
+                </>
+            ) : (
+                <>
+                    <Link href="/login" className="italic text-[#355097]">
+                        Vui lòng đăng nhập để bình luận.
+                    </Link>
+                </>
+            )}
             {/*  comment post */}
             <div className="mt-2">
                 {/* comment now */}
