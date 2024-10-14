@@ -58,7 +58,7 @@ const TryLearningPages = ({ id }: { id: any }) => {
                         case 'fill_in_the_blank':
                             if (content.fill_in_the_blank?.length > 0) {
                                 childrenItems.push({
-                                    key: `fill_in_the_blank`,
+                                    key: `fill_in_the_blank-${content._id}`,
                                     label: 'Fill in the Blank',
                                     onClick: () => {
                                         setSelectedKey(
@@ -136,14 +136,14 @@ const TryLearningPages = ({ id }: { id: any }) => {
 
     return (
         <div className="app-container">
-            <div className="md:p-5">
+            <div className="md:p-5 right-border">
                 <Button
                     className="menu-toggle-btn btn-primary font-semibold"
                     type="primary"
                     onClick={showDrawer}
                 >
                     <div>
-                        <MenuOutlined /> Danh sách bài học
+                        <MenuOutlined />
                     </div>
                 </Button>
                 <Drawer

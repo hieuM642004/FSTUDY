@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Card, Button, message, Select } from 'antd';
+import { Card, Button, message, Input } from 'antd';
 import { nestApiInstance } from '../../../../constant/api';
 
 type WordMatchingData = {
@@ -50,7 +50,7 @@ const WordMatchingPage = ({ id }: { id: string }) => {
         );
 
         if (unselectedWords) {
-            message.error('Vui lòng chọn đáp án cho tất cả các từ!', 1);
+            message.error('Vui lòng nhập đáp án cho tất cả các từ!', 1);
             return;
         }
 
@@ -109,13 +109,13 @@ const WordMatchingPage = ({ id }: { id: string }) => {
                                         className="flex items-center gap-2"
                                     >
                                         <span>{word}</span>
-                                        <Select
-                                            placeholder="Chọn đáp án"
-                                            onChange={(value) =>
+                                        <Input
+                                            placeholder="Nhập đáp án"
+                                            onChange={(e) =>
                                                 handleMatchChange(
                                                     questionIndex,
                                                     word,
-                                                    value,
+                                                    e.target.value,
                                                 )
                                             }
                                             disabled={isSubmitted}
@@ -125,16 +125,7 @@ const WordMatchingPage = ({ id }: { id: string }) => {
                                                     `${questionIndex}-${word}`
                                                 ]
                                             }
-                                        >
-                                            {lesson.matches.map((match) => (
-                                                <Select.Option
-                                                    key={match}
-                                                    value={match}
-                                                >
-                                                    {match}
-                                                </Select.Option>
-                                            ))}
-                                        </Select>
+                                        />
                                     </div>
                                 ))}
                             </div>
@@ -161,7 +152,7 @@ const WordMatchingPage = ({ id }: { id: string }) => {
                                     {lesson.words.map((word) => (
                                         <Card key={word} title={`Từ: ${word}`}>
                                             <p>
-                                                <strong>Đáp án đã chọn:</strong>{' '}
+                                                <strong>Đáp án đã nhập:</strong>{' '}
                                                 {
                                                     selectedWords[
                                                         `${questionIndex}-${word}`

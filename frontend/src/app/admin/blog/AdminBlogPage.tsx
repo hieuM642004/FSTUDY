@@ -61,11 +61,17 @@ function AdminBlogPage() {
                     <p
                         className="mb-4 italic"
                         dangerouslySetInnerHTML={{
-                            __html: item.content,
+                            __html:
+                                item.content.length > 50
+                                    ? `${item.content.substring(0, 50)}...`
+                                    : item.content,
                         }}
                     />
                 ),
-                title: item.title,
+                title:
+                    item.title.length > 20
+                        ? `${item.title.substring(0, 20)}...`
+                        : item.title,
                 avatar: (
                     <Image
                         src={item.avatar}
