@@ -379,7 +379,7 @@ function NavBar() {
                                             <p
                                                 className="mb-4 italic"
                                                 dangerouslySetInnerHTML={{
-                                                    __html: courseDetail.detail_title,
+                                                    __html: item.detail_title,
                                                 }}
                                             />
                                         </div>
