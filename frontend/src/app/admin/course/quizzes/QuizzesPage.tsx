@@ -31,6 +31,11 @@ const columns = [
         title: 'Giải thích',
         dataIndex: 'explanation',
         key: 'explanation',
+        render: (text: string) => (
+            <span>
+                {text.length > 50 ? `${text.substring(0, 50)}...` : text}
+            </span>
+        ),
     },
     {
         title: 'Ngày đăng',

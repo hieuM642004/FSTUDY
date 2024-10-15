@@ -5,14 +5,28 @@
     padding-bottom: 50px;
     padding-top: 20px;
 
+    .right-border {
+        border-right: 2px solid #d9d9d9;
+        /* Viền bên phải */
+    }
+
+
     @media (max-width: 768px) {
         flex-direction: column;
-
+        // padding: 10px;
     }
 
     @media (min-width: 768px) and (max-width: 1024px) {
         padding-top: 30px;
     }
+}
+
+.ant-drawer-body {
+    padding: 0 !important;
+}
+
+main {
+    padding: 0 !important;
 }
 
 .sidebar {
@@ -91,6 +105,7 @@
         padding: 10px;
         height: 400px;
 
+
         .content-items {
             height: 250px;
             width: 100%;
@@ -106,10 +121,11 @@
 .menu-toggle-btn {
     display: none;
 
+
     @media (max-width: 768px) {
         display: block;
         margin: 16px auto 16px 0px;
         width: max-content;
-        padding: auto;
+        margin: 10px;
     }
 }

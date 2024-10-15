@@ -12,36 +12,36 @@ import { isArray } from 'lodash';
 function Blog({ data, onChange }: { data: any[]; onChange: () => void }) {
     const router = useRouter();
 
-    const handleDelete = async (id: string) => {
-        Modal.confirm({
-            title: 'Bạn chắc chắn xóa bài viết này?',
-            okText: 'Xóa',
-            okType: 'danger',
-            cancelText: 'Hủy',
-            onOk: async () => {
-                try {
-                    await nestApiInstance.delete(`/blog/${id}`);
-                    message.success('Bài viết đã được xóa');
-                    onChange();
-                    router.push('/blogs');
-                } catch (error) {
-                    console.error('Error deleting blog:', error);
-                    message.error('Không thể xóa bài viết');
-                }
-            },
-        });
-    };
+    // const handleDelete = async (id: string) => {
+    //     Modal.confirm({
+    //         title: 'Bạn chắc chắn xóa bài viết này?',
+    //         okText: 'Xóa',
+    //         okType: 'danger',
+    //         cancelText: 'Hủy',
+    //         onOk: async () => {
+    //             try {
+    //                 await nestApiInstance.delete(`/blog/${id}`);
+    //                 message.success('Bài viết đã được xóa');
+    //                 onChange();
+    //                 router.push('/blogs');
+    //             } catch (error) {
+    //                 console.error('Error deleting blog:', error);
+    //                 message.error('Không thể xóa bài viết');
+    //             }
+    //         },
+    //     });
+    // };
 
-    const getMenu = (_id: string) => (
-        <Menu>
-            <Menu.Item key="edit">
-                <Link href={`/blogs/handle-blog/edit/${_id}`}>Cập nhật</Link>
-            </Menu.Item>
-            <Menu.Item key="delete" onClick={() => handleDelete(_id)}>
-                Xóa
-            </Menu.Item>
-        </Menu>
-    );
+    // const getMenu = (_id: string) => (
+    //     <Menu>
+    //         <Menu.Item key="edit">
+    //             <Link href={`/blogs/handle-blog/edit/${_id}`}>Cập nhật</Link>
+    //         </Menu.Item>
+    //         <Menu.Item key="delete" onClick={() => handleDelete(_id)}>
+    //             Xóa
+    //         </Menu.Item>
+    //     </Menu>
+    // );
 
     return (
         <div className="flex flex-col-reverse border-b-[1px] mt-3 w-full">
@@ -66,14 +66,20 @@ function Blog({ data, onChange }: { data: any[]; onChange: () => void }) {
                             <p
                                 className="mb-4 italic"
                                 dangerouslySetInnerHTML={{
-                                    __html: item.content,
+                                    __html:
+                                        item.content.length > 50
+                                            ? `${item.content.substring(
+                                                  0,
+                                                  50,
+                                              )}...`
+                                            : item.content,
                                 }}
                             />
                             <div className="text-sm">
                                 {item.date.slice(0, 10)} | {item.user?.fullname}
                             </div>
                         </div>
-                        <div>
+                        {/* <div>
                             <Dropdown
                                 overlay={getMenu(item._id)}
                                 trigger={['hover']}
@@ -81,7 +87,7 @@ function Blog({ data, onChange }: { data: any[]; onChange: () => void }) {
                             >
                                 <Button type="text" icon={<MoreOutlined />} />
                             </Dropdown>
-                        </div>
+                        </div> */}
                     </div>
                 ))}
         </div>

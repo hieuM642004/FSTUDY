@@ -55,7 +55,7 @@ function BlogDetail({ id }: string | any) {
                     {/* title blogdetail */}
                     <div className="text-center">
                         <h2 className=" xl:text-4xl md:text-2xl  text-xl font-bold mb-4">
-                            { blogDetail && blogDetail?.title}
+                            {blogDetail && blogDetail?.title}
                         </h2>
                         {/* <p className="mb-4 font-semibold text-lg">
                             {blogDetail.content}
@@ -77,7 +77,8 @@ function BlogDetail({ id }: string | any) {
                                                     width={35}
                                                     height={35}
                                                     src={
-                                                      blogDetail &&   blogDetail?.user?.avatar
+                                                        blogDetail &&
+                                                        blogDetail?.user?.avatar
                                                     }
                                                     alt="Picture of the author"
                                                     className="rounded-full"
@@ -87,7 +88,10 @@ function BlogDetail({ id }: string | any) {
                                                 <p>
                                                     {blogDetail?.user?.fullname}
                                                 </p>
-                                                <span>{blogDetail && blogDetail?.date}</span>
+                                                <span>
+                                                    {blogDetail &&
+                                                        blogDetail?.date}
+                                                </span>
                                             </div>
                                         </div>
                                         {/*  Related articles */}
@@ -122,7 +126,10 @@ function BlogDetail({ id }: string | any) {
                                         {/* main content  */}
                                         <div>
                                             <Image
-                                                src={blogDetail && blogDetail?.avatar}
+                                                src={
+                                                    blogDetail &&
+                                                    blogDetail?.avatar
+                                                }
                                                 alt="pics"
                                                 width={1000}
                                                 height={0}
@@ -130,7 +137,9 @@ function BlogDetail({ id }: string | any) {
                                             />
                                             <div
                                                 dangerouslySetInnerHTML={{
-                                                    __html: blogDetail && blogDetail?.content,
+                                                    __html:
+                                                        blogDetail &&
+                                                        blogDetail?.content,
                                                 }}
                                             />
                                         </div>

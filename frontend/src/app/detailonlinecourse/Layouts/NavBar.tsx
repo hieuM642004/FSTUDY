@@ -91,10 +91,18 @@ function NavBar() {
                                 </div>
                                 <div className="course-overview  lg:mt-2 text-[1rem]">
                                     <div>
+                                        <p
+                                            className="mb-4 italic"
+                                            dangerouslySetInnerHTML={{
+                                                __html: courseDetail.detail_title,
+                                            }}
+                                        />
+                                    </div>
+                                    {/* <div>
                                         {lines.map((line: any, index: any) => (
                                             <div key={index}>✅ {line}</div>
                                         ))}
-                                    </div>
+                                    </div> */}
                                 </div>
                             </div>
 
@@ -307,8 +315,15 @@ function NavBar() {
                                 <h3 id="bạn-sẽ-học-những-gì?">
                                     <strong>Bạn sẽ học những gì?</strong>
                                 </h3>
-                                <div dangerouslySetInnerHTML={{ __html: courseDetail.detail_content }} />
 
+                                <div>
+                                    <p
+                                        className="mb-4 italic"
+                                        dangerouslySetInnerHTML={{
+                                            __html: courseDetail.detail_content,
+                                        }}
+                                    />
+                                </div>
                             </div>
                         </div>
                     </WapperItemCard>
@@ -362,7 +377,12 @@ function NavBar() {
                                             </span>
                                         </div>
                                         <div className="series-syllabus-course-overview">
-                                            {item.detail_title}
+                                            <p
+                                                className="mb-4 italic"
+                                                dangerouslySetInnerHTML={{
+                                                    __html: item.detail_title,
+                                                }}
+                                            />
                                         </div>
                                     </div>
                                 </div>

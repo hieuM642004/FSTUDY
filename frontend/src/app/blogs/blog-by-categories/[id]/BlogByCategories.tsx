@@ -104,14 +104,6 @@ function PageBlogByCategories({ id }: string | any) {
                             </div>
                             {/* content */}
                             <div className="grow pl-6 pb-8 md:border-l-[1px]">
-                                <Link href={'/blogs/handle-blog/add'}>
-                                    <ButtonPrimary
-                                        size={'large'}
-                                        label={'Thêm bài viết'}
-                                        className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg"
-                                    />
-                                </Link>
-
                                 <Blog
                                     data={blogs}
                                     onChange={handleBlogUpdate}

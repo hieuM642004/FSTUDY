@@ -161,6 +161,7 @@ const TryLearningPages = ({ id }: { id: any }) => {
                                             Fill in the Blank {getProgressStatus(content._id, 'fill_in_the_blank')}
                                         </>
                                     ),
+                                  
                                     onClick: () => {
                                         setSelectedKey(`fill_in_the_blank-${content._id}`);
                                         router.push(`/trylearning/lessons-handle/fillInTheBlank/${content._id}`);
@@ -237,14 +238,14 @@ const TryLearningPages = ({ id }: { id: any }) => {
 
     return (
         <div className="app-container">
-            <div className="md:p-5">
+            <div className="md:p-5 right-border">
                 <Button
                     className="menu-toggle-btn btn-primary font-semibold"
                     type="primary"
                     onClick={showDrawer}
                 >
                     <div>
-                        <MenuOutlined /> Danh sách bài học
+                        <MenuOutlined />
                     </div>
                 </Button>
                 <Drawer

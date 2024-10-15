@@ -46,7 +46,7 @@ function HandleCoursesPage({ id }: { id?: string }) {
                 'Tên nội dung khóa học không được để trống',
             ),
             lessons: Yup.array()
-                .min(1, 'Phải chọn ít nhất một bài học')
+                .min(0, 'Phải chọn ít nhất một bài học')
                 .required('Tên bài học không được để trống'),
             thumbnail: Yup.mixed().required(
                 'Hình ảnh khóa học không được để trống',
@@ -100,6 +100,7 @@ function HandleCoursesPage({ id }: { id?: string }) {
             formData.append('discount', values.discount);
             formData.append('createdBy', dataUser.id);
             formData.append('updatedBy', dataUser.id);
+            console.log(formData);
 
             try {
                 if (isEditForm) {
