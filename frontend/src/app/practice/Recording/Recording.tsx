@@ -35,12 +35,9 @@ const Recording: React.FC<ExtendedRecordingProps> = React.memo(
                 ? JSON.parse(existingQuestions)
                 : [];
             const updatedArray = Array.from(
-                new Set([...existingArray, ...questions]),
+                new Set([...existingArray, ...questions])
             );
-            localStorage.setItem(
-                'activeQuestions',
-                JSON.stringify(updatedArray),
-            );
+            localStorage.setItem('activeQuestions', JSON.stringify(updatedArray));
         };
 
         useEffect(() => {
@@ -62,7 +59,7 @@ const Recording: React.FC<ExtendedRecordingProps> = React.memo(
                 e:
                     | RadioChangeEvent
                     | React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
-                questionId: string,
+                questionId: string
             ) => {
                 const value = e.target.value;
 
@@ -90,7 +87,7 @@ const Recording: React.FC<ExtendedRecordingProps> = React.memo(
                         : null;
 
                     const existingIndex = updatedList.findIndex(
-                        (item) => item.order === currentOrder,
+                        (item) => item.order === currentOrder
                     );
 
                     if (currentOrder !== null) {
@@ -128,8 +125,8 @@ const Recording: React.FC<ExtendedRecordingProps> = React.memo(
                 dataselection,
                 questionsGroup,
                 activeQuestions,
-                onActiveQuestionChange,
-            ],
+                onActiveQuestionChange
+            ]
         );
 
         const renderInputField = useCallback(
@@ -148,7 +145,7 @@ const Recording: React.FC<ExtendedRecordingProps> = React.memo(
                                             <Radio key={index} value={option}>
                                                 {option}
                                             </Radio>
-                                        ),
+                                        )
                                     )}
                                 </Space>
                             </Radio.Group>
@@ -172,7 +169,7 @@ const Recording: React.FC<ExtendedRecordingProps> = React.memo(
                         );
                 }
             },
-            [onChange],
+            [onChange]
         );
 
         const renderedQuestionsGroup = useMemo(() => {
@@ -194,7 +191,8 @@ const Recording: React.FC<ExtendedRecordingProps> = React.memo(
                                 <div className="cursor-pointer">
                                     <div className="grid grid-cols-2 gap-2">
                                         {(group?.passageText ||
-                                            group?.imageUrl) && (
+                                            group?.imageUrl ||
+                                            group?.audioUrl) && (
                                             <div>
                                                 {group?.imageUrl && (
                                                     <img
@@ -207,6 +205,13 @@ const Recording: React.FC<ExtendedRecordingProps> = React.memo(
                                                     <p className="font-bold">
                                                         {group.passageText}
                                                     </p>
+                                                )}
+                                                {group?.audioUrl && (
+                                                    <audio
+                                                        src={group.audioUrl}
+                                                        controls
+                                                        className="w-full mt-2"
+                                                    />
                                                 )}
                                             </div>
                                         )}
@@ -226,7 +231,7 @@ const Recording: React.FC<ExtendedRecordingProps> = React.memo(
                                                                     }
                                                                 </button>
                                                                 {renderInputField(
-                                                                    question,
+                                                                    question
                                                                 )}
                                                                 {question.audioUrl && (
                                                                     <audio
@@ -239,7 +244,7 @@ const Recording: React.FC<ExtendedRecordingProps> = React.memo(
                                                                 )}
                                                             </div>
                                                         </div>
-                                                    ),
+                                                    )
                                                 )}
                                             </div>
                                         )}
@@ -249,7 +254,9 @@ const Recording: React.FC<ExtendedRecordingProps> = React.memo(
                         </Tooltip>
                     ) : (
                         <div className="grid grid-cols-2 gap-2">
-                            {(group?.passageText || group?.imageUrl) && (
+                            {(group?.passageText ||
+                                group?.imageUrl ||
+                                group?.audioUrl) && (
                                 <div>
                                     {group?.imageUrl && (
                                         <img
@@ -262,6 +269,13 @@ const Recording: React.FC<ExtendedRecordingProps> = React.memo(
                                         <p className="font-bold">
                                             {group.passageText}
                                         </p>
+                                    )}
+                                    {group?.audioUrl && (
+                                        <audio
+                                            src={group.audioUrl}
+                                            controls
+                                            className="w-full mt-2"
+                                        />
                                     )}
                                 </div>
                             )}
@@ -290,7 +304,7 @@ const Recording: React.FC<ExtendedRecordingProps> = React.memo(
                                                     )}
                                                 </div>
                                             </div>
-                                        ),
+                                        )
                                     )}
                                 </div>
                             )}
@@ -301,7 +315,7 @@ const Recording: React.FC<ExtendedRecordingProps> = React.memo(
         }, [questionsGroup, renderInputField, isEditable]);
 
         return <>{renderedQuestionsGroup}</>;
-    },
+    }
 );
 
 export default Recording;

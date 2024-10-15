@@ -307,7 +307,8 @@ function NavBar() {
                                 <h3 id="bạn-sẽ-học-những-gì?">
                                     <strong>Bạn sẽ học những gì?</strong>
                                 </h3>
-                                <div>{courseDetail.detail_content}</div>
+                                <div dangerouslySetInnerHTML={{ __html: courseDetail.detail_content }} />
+
                             </div>
                         </div>
                     </WapperItemCard>

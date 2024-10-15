@@ -4,8 +4,11 @@ from flask import Blueprint, jsonify, request, send_file
 from googleapiclient.discovery import build
 from google.oauth2.service_account import Credentials
 from googleapiclient.discovery import build
-from openai import OpenAI
-import pytesseract
+from deep_translator import GoogleTranslator
+from transformers import pipeline
+# from googletrans import Translator
+# from openai import OpenAI
+from transformers import pipeline
 from youtube_transcript_api import YouTubeTranscriptApi
 from youtube_transcript_api.formatters import JSONFormatter
 from pydub import AudioSegment
@@ -512,6 +515,39 @@ def process_exam():
         os.remove(image_path)
 
         return jsonify({'result': analysis_result}), 200
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+nlp_pipeline = pipeline("text-generation", model="gpt2")
+
+# Tạo đối tượng dịch từ deep-translator
+translator = GoogleTranslator(source='auto', target='vi')
+
+@generate_response_api.route('/generate_response', methods=['POST'])
+def generate_response():
+    data = request.get_json()
+    input_word = data['input']
+
+    # Tạo prompt để sinh câu
+    prompt = f"Please create a clear and natural sentence using the word '{input_word}':"
+
+    try:
+        # Sử dụng mô hình Gemini để sinh văn bản dựa trên prompt
+        model = genai.GenerativeModel("gemini-1.5-flash")
+        response = model.generate_content(prompt)
+        generated_response = response.text.strip()
+
+        # Dịch câu đã sinh sang tiếng Việt
+        translated_response = translator.translate(generated_response)
+
+        # Trả về kết quả dưới dạng JSON
+        result = {
+            'generated_response': generated_response,
+            'translated_response': translated_response
+        }
+
+        return jsonify(result), 200
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500

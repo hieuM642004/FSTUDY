@@ -51,8 +51,17 @@ const MultipleChoice = ({
                 />
             )}
 
+            {question.options.map((option, index) => (
+                <Form.Item label={`Lựa chọn ${index + 1}`} key={index}>
+                    <Input
+                        value={option}
+                        onChange={(e) => onChangeOption(index, e.target.value)}
+                        placeholder={`Nhập lựa chọn ${index + 1}`}
+                    />
+                </Form.Item>
+            ))}
             <Form.Item label="Chọn đáp án đúng">
-            <p className='text-green-500'>{question?.correctAnswer}</p>
+                <p className="text-green-500">{question?.correctAnswer}</p>
                 <Radio.Group
                     onChange={handleAnswerChange}
                     value={selectedAnswer}
@@ -63,19 +72,7 @@ const MultipleChoice = ({
                         </Radio>
                     ))}
                 </Radio.Group>
-               
             </Form.Item>
-
-            {question.options.map((option, index) => (
-                <Form.Item label={`Lựa chọn ${index + 1}`} key={index}>
-                    <Input
-                        value={option}
-                        onChange={(e) => onChangeOption(index, e.target.value)}
-                        placeholder={`Nhập lựa chọn ${index + 1}`}
-                    />
-                </Form.Item>
-            ))}
-
             <Form.Item label="Giải thích cho đáp án đúng">
                 <Input.TextArea
                     value={question.explanation}

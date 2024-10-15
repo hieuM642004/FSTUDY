@@ -1,10 +1,10 @@
-#nameFlashcard{
-    
+#nameFlashcard {
+
     background-image: linear-gradient(315deg, #aee1f9, #f6ebe6 74%);
 }
 
 .custom-outline:focus {
     outline: none;
     transition: 0.5s cubic-bezier(0.075, 0.82, 0.165, 1);
-    box-shadow: inset 0 -2px 0 0 black; 
-  }
+    box-shadow: inset 0 -2px 0 0 black;
+}

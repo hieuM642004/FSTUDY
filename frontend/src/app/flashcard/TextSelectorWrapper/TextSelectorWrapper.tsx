@@ -5,8 +5,7 @@ import FlashCardService from '@/services/FlashCardService';
 import FormFlashCard from '../FormFlashCard/FormFlashCard.';
 import FlashCardInterface from '@/types/FlashCard';
 
-
-function TextSelectorWrapper({ children}:{children:React.ReactNode}) {
+function TextSelectorWrapper({ children }:{children:React.ReactNode}) {
     const [showButton, setShowButton] = useState(false);
     const [buttonPosition, setButtonPosition] = useState({ top: 0, left: 0 });
     const [selectedText, setSelectedText] = useState('');
@@ -15,7 +14,6 @@ function TextSelectorWrapper({ children}:{children:React.ReactNode}) {
     const [selectedFlashCardId, setSelectedFlashCardId] = useState<string | null>(null);
     const buttonRef = useRef<HTMLButtonElement | null>(null);
 
-    // Fetch flashcards data
     useEffect(() => {
         const fetchData = async () => {
             try {
@@ -27,6 +25,7 @@ function TextSelectorWrapper({ children}:{children:React.ReactNode}) {
         };
         fetchData();
     }, []);
+
     const handleDoubleClick = (text: string) => {
         if (text && text.length > 0) {
             setSelectedText(text);
@@ -35,14 +34,14 @@ function TextSelectorWrapper({ children}:{children:React.ReactNode}) {
             setShowButton(false);
         }
     };
+
     useEffect(() => {
         document.addEventListener('dblclick', handleMouseUp);
         return () => {
             document.removeEventListener('dblclick', handleMouseUp);
         };
     }, []);
-    
-    // Handle mouse selection of text
+
     const handleMouseUp = () => {
         const selection = window.getSelection();
         const text = selection?.toString();
@@ -54,8 +53,8 @@ function TextSelectorWrapper({ children}:{children:React.ReactNode}) {
 
                 if (rect) {
                     setButtonPosition({
-                        top: rect.top - rect.height - 5,
-                        left: rect.left,
+                        top: rect.bottom + window.scrollY + 10, 
+                        left: rect.left + window.scrollX, 
                     });
                     setSelectedText(text);
                     setShowButton(true);
@@ -69,18 +68,14 @@ function TextSelectorWrapper({ children}:{children:React.ReactNode}) {
         }
     };
 
-    // Handle button click to open modal and pause the timer
     const handleButtonClick = () => {
         setIsModalVisible(true);
-        
     };
 
-    // Handle modal close and resume the timer
     const handleModalClose = () => {
         setIsModalVisible(false);
     };
 
-    // Handle flashcard selection
     const handleSelectFlashCard = (flashCardId: string) => {
         setSelectedFlashCardId(flashCardId);
     };

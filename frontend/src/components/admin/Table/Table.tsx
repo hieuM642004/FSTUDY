@@ -72,6 +72,8 @@ function Table<T extends object>({
     const actionColumn = {
         title: 'Hành động',
         key: 'actions',
+        fixed: 'right', 
+        width: 120,
         render: (text: any, record: T) => (
             <div className="flex space-x-2">
                 {editLink ? (
@@ -152,6 +154,7 @@ function Table<T extends object>({
                 }
                 dataSource={Array.isArray(dataSource) ? dataSource : []}
                 pagination={pagination}
+                scroll={{ x: 1000 }}
                 rowKey={rowKey}
                 {...props}
             />

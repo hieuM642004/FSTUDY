@@ -29,17 +29,18 @@ function FormFlashCard({
             translatedExample?: string;
         };
     }>({});
+
     const [isWordValid, setIsWordValid] = useState<{
         [index: number]: boolean;
     }>({});
-const {isLoggedIn}=useAuth()
+    const { isLoggedIn } = useAuth();
     const [messageProps, setMessageProps] = useState<{
         type: 'success' | 'error' | 'warning';
         content: string;
     } | null>(null);
     const router = useRouter();
     const dataUser = useTypedSelector((state) => state.user);
-    const {}=dataUser
+    const {} = dataUser;
     useEffect(() => {
         if (id) {
             const fetchCardData = async () => {
@@ -229,7 +230,7 @@ const {isLoggedIn}=useAuth()
         if (card) {
             try {
                 const response = await fetch(
-                    `https://api.pexels.com/v1/search?query=${card.words[wordIndex].word}&per_page=1`,
+                    `https://api.pexels.com/v1/search?query=${card.words[wordIndex].word}&per_page=5`, // Lấy 5 ảnh
                     {
                         headers: {
                             Authorization:
@@ -238,18 +239,21 @@ const {isLoggedIn}=useAuth()
                     },
                 );
                 const data = await response.json();
-                const imageUrl = data.photos?.[0]?.src.medium || '';
-                updateCardImage(cardIndex, wordIndex, imageUrl);
+                const images = data.photos.map(
+                    (photo: any) => photo.src.medium,
+                ); // Lấy danh sách ảnh
+
+                updateCardImages(cardIndex, wordIndex, images); // Cập nhật danh sách ảnh
             } catch (error) {
                 console.error('Error fetching image:', error);
             }
         }
     };
 
-    const updateCardImage = (
+    const updateCardImages = (
         cardIndex: number,
         wordIndex: number,
-        newImageUrl: string,
+        images: string[],
     ) => {
         const updatedCards = cards.map((card, i) =>
             i === cardIndex
@@ -257,7 +261,49 @@ const {isLoggedIn}=useAuth()
                       ...card,
                       words: card.words.map((word, j) =>
                           j === wordIndex
-                              ? { ...word, image: newImageUrl }
+                              ? { ...word, images } // Cập nhật danh sách ảnh vào từ
+                              : word,
+                      ),
+                  }
+                : card,
+        );
+        setCards(updatedCards);
+        if (!id) {
+            saveToLocalStorage(updatedCards);
+        }
+    };
+
+    const selectImage = (
+        cardIndex: number,
+        wordIndex: number,
+        selectedImage: string,
+    ) => {
+        const updatedCards = cards.map((card, i) =>
+            i === cardIndex
+                ? {
+                      ...card,
+                      words: card.words.map((word, j) =>
+                          j === wordIndex
+                              ? { ...word, image: selectedImage } // Chọn ảnh
+                              : word,
+                      ),
+                  }
+                : card,
+        );
+        setCards(updatedCards);
+        if (!id) {
+            saveToLocalStorage(updatedCards);
+        }
+    };
+
+    const removeImage = (cardIndex: number, wordIndex: number) => {
+        const updatedCards = cards.map((card, i) =>
+            i === cardIndex
+                ? {
+                      ...card,
+                      words: card.words.map((word, j) =>
+                          j === wordIndex
+                              ? { ...word, image: '' } // Xóa ảnh
                               : word,
                       ),
                   }
@@ -451,7 +497,7 @@ const {isLoggedIn}=useAuth()
                             <>
                                 <div
                                     key={wordIndex}
-                                    className="w-full bg-white text-black rounded-lg shadow-lg p-4 mb-4"
+                                    className="w-full bg-white text-black rounded-lg shadow-lg p-4 mb-4 h-52"
                                 >
                                     <div className="flex justify-between items-center border-b border-gray-700 pb-2 mb-4">
                                         <div className="text-lg font-bold">
@@ -559,22 +605,7 @@ const {isLoggedIn}=useAuth()
                                                                 Xóa ví dụ
                                                             </button>
                                                         )}
-
-                                                        <div className="mt-2">
-                                                            <p className="text-gray-400">
-                                                                Ví dụ
-                                                                (Generated)
-                                                            </p>
-                                                            <p></p>
-                                                        </div>
                                                     </>
-
-                                                    <div className="mt-2">
-                                                        <p className="text-gray-400">
-                                                            Ví dụ (Translated)
-                                                        </p>
-                                                        <p></p>
-                                                    </div>
                                                 </div>
                                             </div>
                                         </Col>
@@ -590,7 +621,7 @@ const {isLoggedIn}=useAuth()
                                                 <div className="relative w-full h-full">
                                                     {word?.image && (
                                                         <Image
-                                                            className="!object-cover w-20 !h-30"
+                                                            className="!object-cover !w-40 !h-24"
                                                             src={word.image}
                                                             alt="Image"
                                                         />
@@ -620,6 +651,56 @@ const {isLoggedIn}=useAuth()
                                                             Tạo ảnh
                                                         </button>
                                                     )}
+                                                    <div className="flex items-center">
+                                                        {word?.images?.length >
+                                                            0 && (
+                                                            <div className="flex space-x-2">
+                                                                {word.images.map(
+                                                                    (
+                                                                        imgSrc: any,
+                                                                        imgIndex: any,
+                                                                    ) => (
+                                                                        <Image
+                                                                            key={
+                                                                                imgIndex
+                                                                            }
+                                                                            src={
+                                                                                imgSrc
+                                                                            }
+                                                                            alt="Image"
+                                                                            className={`w-20 h-30 ${
+                                                                                word.image ===
+                                                                                imgSrc
+                                                                                    ? 'border-2 border-blue-500'
+                                                                                    : ''
+                                                                            }`} // Đánh dấu ảnh đã chọn
+                                                                            onClick={() =>
+                                                                                selectImage(
+                                                                                    cardIndex,
+                                                                                    wordIndex,
+                                                                                    imgSrc,
+                                                                                )
+                                                                            }
+                                                                        />
+                                                                    ),
+                                                                )}
+                                                            </div>
+                                                        )}
+
+                                                        {word?.image && (
+                                                            <button
+                                                                onClick={() =>
+                                                                    removeImage(
+                                                                        cardIndex,
+                                                                        wordIndex,
+                                                                    )
+                                                                }
+                                                                className="text-gray-400 hover:text-red-500 ml-2"
+                                                            >
+                                                                <DeleteOutlined />
+                                                            </button>
+                                                        )}
+                                                    </div>
                                                 </div>
                                             </div>
                                         </Col>

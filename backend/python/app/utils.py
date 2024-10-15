@@ -1,5 +1,5 @@
-from transformers import pipeline
-from googletrans import Translator
+# from transformers import pipeline
+# from googletrans import Translator
 
-nlp_pipeline = pipeline("text-generation")
-translator = Translator()
+# nlp_pipeline = pipeline("text-generation")
+# translator = Translator()

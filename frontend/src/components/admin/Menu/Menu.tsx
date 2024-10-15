@@ -35,7 +35,7 @@ function MenuAdmin() {
         {
             key: '2',
             icon: <VideoCameraOutlined />,
-            label: <Link href="/admin/">Khóa học</Link>,
+            label: <Link href="/admin/user">Người dùng</Link>,
         },
         {
             key: '3',
@@ -136,11 +136,6 @@ function MenuAdmin() {
             key: '8',
             icon: <CommentOutlined />,
             label: <Link href="/admin/comment">Bình luận</Link>,
-        },
-        {
-            key: '9',
-            icon: <UserOutlined />,
-            label: <Link href="/admin/user">Người dùng</Link>,
         },
     ];
 

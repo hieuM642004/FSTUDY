@@ -39,7 +39,7 @@ const App: React.FC = () => {
                         />
                     </Carousel>
                 </div>
-                <OnlineCourse />
+                {/* <OnlineCourse />
                 <div className="banner2">
                     <Carousel arrows infinite={false}>
                         <img
@@ -129,7 +129,7 @@ const App: React.FC = () => {
                             />
                         </div>
                     </div>
-                </div>
+                </div> */}
             </div>
         </>
     );

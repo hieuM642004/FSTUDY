@@ -39,6 +39,7 @@ function Video({ id }: { id: string }) {
         try {
             const response = await FlashCardService.searchVideo(value);
             const results = response.data;
+            console.log(results)
             setSearchResults(results);
             setCurrentVideoIndex(0);
         } catch (error) {
