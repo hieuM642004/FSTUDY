@@ -23,6 +23,7 @@ import {
     Purchase,
     Quiz,
     QuizProgress,
+    Rating,
     Video,
     VideoProgress,
     WordMatching,
@@ -54,6 +55,9 @@ import { transporter } from '../../providers/mail/mailler';
 import { createHash } from 'crypto';
 import { Vimeo } from '@vimeo/vimeo';
 import FirebaseService from 'src/providers/storage/firebase/firebase.service';
+import { CreateRatingDto } from './dto/rating/rating.dto';
+import { UpdateRatingDto } from './dto/rating/updateRating.dto';
+import { log } from 'console';
 
 // import { Vimeo } from 'vimeo';
 
@@ -90,7 +94,8 @@ export class CourseService {
         private wordMatchingProgressModel: mongoose.Model<WordMatchingProgress>,
         @InjectModel(FillInTheBlankProgress.name)
         private fillInTheBlankProgressModel: mongoose.Model<FillInTheBlankProgress>,
-
+        @InjectModel(Rating.name)
+        private ratingModel: mongoose.Model<Rating>,
         private readonly googleDriveUploader: GoogleDriveUploader,
         private readonly firebaseService: FirebaseService,
     ) {}
@@ -1387,4 +1392,77 @@ export class CourseService {
 
         return purchase;
     }
+
+
+
+    async create(createRatingDto: CreateRatingDto) {
+        const existingRating = await this.ratingModel.findOne({
+            userId: new Types.ObjectId(createRatingDto.userId),
+            courseId: new Types.ObjectId(createRatingDto.courseId),
+          });
+        
+          if (existingRating) {
+            throw new BadRequestException('Rating already exists for this user and course');
+          }
+        const newRating = new this.ratingModel({
+            ...createRatingDto,
+            userId: new Types.ObjectId(createRatingDto.userId),
+            courseId: new Types.ObjectId(createRatingDto.courseId), 
+        });
+        await newRating.save();
+        return newRating;
+    }
+      
+      async update(ratingId: string, updateRatingDto: UpdateRatingDto) {
+        const rating = await this.ratingModel.findByIdAndUpdate(
+          ratingId,
+          {
+            ...updateRatingDto,
+            userId: new Types.ObjectId(updateRatingDto.userId), 
+            courseId: new Types.ObjectId(updateRatingDto.courseId), 
+          },
+          { new: true }
+        );
+        if (!rating) {
+          throw new NotFoundException('Rating not found');
+        }
+        return rating;
+      }
+    
+      async findAllByCourse(courseId: string) {
+        return this.ratingModel.find({ courseId: new Types.ObjectId(courseId) }).exec();
+      }
+    
+      async delete(ratingId: string) {
+        const result = await this.ratingModel.findByIdAndDelete(ratingId);
+        if (!result) {
+          throw new NotFoundException('Rating not found');
+        }
+        return result;
+      }
+    
+      async getCourseAverageRating(courseId: string) {
+        const courseObjectId = new Types.ObjectId(courseId);
+      
+        const ratings = await this.ratingModel.aggregate([
+          { $match: { courseId: courseObjectId } },
+          {
+            $group: {
+              _id: '$courseId',
+              averageRating: { $avg: '$rating' },
+              totalRatings: { $sum: 1 },
+            },
+          },
+        ]);
+        if (ratings.length === 0) {
+          return { averageRating: 0, totalRatings: 0 }; // Không có đánh giá
+        }
+      
+        return {
+          averageRating: ratings[0].averageRating.toFixed(2), // Định dạng với 2 chữ số thập phân
+          totalRatings: ratings[0].totalRatings,
+        };
+      }
+      
+      
 }

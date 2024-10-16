@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { GoogleDriveUploader } from 'src/providers/storage/drive/drive.upload';
-import { Content, ContentSchema, Course,  CourseSchema, CourseType, CourseTypeSchema, FillInTheBlank, FillInTheBlankProgress, FillInTheBlankSchema, FillProgressSchema, Lesson, LessonSchema, Purchase, PurchaseSchema, Quiz, QuizProgress, QuizSchema, QuizzProgressSchema, Video, 
+import { Content, ContentSchema, Course,  CourseSchema, CourseType, CourseTypeSchema, FillInTheBlank, FillInTheBlankProgress, FillInTheBlankSchema, FillProgressSchema, Lesson, LessonSchema, Purchase, PurchaseSchema, Quiz, QuizProgress, QuizSchema, QuizzProgressSchema, Rating, RatingSchema, Video, 
   VideoProgress, VideoProgressSchema,
   VideoSchema, WordMatching, WordMatchingProgress, WordMatchingProgressSchema, WordMatchingSchema } from './courseSchema/course.schema';
 import { CourseController } from './course.controller';
@@ -25,7 +25,8 @@ import FirebaseService from 'src/providers/storage/firebase/firebase.service';
       {name : VideoProgress.name, schema: VideoProgressSchema},
       {name : QuizProgress.name, schema: QuizzProgressSchema},
       {name : WordMatchingProgress.name, schema: WordMatchingProgressSchema},
-      {name : FillInTheBlankProgress.name, schema: FillProgressSchema}
+      {name : FillInTheBlankProgress.name, schema: FillProgressSchema},
+      {name : Rating.name, schema: RatingSchema}
 
 
     ]),
