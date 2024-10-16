@@ -53,6 +53,8 @@ import * as multer from 'multer';
 
 import { Types } from 'mongoose';
 import axios from 'axios';
+import { CreateRatingDto } from './dto/rating/rating.dto';
+import { UpdateRatingDto } from './dto/rating/updateRating.dto';
 
 @Controller('course')
 export class CourseController {
@@ -790,5 +792,31 @@ export class CourseController {
     async completePayment(@Body('key') purchaseKey: string) {
         const purchase = await this.courseService.completePurchase(purchaseKey);
         return purchase;
+    }
+
+    // Rating courses
+
+    @Post('rating')
+    async createRating(@Body() createRatingDto: CreateRatingDto) {
+      return this.courseService.create(createRatingDto);
+    }
+  
+    @Patch('rating/:ratingId')
+    async updateRating(
+      @Param('ratingId') ratingId: string,
+      @Body() updateRatingDto: UpdateRatingDto,
+    ) {
+      return this.courseService.update(ratingId, updateRatingDto);
+    }
+
+  
+    @Delete('rating/:ratingId')
+    async deleteRating(@Param('ratingId') ratingId: string) {
+      return this.courseService.delete(ratingId);
+    }
+  
+    @Get('rating/:courseId/average')
+    async getCourseAverageRating(@Param('courseId') courseId: string) {
+      return this.courseService.getCourseAverageRating(courseId);
     }
 }

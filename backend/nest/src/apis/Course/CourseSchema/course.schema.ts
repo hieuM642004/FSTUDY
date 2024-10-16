@@ -303,3 +303,20 @@ export class Purchase {
 }
 
 export const PurchaseSchema = SchemaFactory.createForClass(Purchase);
+
+@Schema({ timestamps: true })
+export class Rating {
+  @Prop({ type: Types.ObjectId, ref: 'User', required: true })
+  userId: Types.ObjectId;
+
+  @Prop({ type: Types.ObjectId, ref: 'Course', required: true })
+  courseId: Types.ObjectId;
+
+  @Prop({ required: true, min: 1, max: 5 })
+  rating: number;  
+
+  @Prop({ required: true })
+  comment: string; 
+}
+
+export const RatingSchema = SchemaFactory.createForClass(Rating);
