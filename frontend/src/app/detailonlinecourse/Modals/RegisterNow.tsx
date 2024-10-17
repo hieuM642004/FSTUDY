@@ -45,12 +45,13 @@ const RegisterNow = ({ idCourse }: String | any) => {
                 userId,
                 courseId,
             });
-            if (response) {
+            
+            if (response.payUrl) {
                 router.push(response?.payUrl);
             } else {
                 messageApi.open({
                     type: 'error',
-                    content: 'KÍCH HOẠT KHÓA HỌC THẤT BẠI',
+                    content: `${response.data.message}`,
                 });
             }
         } else {
@@ -58,20 +59,19 @@ const RegisterNow = ({ idCourse }: String | any) => {
                 userId,
                 courseId,
             });
-
-            if (response) {
+            
+            if (response.paymentUrl) {
                 router.push(response?.paymentUrl);
             } else {
                 messageApi.open({
                     type: 'error',
-                    content: 'KÍCH HOẠT KHÓA HỌC THẤT BẠI',
+                    content: `${response.data.message}`,
                 });
             }
         }
     };
 
     const onChange = (e: RadioChangeEvent) => {
-        console.log('radio checked', e.target.value);
         setValue(e.target.value);
     };
 

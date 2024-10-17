@@ -5,7 +5,9 @@ import {
     AppstoreOutlined,
     CommentOutlined,
     ContainerOutlined,
+    RadiusUpleftOutlined,
     ReconciliationOutlined,
+    SnippetsOutlined,
     UserOutlined,
     VideoCameraOutlined,
 } from '@ant-design/icons';
@@ -29,12 +31,12 @@ function MenuAdmin() {
     const items = [
         {
             key: '1',
-            icon: <UserOutlined />,
+            icon: <RadiusUpleftOutlined />,
             label: <Link href="/admin">Dashboard</Link>,
         },
         {
             key: '2',
-            icon: <VideoCameraOutlined />,
+            icon:  <UserOutlined />,
             label: <Link href="/admin/user">Người dùng</Link>,
         },
         {
@@ -129,7 +131,7 @@ function MenuAdmin() {
         },
         {
             key: '7',
-            icon: <UserOutlined />,
+            icon: <SnippetsOutlined />,
             label: <Link href="/admin/blog">Trang Blog</Link>,
         },
         {

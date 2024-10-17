@@ -17,8 +17,9 @@ class PurchaseService {
             if (response.status === 201) {
                 return response.data.data;
             }
-        } catch (error) {
+        } catch (error : any) {
             console.error('Error fetching register:', error);
+            return error.response
         }
     }
     @withTokenRefresh
@@ -34,8 +35,9 @@ class PurchaseService {
             if (response.status === 201) {
                 return response.data;
             }
-        } catch (error) {
+        } catch (error : any) {
             console.error('Error fetching register:', error);
+            return error.response
         }
     }
     @withTokenRefresh
