@@ -324,12 +324,13 @@ export class AuthService {
 
     async forgotPassword(email: string): Promise<void > {
         const user = await this.userModel.findOne({ email });
-        if(user.typeLogin === TypeLogin.GOOGLE){
-            throw new Error('Password reset is not allowed for Google login users');
-        }
         if (!user) {
             throw new Error('User not found');
         }
+        if(user.typeLogin === TypeLogin.GOOGLE){
+            throw new Error('Password reset is not allowed for Google login users');
+        }
+       
 
         const token = this.jwtService.sign(
             { id: user._id },

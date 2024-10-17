@@ -1,5 +1,5 @@
 'use client';
-import { Form, Input, DatePicker } from 'antd';
+import { Form, Input, DatePicker, message } from 'antd';
 import { useEffect, useState } from 'react';
 import moment from 'moment';
 import { getCookie } from 'cookies-next';
@@ -16,7 +16,24 @@ function UserInfo() {
     const [form] = Form.useForm();
     const [file, setFile] = useState<File | null>(null);
     const [checkType, setCheckType] = useState<string | boolean>();
+    const [messageApi, contextHolder] = message.useMessage();
+    const [loadings, setLoadings] = useState<boolean[]>([]);
 
+    const enterLoading = (index: number) => {
+        setLoadings((prevLoadings) => {
+          const newLoadings = [...prevLoadings];
+          newLoadings[index] = true;
+          return newLoadings;
+        });
+    
+        setTimeout(() => {
+          setLoadings((prevLoadings) => {
+            const newLoadings = [...prevLoadings];
+            newLoadings[index] = false;
+            return newLoadings;
+          });
+        }, 2000);
+      };
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files) {
             setFile(e.target.files[0]);
@@ -29,11 +46,11 @@ function UserInfo() {
     }, [dispatch]);
 
     useEffect(() => {
-        console.log("User data updated:", dataUser); 
+        console.log('User data updated:', dataUser);
         form.setFieldsValue({
             fullname: dataUser?.name,
-            phone: dataUser?.phone ? dataUser?.phone : null,
-            birthday: dataUser?.birthday ? moment(dataUser.birthday) : null,
+            phone: dataUser?.phone ? dataUser?.phone : '',
+            birthday: dataUser?.birthday ? moment(dataUser.birthday) : '',
             avatar: dataUser?.avatar,
         });
     }, [dataUser, form]);
@@ -43,6 +60,7 @@ function UserInfo() {
         const infoDataUser: any = new FormData();
         infoDataUser.append('fullname', values.fullname);
         infoDataUser.append('phone', values.phone);
+        // API bắt buộc birthday không đc cập nhật null cho lần sau 
         if (values.birthday) {
             infoDataUser.append('birthday', values.birthday);
         }
@@ -50,18 +68,31 @@ function UserInfo() {
             infoDataUser.append('avatar', file);
         }
         try {
-            const res = await UserService.updateUser(infoDataUser, iduser as string);
+            const res = await UserService.updateUser(
+                infoDataUser,
+                iduser as string,
+            );
             if (res) {
                 console.log('User updated successfully', res);
-                await dispatch(fetchUserData()); 
+                await dispatch(fetchUserData());
+                setFile(null)
+                messageApi.open({
+                    type: 'success',
+                    content: 'Cập nhật tài khoản thành công.',
+                });
             }
         } catch (error) {
             console.error('Error updating user', error);
+            messageApi.open({
+                type: 'error',
+                content: 'Cập nhật tài khoản thất bại.',
+            });
         }
     };
 
     return (
         <>
+            {contextHolder}
             <p className="mb-4 ">
                 Email: {dataUser?.email} (STUDY4 không hỗ trợ đổi email. Vui
                 lòng liên hệ chúng tôi nếu bạn đã mua khóa học và muốn đổi
@@ -115,6 +146,7 @@ function UserInfo() {
                                 size="small"
                                 label="Cập nhật"
                                 className="flex justify-center mb-3"
+                                loading={loadings[0]} onClick={() => enterLoading(0)}
                             />
                         </div>
                     </>

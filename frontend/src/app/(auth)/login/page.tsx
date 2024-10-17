@@ -1,6 +1,6 @@
 'use client';
 import { LockOutlined, UserOutlined } from '@ant-design/icons';
-import { Form, Input } from 'antd';
+import { Form, Input, message } from 'antd';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { setCookie } from 'cookies-next';
@@ -20,7 +20,7 @@ function Login() {
     const [form] = Form.useForm();
     const router = useRouter();
     const dispatch = useAppDispatch();
-    const [errorMessage, setErrorMessage] = useState<string | null>(null);
+    const [messageApi, contextHolder] = message.useMessage();
 
     const onFinish = async (values: any) => {
         try {
@@ -51,12 +51,18 @@ function Login() {
                 await dispatch(fetchUserData()).unwrap();
 
               
-                router.push('/');
+                router.push('/home');
             }else{
-                setErrorMessage('Đăng nhập thất bại! Vui lòng kiểm tra lại email và mật khẩu.');
+                messageApi.open({
+                    type: 'error',
+                    content: 'Đăng nhập thất bại! Vui lòng kiểm tra lại email và mật khẩu.',
+                });
             }
         } catch (error) {
-            setErrorMessage('Đăng nhập thất bại! Vui lòng kiểm tra lại email và mật khẩu.');
+            messageApi.open({
+                type: 'error',
+                content: 'Đăng nhập thất bại! Vui lòng kiểm tra lại email và mật khẩu.',
+            });
             console.log('Error:', error);
         }
     };
@@ -140,7 +146,7 @@ function Login() {
                     </Link>
                     <ForgotPass />
                 </WapperItemCard>
-                {errorMessage && <Message type="error" content={errorMessage} />}
+                {contextHolder}
             </div>
         </>
     );

@@ -1,9 +1,8 @@
 'use client';
 import React, { useState } from 'react';
-import { Modal } from 'antd';
+import { message, Modal } from 'antd';
 import { UserOutlined } from '@ant-design/icons';
 import { Form, Input } from 'antd';
-
 
 import ButtonPrimary from '@/components/shared/ButtonPrimary/ButtonPrimary';
 import AuthService from '@/services/auth/AuthService';
@@ -12,21 +11,22 @@ function ForgotPass() {
     const [open, setOpen] = useState(false);
     const [form] = Form.useForm();
     const [loadings, setLoadings] = useState<boolean[]>([]);
+    const [messageApi, contextHolder] = message.useMessage();
 
     const enterLoading = (index: number) => {
-      setLoadings((prevLoadings) => {
-        const newLoadings = [...prevLoadings];
-        newLoadings[index] = true;
-        return newLoadings;
-      });
-  
-      setTimeout(() => {
         setLoadings((prevLoadings) => {
-          const newLoadings = [...prevLoadings];
-          newLoadings[index] = false;
-          return newLoadings;
+            const newLoadings = [...prevLoadings];
+            newLoadings[index] = true;
+            return newLoadings;
         });
-      }, 3000);
+
+        setTimeout(() => {
+            setLoadings((prevLoadings) => {
+                const newLoadings = [...prevLoadings];
+                newLoadings[index] = false;
+                return newLoadings;
+            });
+        }, 3000);
     };
     const showModal = () => {
         setOpen(true);
@@ -37,14 +37,34 @@ function ForgotPass() {
     };
     const onFinish = async (values: string) => {
         try {
-           
-            const response = await AuthService.forgotPassword(values);       
-            form.resetFields();
-            if (response !== 400) {
-               
-            } else {
-               
+            const response: string | number | any =
+                await AuthService.forgotPassword(values);
+
+       
+        if (response && response.data) {
+            if (response.data.error === 'User not found') {
+                messageApi.open({
+                    type: 'error',
+                    content: 'Tài khoản chưa được tạo.',
+                });
             }
+            if (response.data.error === 'Password reset is not allowed for Google login users') {
+               
+                messageApi.open({
+                    type: 'error',
+                    content: 'Tài khoản Google không được reset mật khẩu.',
+                });
+            }
+            form.resetFields();
+        }
+
+        if (response && response.message === 'Password reset email sent successfully') {
+            form.resetFields();
+            messageApi.open({
+                type: 'success',
+                content: 'Xác nhận email thành công.',
+            });
+        }
         } catch (error) {
             console.log('Error:', error);
         }
@@ -52,6 +72,7 @@ function ForgotPass() {
 
     return (
         <>
+            {contextHolder}
             <p
                 className="hover:text-black text-[#35509a] cursor-pointer mt-2"
                 onClick={showModal}
@@ -99,7 +120,8 @@ function ForgotPass() {
                         size="large"
                         label="Xác nhận quên mật khẩu"
                         className="w-full  flex justify-center mb-3"
-                        loading={loadings[0]} onClick={() => enterLoading(0)}
+                        loading={loadings[0]}
+                        onClick={() => enterLoading(0)}
                     />
                 </Form>
             </Modal>
