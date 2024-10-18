@@ -28,7 +28,7 @@ function HandleCoursesPage({ id }: { id?: string }) {
         initialValues: {
             title: '',
             thumbnail: null,
-            featured: false,
+            featured: true,
             display_order: 0,
             detail_title: '',
             detail_short_description: '',
@@ -84,6 +84,7 @@ function HandleCoursesPage({ id }: { id?: string }) {
                 formData.append('thumbnail', values.thumbnail);
             }
             formData.append('featured', String(values.featured));
+            // formData.append('featured', String(values.featured));
             formData.append('display_order', String(values.display_order));
             formData.append('detail_title', values.detail_title);
             formData.append(
@@ -103,18 +104,37 @@ function HandleCoursesPage({ id }: { id?: string }) {
             console.log(formData);
 
             try {
+                // if (isEditForm) {
+                //     await nestApiInstance.put(`/course/${id}`, formData, {
+                //         headers: { 'Content-Type': 'multipart/form-data' },
+                //     });
+                //     message.success('Khóa học đã được cập nhật!');
+                // } else {
+                //     console.log('test add');
+
+                //     await nestApiInstance.post(`/course/create`, formData, {
+                //         headers: { 'Content-Type': 'multipart/form-data' },
+                //     });
+                //     message.success('Khóa học đã được thêm!');
+                // }
+                // router.push('/admin/course/courses');
+                console.log('test add');
                 if (isEditForm) {
                     await nestApiInstance.put(`/course/${id}`, formData, {
                         headers: { 'Content-Type': 'multipart/form-data' },
                     });
                     message.success('Khóa học đã được cập nhật!');
-                } else {
+                    router.push('/admin/course/courses');
+                    return;
+                }
+
+                if (isEditForm === false) {
                     await nestApiInstance.post(`/course/create`, formData, {
                         headers: { 'Content-Type': 'multipart/form-data' },
                     });
                     message.success('Khóa học đã được thêm!');
+                    router.push('/admin/course/courses');
                 }
-                router.push('/admin/course/courses');
             } catch (error) {
                 console.error('Error submitting course:', error);
                 message.error('Có lỗi xảy ra khi thêm hoặc cập nhật khóa học.');
@@ -239,6 +259,22 @@ function HandleCoursesPage({ id }: { id?: string }) {
                         {formik.errors.detail_short_description && (
                             <div className="text-red-500">
                                 {formik.errors.detail_short_description}
+                            </div>
+                        )}
+                    </div>
+                    <div className="mb-4">
+                        <label htmlFor="detail_type">Loại chi tiết:</label>
+                        <textarea
+                            id="detail_type"
+                            name="detail_type"
+                            placeholder="Điền mô tả ngắn"
+                            className="rounded-lg border-zinc-300 h-24 p-2 w-full mt-2 bg-gray-100"
+                            onChange={formik.handleChange}
+                            value={formik.values.detail_type}
+                        />
+                        {formik.errors.detail_type && (
+                            <div className="text-red-500">
+                                {formik.errors.detail_type}
                             </div>
                         )}
                     </div>
