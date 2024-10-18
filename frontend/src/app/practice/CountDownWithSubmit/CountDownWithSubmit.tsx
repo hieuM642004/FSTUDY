@@ -94,6 +94,8 @@ const CountDownWithSubmit = ({
 
         const result = await ExamService.submitExam(data);
         if (result) {
+            localStorage.removeItem('activeQuestions');
+            localStorage.removeItem('answerList')
             router.push(`/tests/result/${result._id}`);
         }
     };

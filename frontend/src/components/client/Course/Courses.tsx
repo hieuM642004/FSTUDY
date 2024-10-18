@@ -3,10 +3,12 @@ import { StarFilled } from '@ant-design/icons';
 import Link from 'next/link';
 import Image from 'next/image';
 import { nestApiInstance } from '../../../constant/api';
+import { useTypedSelector } from '@/hooks/useTypedSelector';
 
 function Courses({ data }: any) {
+    console.log(data);
     const [coursesType, setCoursesType] = useState<any[]>([]);
-
+    const dataUser = useTypedSelector((state) => state.user);
     const fetchCourseType = async () => {
         try {
             const response = await nestApiInstance.get(`/course/type`);

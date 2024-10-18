@@ -8,7 +8,6 @@ import { useTypedSelector } from '@/hooks/useTypedSelector';
 const App = () => {
     const [jwtToken, setJwtToken] = useState<string | null>(null);
     const dataUser = useTypedSelector((state) => state.user);
-    // Lấy JWT từ cookie
     useEffect(() => {
         const token = getCookie('token');
         if (token) {
@@ -16,34 +15,36 @@ const App = () => {
         }
     }, []);
 
-    // Kiểm tra xem JWT đã được lấy chưa
     if (!jwtToken) {
         return <p>Loading...</p>;
     }
 
     return (
-        <JitsiMeeting
-    
-    roomName = "jikvhhv"
-    configOverwrite = {{
-        startWithAudioMuted: true,
-        disableModeratorIndicator: true,
-        startScreenSharing: true,
-        enableEmailInStats: false
-    }}
-    interfaceConfigOverwrite = {{
-        DISABLE_JOIN_LEAVE_NOTIFICATIONS: true
-    }}
-    userInfo = {{
-        displayName: dataUser.name || '',
-        email:dataUser.email || ''
-    }}
-    onApiReady = { (externalApi) => {
-        // here you can attach custom event listeners to the Jitsi Meet External API
-        // you can also store it locally to execute commands
-    } }
-    getIFrameRef = { (iframeRef) => { iframeRef.style.height = '400px'; } }
-/>
+        <div className="p-4">
+            <JitsiMeeting
+                roomName="your-room-name"
+                configOverwrite={{
+                    startWithAudioMuted: true,
+                    disableModeratorIndicator: true,
+                    startScreenSharing: true,
+                    enableEmailInStats: false,
+                }}
+                interfaceConfigOverwrite={{
+                    DISABLE_JOIN_LEAVE_NOTIFICATIONS: true,
+                }}
+                userInfo={{
+                    displayName: dataUser.name || '',
+                    email: dataUser.email || '',
+                }}
+                onApiReady={(externalApi) => {
+                    // here you can attach custom event listeners to the Jitsi Meet External API
+                    // you can also store it locally to execute commands
+                }}
+                getIFrameRef={(iframeRef) => {
+                    iframeRef.style.height = '500px';
+                }}
+            />
+        </div>
     );
 };
 

@@ -24,7 +24,7 @@ const TryLearningPages = ({ id }: { id: any }) => {
     const [collapsed, setCollapsed] = useState(false);
     const [lessonsCourse, setLessonsCourse] = useState<any>(null);
     const [selectedKey, setSelectedKey] = useState<string | null>(null);
-    const [selectedContent, setSelectedContent] = useState<React.ReactNode>(null); // Nội dung đã chọn
+    const [selectedContent, setSelectedContent] = useState<React.ReactNode>(null);
     const [progressData, setProgressData] = useState<any>({});
     const [userId, setUserId] = useState<string | null>(null);
     const [userPurchased, setUserPurchased] = useState<boolean>(false);
@@ -82,27 +82,29 @@ const TryLearningPages = ({ id }: { id: any }) => {
         }
     }, [id, userId]);
 
-    // Tự động chọn bài học đầu tiên khi có dữ liệu
     useEffect(() => {
         if (lessonsCourse && lessonsCourse.lessons && lessonsCourse.lessons.length > 0) {
             const firstLesson = lessonsCourse.lessons[0];
             if (firstLesson && firstLesson.content && firstLesson.content.length > 0) {
                 const firstContent = firstLesson.content[0];
                 if (firstContent) {
-                    // Dựa trên loại content, chọn component phù hợp
-                    if (firstContent.quiz?.length > 0) {
-                        handleMenuClick(`quiz-${firstContent._id}`, <LessonsHandlePage id={firstContent._id} />);
-                    } else if (firstContent.fill_in_the_blank?.length > 0) {
-                        handleMenuClick(`fill_in_the_blank-${firstContent._id}`, <FillInTheBlankPage id={firstContent._id} />);
-                    } else if (firstContent.video?.length > 0) {
-                        handleMenuClick(`video-${firstContent._id}`, <VideoPage id={firstContent._id} />);
-                    } else if (firstContent.word_matching?.length > 0) {
-                        handleMenuClick(`word_matching-${firstContent._id}`, <WordMatchingPage id={firstContent._id} />);
-                    }
+                    selectContentBasedOnType(firstContent);
                 }
             }
         }
     }, [lessonsCourse]);
+
+    const selectContentBasedOnType = (content: any) => {
+        if (content.quiz?.length > 0) {
+            handleMenuClick(`quiz-${content._id}`, <LessonsHandlePage id={content._id} />);
+        } else if (content.fill_in_the_blank?.length > 0) {
+            handleMenuClick(`fill_in_the_blank-${content._id}`, <FillInTheBlankPage id={content._id} />);
+        } else if (content.video?.length > 0) {
+            handleMenuClick(`video-${content._id}`, <VideoPage id={content._id} />);
+        } else if (content.word_matching?.length > 0) {
+            handleMenuClick(`word_matching-${content._id}`, <WordMatchingPage id={content._id} />);
+        }
+    };
 
     const getProgressStatus = (contentId: string, type: string) => {
         let progressItem;
@@ -132,16 +134,14 @@ const TryLearningPages = ({ id }: { id: any }) => {
         return <CheckCircleOutlined />;
     };
 
-    // Khi người dùng chọn một mục từ menu, hiển thị nội dung tương ứng
     const handleMenuClick = (key: string, component: React.ReactNode) => {
         setSelectedKey(key);
-        setSelectedContent(component); // Đặt nội dung được chọn
+        setSelectedContent(component);
     };
 
     const items = lessonsCourse?.lessons?.map((lesson: any, lessonIndex: number) => {
         const childrenItems: any[] = [];
 
-        // Check if the lesson is free or user has purchased the course
         if (!lesson.isFree && !userPurchased) {
             return {
                 key: `sub${lessonIndex + 1}`,
@@ -235,9 +235,8 @@ const TryLearningPages = ({ id }: { id: any }) => {
     return (
         <Layout className='h-auto'>
             <Sider trigger={null} collapsible collapsed={collapsed} className='bg-white border-solid border-r-2 border-zinc-200'>
-                {/* <div className="demo-logo-vertical" >{lessonsCourse.title }</div> */}
                 <Menu
-                   className='bg-white mt-3'
+                    className='bg-white mt-3'
                     mode="inline"
                     selectedKeys={[selectedKey || '1']}
                     items={items}

@@ -57,7 +57,9 @@ import { Vimeo } from '@vimeo/vimeo';
 import FirebaseService from 'src/providers/storage/firebase/firebase.service';
 import { CreateRatingDto } from './dto/rating/rating.dto';
 import { UpdateRatingDto } from './dto/rating/updateRating.dto';
-import { log } from 'console';
+import * as mjml from 'mjml';
+import * as handlebars from 'handlebars';
+import * as fs from 'fs';
 
 // import { Vimeo } from 'vimeo';
 
@@ -1439,20 +1441,35 @@ export class CourseService {
         return purchases;
     }
     async sendSuccessEmail(email: string, key: string): Promise<void> {
+        // Load MJML template from file
+        const mjmlTemplate = fs.readFileSync('src/providers/mail/templates/activation.mjml', 'utf8');
+    
+        // Compile template with Handlebars
+        const template = handlebars.compile(mjmlTemplate);
+    
+        // Data to be passed to the template
+        const templateData = {
+            name: email, 
+            activationKey: key,
+        };
+    
+        // Render MJML template to HTML
+        const htmlContent = mjml(template(templateData)).html;
+    
+        // Prepare email options
         const mailOptions = {
             from: '<hieu@78544@gmail.com>',
             to: email,
-            subject: 'Password Reset Request',
-            html: `
-                <p>Active key : ${key}</p>
-              `,
+            subject: 'Kích hoạt khóa học của bạn',
+            html: htmlContent,
         };
-
+    
         try {
             await transporter.sendMail(mailOptions);
+            console.log('Activation email sent successfully to', email);
         } catch (error) {
-            console.error('Failed to send password reset email:', error);
-            throw new Error('Failed to send password reset email');
+            console.error('Failed to send activation email:', error);
+            throw new Error('Failed to send activation email');
         }
     }
     async checkUserPurchase(userId: string, courseId: string): Promise<{ paymentStatus: string }> {

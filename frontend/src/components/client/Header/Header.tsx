@@ -6,9 +6,10 @@ import {
     UnorderedListOutlined,
     UploadOutlined,
     UserOutlined,
+    VideoCameraAddOutlined,
     VideoCameraOutlined,
 } from '@ant-design/icons';
-import {  Drawer, MenuProps } from 'antd';
+import { Drawer, MenuProps, Tooltip } from 'antd';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useTypedSelector } from '@/hooks/useTypedSelector';
@@ -82,14 +83,14 @@ const Header = () => {
             key: '1',
         },
         isAdmin
-        ? {
-            label: <Link href={'/admin'}>Trang quản trị</Link>,
-            key: '3',
-          }
-        : {
-            label: null,
-            key: '',
-          },
+            ? {
+                  label: <Link href={'/admin'}>Trang quản trị</Link>,
+                  key: '3',
+              }
+            : {
+                  label: null,
+                  key: '',
+              },
         {
             label: (
                 <div onClick={handleLogout} className="">
@@ -155,11 +156,20 @@ const Header = () => {
                     </ul>
                 </nav>
                 {user.isLoggedIn ? (
-                    <UserAvatarDropdown
-                        user={user as any}
-                        isAdmin={isAdmin}
-                        itemsdropdown={itemsdropdown}
-                    />
+                    <>
+                        <Tooltip title='Tạo lớp học'>
+                           <Link href='/meet' >
+                                <button className="md:p-4 py-3 px-0 block font-semibold text-slate-950">
+                                    <VideoCameraAddOutlined />
+                                </button>
+                           </Link>
+                        </Tooltip>
+                        <UserAvatarDropdown
+                            user={user as any}
+                            isAdmin={isAdmin}
+                            itemsdropdown={itemsdropdown}
+                        />
+                    </>
                 ) : (
                     <ButtonPrimary to="/login" size="large" label="Đăng nhập" />
                 )}

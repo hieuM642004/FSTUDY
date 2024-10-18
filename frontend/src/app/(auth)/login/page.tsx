@@ -94,7 +94,7 @@ function Login() {
                         >
                             <Input
                                 prefix={<UserOutlined className="site-form-item-icon" />}
-                                placeholder="nhập email"
+                                placeholder="Nhập email"
                             />
                         </Form.Item>
                         <Form.Item
@@ -110,7 +110,7 @@ function Login() {
                             <Input
                                 prefix={<LockOutlined className="site-form-item-icon" />}
                                 type="password"
-                                placeholder="nhập mật khẩu"
+                                placeholder="Nhập mật khẩu"
                             />
                         </Form.Item>
                         <ButtonPrimary
@@ -120,11 +120,11 @@ function Login() {
                             className="w-full flex justify-center mb-3"
                         />
                     </Form>
-                    <ButtonOutline
+                    {/* <ButtonOutline
                         size="large"
                         label="Đăng nhập với Facebook"
                         className="w-full mt-2 text-[#35509a] hover:bg-[#35509a] mb-3"
-                    />
+                    /> */}
                     <ButtonOutline
                         size="large"
                         label="Đăng nhập với Google"
@@ -132,7 +132,7 @@ function Login() {
                         onClick={() => {
                             router.push(`${process.env.baseURL}/auth/google/callback`);
                         }}
-                        className="w-full mt-2 text-[#db4a39] hover:bg-black mb-3"
+                        className="w-full mt-2 text-[#db4a39] hover:bg-[#db4a39] mb-3"
                     />
 
                     <Link className="hover:text-black text-[#35509a]" href="/register">

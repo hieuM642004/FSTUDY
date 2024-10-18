@@ -15,6 +15,9 @@ import { transporter } from '../providers/mail/mailler';
 import { TypeLogin, User, UserRole } from 'src/apis/users/userSchema/user.schema';
 import slugify from 'slugify';
 import * as jwt from 'jsonwebtoken';
+import * as mjml from 'mjml';
+import * as handlebars from 'handlebars';
+import * as fs from 'fs';
 
 @Injectable()
 export class AuthService {
@@ -322,38 +325,49 @@ export class AuthService {
         await user.save();
     }
 
-    async forgotPassword(email: string): Promise<void > {
+    async forgotPassword(email: string): Promise<void> {
         const user = await this.userModel.findOne({ email });
-        if(user.typeLogin === TypeLogin.GOOGLE){
+        if (user.typeLogin === TypeLogin.GOOGLE) {
             throw new Error('Password reset is not allowed for Google login users');
         }
         if (!user) {
             throw new Error('User not found');
         }
-
+    
         const token = this.jwtService.sign(
             { id: user._id },
             { expiresIn: '1h' },
         );
-
+    
         user.passwordResetToken = token;
         const expiresDate = new Date(Date.now() + 3600000);
         user.passwordResetExpires = expiresDate.toISOString();
         await user.save();
-
-        // Send the password reset email
-        const resetUrl = `http://localhost:3000/reset-password?token=${token}`;
+    
+        // Load MJML template from file
+        const mjmlTemplate = fs.readFileSync('src/providers/mail/templates/resetpassword.mjml', 'utf8');
+    
+        // Compile template with Handlebars
+        const template = handlebars.compile(mjmlTemplate);
+    
+        // Data to be passed to the template
+        const templateData = {
+            name: user.fullname || 'người dùng',
+            nextReviewDate: expiresDate.toISOString(),
+            reviewLink: `http://localhost:3000/reset-password?token=${token}`,
+        };
+    
+        // Render MJML template to HTML
+        const htmlContent = mjml(template(templateData)).html;
+    
+        // Prepare email options
         const mailOptions = {
             from: '<hieu@78544@gmail.com>',
             to: user.email,
             subject: 'Password Reset Request',
-            html: `
-        <p>You requested a password reset. Click the link below to reset your password:</p>
-        <a href="${resetUrl}">${resetUrl}</a>
-        <p>Ex: ${expiresDate}</p>
-      `,
+            html: htmlContent,
         };
-
+    
         try {
             await transporter.sendMail(mailOptions);
         } catch (error) {

@@ -10,7 +10,6 @@ function CoureseOnlinePage() {
     const fetchCourses = async () => {
         try {
             const response = await nestApiInstance.get(`/course`);
-            console.log(response.data);
             setCourses(response.data);
         } catch (error) {
             console.error('Error fetching blogs:', error);
@@ -38,17 +37,10 @@ function CoureseOnlinePage() {
                     </a>
 
                     <div>
-                        <h1 className="mb-4 font-bold text-4xl">
+                        <h1 className=" font-bold text-4xl">
                             Khoá học online
                         </h1>
-                        <p className="mb-4">
-                            Những khoá học tiếng Anh online chất lượng cao của
-                            STUDY4 được thiết kế theo chương trình tiếng Anh
-                            chuẩn CEFR (A1-C2) của đại học Cambridge và Oxford
-                            (Anh) với hệ thống bài giảng, bài tập phong phú đa
-                            dạng. Bạn có thể học thử miễn phí trước khi đặt mua
-                            sản phẩm.
-                        </p>
+                      
                     </div>
                 </div>
             </div>

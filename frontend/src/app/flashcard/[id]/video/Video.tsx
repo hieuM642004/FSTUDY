@@ -142,20 +142,21 @@ function Video({ id }: { id: string }) {
                         <div className="vocabulary ml-2 mt-4">
     <h3 className="font-bold text-xl">Từ vựng liên quan:</h3>
     <TextSelectorWrapper>
-        <div>
-            {Object.entries(searchResults[currentVideoIndex].vocabulary).map(
-                ([word, videoUrl], i) => (
-                    <span
-                        key={i}
-                        className="bg-slate-300 px-2 my-1 py-1 mx-1 inline-block rounded-md cursor-pointer"
-                        onDoubleClick={() => handleWordClick(videoUrl)}
-                    >
-                        {word}
-                    </span>
-                ),
-            )}
-        </div>
-    </TextSelectorWrapper>
+    <div>
+        {Object.entries(searchResults[currentVideoIndex].vocabulary).map(
+            ([word, videoUrl], i) => (
+                <span
+                    key={i}
+                    className="bg-slate-300 px-2 my-1 py-1 mx-1 inline-block rounded-md cursor-pointer"
+                    onClick={() => handleWordClick(videoUrl)} 
+                >
+                    {word}
+                </span>
+            ),
+        )}
+    </div>
+</TextSelectorWrapper>
+
 </div>
 
                     </>

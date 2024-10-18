@@ -49,31 +49,28 @@ function AdminGroupQuestions() {
     };
 
     const columns = [
-        {
-            title: 'Tên nhóm câu hỏi',
-            dataIndex: 'title',
-            key: 'title',
-            render: (text: any, record: any) => (
-                <Tooltip title="Xem chi tiết">
-                    <Button
-                        type="link"
-                        onClick={() => handleViewDetails(record)}
-                    >
-                        {text}
-                    </Button>
-                </Tooltip>
-            ),
-        },
+       
         {
             title: 'Câu hỏi',
             dataIndex: 'passageText',
             key: 'passageText',
             render: (text: any, record: any) => {
-                const maxLength = 50;
+                const maxLength = 15;
                 const passageText = record?.passageText || 'N/A';
-                return passageText.length > maxLength
+                const displayText = passageText.length > maxLength
                     ? `${passageText.substring(0, maxLength)}...`
                     : passageText;
+    
+                return (
+                    <Tooltip title="Xem chi tiết">
+                        <Button
+                            type="link"
+                            onClick={() => handleViewDetails(record)}
+                        >
+                            {displayText}
+                        </Button>
+                    </Tooltip>
+                );
             },
         },
 
@@ -82,7 +79,7 @@ function AdminGroupQuestions() {
             dataIndex: 'examSession',
             key: 'examSession',
             render: (text: any, record: any) =>
-                record?.examSession ? record?.examSession : 'N/A',
+                record?.examSession?.title ? record?.examSession?.title : 'N/A',
         },
         {
             title: 'Ngày tạo',
@@ -153,13 +150,14 @@ function AdminGroupQuestions() {
                                         {selectedExam.title}
                                     </Tooltip>
                                 </Descriptions.Item>
-                                <Descriptions.Item label="Mô tả">
-                                    {typeof selectedExam.description ===
+                                <Descriptions.Item label="Transcription">
+                                    {selectedExam.transcription === undefined && 'Chưa có'}
+                                    {/* {typeof selectedExam.description ===
                                     'object'
                                         ? JSON.stringify(
                                               selectedExam.description,
                                           )
-                                        : selectedExam.description || 'N/A'}
+                                        : selectedExam.description || 'N/A'} */}
                                 </Descriptions.Item>
                                 <Descriptions.Item label="Câu hỏi chính">
                                     {selectedExam.passageText || 'Chưa có'}

@@ -1,9 +1,8 @@
 'use client';
 import React, { useState } from 'react';
-import { Modal } from 'antd';
+import { Modal, notification } from 'antd';
 import { UserOutlined } from '@ant-design/icons';
 import { Form, Input } from 'antd';
-
 
 import ButtonPrimary from '@/components/shared/ButtonPrimary/ButtonPrimary';
 import AuthService from '@/services/auth/AuthService';
@@ -14,19 +13,19 @@ function ForgotPass() {
     const [loadings, setLoadings] = useState<boolean[]>([]);
 
     const enterLoading = (index: number) => {
-      setLoadings((prevLoadings) => {
-        const newLoadings = [...prevLoadings];
-        newLoadings[index] = true;
-        return newLoadings;
-      });
-  
-      setTimeout(() => {
         setLoadings((prevLoadings) => {
-          const newLoadings = [...prevLoadings];
-          newLoadings[index] = false;
-          return newLoadings;
+            const newLoadings = [...prevLoadings];
+            newLoadings[index] = true;
+            return newLoadings;
         });
-      }, 3000);
+
+        setTimeout(() => {
+            setLoadings((prevLoadings) => {
+                const newLoadings = [...prevLoadings];
+                newLoadings[index] = false;
+                return newLoadings;
+            });
+        }, 3000);
     };
     const showModal = () => {
         setOpen(true);
@@ -37,13 +36,20 @@ function ForgotPass() {
     };
     const onFinish = async (values: string) => {
         try {
-           
-            const response = await AuthService.forgotPassword(values);       
+            const response = await AuthService.forgotPassword(values);
             form.resetFields();
-            if (response !== 400) {
-               
+            if (response?.message == 'Password reset email sent successfully') {
+                notification.success({
+                    message: 'Gửi email thành công',
+                    description:
+                        'Email đặt lại mật khẩu đã được gửi thành công. Vui lòng kiểm tra hộp thư của bạn.',
+                });
             } else {
-               
+                notification.error({
+                    message: 'Không thể gửi email',
+                    description:
+                        'Có lỗi xảy ra khi gửi email đặt lại mật khẩu. Vui lòng thử lại sau.',
+                });
             }
         } catch (error) {
             console.log('Error:', error);
@@ -90,7 +96,7 @@ function ForgotPass() {
                             prefix={
                                 <UserOutlined className="site-form-item-icon" />
                             }
-                            placeholder="nhập email"
+                            placeholder="Nhập email"
                         />
                     </Form.Item>
 
@@ -99,7 +105,8 @@ function ForgotPass() {
                         size="large"
                         label="Xác nhận quên mật khẩu"
                         className="w-full  flex justify-center mb-3"
-                        loading={loadings[0]} onClick={() => enterLoading(0)}
+                        loading={loadings[0]}
+                        onClick={() => enterLoading(0)}
                     />
                 </Form>
             </Modal>

@@ -61,6 +61,7 @@ function FormGroupQuestions({ id }: FormGroupQuestionsProps) {
     ]);
     const [audioFile, setAudioFile] = useState<RcFile | null>(null);
     const [imageFile, setImageFile] = useState<RcFile | null>(null);
+    const [transcript,setTranscript]=useState(false)
     const router = useRouter();
 
     useEffect(() => {
@@ -126,6 +127,7 @@ function FormGroupQuestions({ id }: FormGroupQuestionsProps) {
 
     const handleAudioChange = (info: UploadChangeParam) => {
         if (info.fileList.length > 0) {
+            setTranscript(true)
             setAudioFile(info.fileList[0].originFileObj as RcFile);
         } else {
             setAudioFile(null);
@@ -306,27 +308,8 @@ function FormGroupQuestions({ id }: FormGroupQuestionsProps) {
 
     return (
         <Form form={form} layout="vertical" onFinish={onFinish}>
-            <Row gutter={16}>
-                <Col span={12}>
-                    <Form.Item
-                        label="Tên nhóm câu hỏi"
-                        name="title"
-                        rules={[
-                            {
-                                required: true,
-                                message: 'Vui lòng nhập tên nhóm câu hỏi',
-                            },
-                        ]}
-                    >
-                        <Input placeholder="Nhập tên nhóm câu hỏi" />
-                    </Form.Item>
-                </Col>
-                <Col span={12}>
-                    <Form.Item label="Mô tả" name="description">
-                        <Input.TextArea placeholder="Nhập mô tả" />
-                    </Form.Item>
-                </Col>
-            </Row>
+ 
+          
 
             <Row gutter={16}>
                 <Col span={12}>
@@ -368,7 +351,18 @@ function FormGroupQuestions({ id }: FormGroupQuestionsProps) {
                     </Form.Item>
                 </Col>
             </Row>
-
+<Row>
+{
+        transcript && (
+             <Col span={12}>
+                    <Form.Item label="Transcript" name="description">
+                        <Input.TextArea placeholder="Nhập transcript" />
+                    </Form.Item>
+                </Col>
+        )
+       }
+              
+</Row>
             <Row gutter={16}>
                 <Col span={12}>
                     <Form.Item label="Upload Audio" name="audio">
@@ -479,7 +473,7 @@ function FormGroupQuestions({ id }: FormGroupQuestionsProps) {
                     ) : question.questionType === 'short-answer' ? (
                         <>
                           
-                            <p className='my-3 italic text-yellow-500'>Điểm số phần thi do AI thực hiện</p>
+                            <p className='my-3 italic text-yellow-500'>Với phần thi này không thể lưu đáp án</p>
                         </>
                     ) : (
                         <MultipleChoice
@@ -496,24 +490,17 @@ function FormGroupQuestions({ id }: FormGroupQuestionsProps) {
                         />
                     )}
 
-                    <Button
+                    {/* <Button
                         onClick={() => handleRemoveQuestion(index)}
                         icon={<MinusCircleOutlined />}
                         disabled={questions.length === 1}
                     >
                         Xóa câu hỏi
-                    </Button>
+                    </Button> */}
                 </div>
             ))}
 
-            <Button
-                type="dashed"
-                onClick={handleAddQuestion}
-                icon={<PlusOutlined />}
-            >
-                Thêm câu hỏi
-            </Button>
-
+          
             <Form.Item>
                 <ButtonPrimary
                     htmlType="submit"
