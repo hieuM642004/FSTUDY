@@ -25,6 +25,7 @@ const Dashboard = () => {
     useEffect(() => {
         if (dataUser) {
             getUserCourse();
+            getAllCourse();
         }
     }, [dataUser]);
     const getUserCourse = async () => {
@@ -37,8 +38,6 @@ const Dashboard = () => {
                 console.log('response', response);
                 if (response) {
                     SetUserCourse(response);
-                } else {
-                    getAllCourse();
                 }
             } else {
                 return;
@@ -107,45 +106,58 @@ const Dashboard = () => {
                         <div className="flex flex-wrap">
                             {userCourse?.length > 0 &&
                                 userCourse?.map(
-                                    (item: string | any, index: number) => {
+                                    (item: string | any, index: number) => {                             
                                         return (
-                                            <div
-                                                key={item.course._id}
-                                                className="bg-white p-4 rounded-lg shadow-md w-min-20 w-[20rem] mx-2 transition ease-in-out delay-150 hover:-translate-y-1 hover:scale-80 duration-300"
-                                            >
-                                                <Link
-                                                    href={`trylearning/${item.course._id}`}
-                                                >
-                                                    <div className="bg-gray-100 p-4 rounded-lg">
-                                                        <div className="flex justify-between items-center mb-2 text-black">
-                                                            <span className="font-semibold">
-                                                                {
-                                                                    item.course
-                                                                        .title
-                                                                }
-                                                            </span>
-                                                            <span className="bg-orange-400 rounded-lg p-1 text-white">
-                                                                Học thử
-                                                            </span>
-                                                        </div>
-                                                        <div className="bg-gray-300 h-2 rounded-full mb-2">
-                                                            <div
-                                                                className="bg-orange-500 h-2 rounded-full"
-                                                                style={{
-                                                                    width: '0%',
-                                                                }}
-                                                            ></div>
-                                                        </div>
-                                                        <div className="text-gray-600">
-                                                            Tiếp tục bài học:{' '}
-                                                            {
-                                                                item.course
-                                                                    .detail_short_description
+                                            <>
+                                                {item?.paymentStatus ===
+                                                    'COMPLETED' && (
+                                                    <>
+                                                        <div
+                                                            key={
+                                                                item.course._id
                                                             }
+                                                            className="bg-white p-4  mb-3  rounded-lg shadow-md w-min-20 w-[20rem] mx-2 transition ease-in-out delay-150 hover:-translate-y-1 hover:scale-80 duration-300"
+                                                        >
+                                                            <Link
+                                                                href={`learning/${item.course._id}`}
+                                                            >
+                                                                <div className="bg-gray-100 p-4 rounded-lg">
+                                                                    <div className="flex justify-between items-center mb-2 text-black">
+                                                                        <span className="font-semibold">
+                                                                            {
+                                                                                item
+                                                                                    .course
+                                                                                    .title
+                                                                            }
+                                                                        </span>
+                                                                        <span className="bg-orange-400 rounded-lg p-1 text-white">
+                                                                            Học
+                                                                            thử
+                                                                        </span>
+                                                                    </div>
+                                                                    <div className="bg-gray-300 h-2 rounded-full mb-2">
+                                                                        <div
+                                                                            className="bg-orange-500 h-2 rounded-full"
+                                                                            style={{
+                                                                                width: '0%',
+                                                                            }}
+                                                                        ></div>
+                                                                    </div>
+                                                                    <div className="text-gray-600">
+                                                                        Tiếp tục
+                                                                        bài học:{' '}
+                                                                        {
+                                                                            item
+                                                                                .course
+                                                                                .detail_short_description
+                                                                        }
+                                                                    </div>
+                                                                </div>
+                                                            </Link>
                                                         </div>
-                                                    </div>
-                                                </Link>
-                                            </div>
+                                                    </>
+                                                )}
+                                            </>
                                         );
                                     },
                                 )}
@@ -176,7 +188,7 @@ const Dashboard = () => {
                                         return (
                                             <div
                                                 key={item._id}
-                                                className="bg-white p-4 rounded-lg shadow-md w-min-20 w-[20rem] mx-2 transition ease-in-out delay-150 hover:-translate-y-1 hover:scale-80 duration-300"
+                                                className="bg-white  mb-3  p-4 rounded-lg shadow-md w-min-20 w-[20rem] mx-2 transition ease-in-out delay-150 hover:-translate-y-1 hover:scale-80 duration-300"
                                             >
                                                 <Link
                                                     href={`detailonlinecourse/${item._id}`}

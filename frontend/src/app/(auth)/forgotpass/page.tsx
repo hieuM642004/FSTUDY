@@ -1,6 +1,6 @@
 'use client';
 import React, { useState } from 'react';
-import { Modal, notification } from 'antd';
+import { Modal, notification,message } from 'antd';
 import { UserOutlined } from '@ant-design/icons';
 import { Form, Input } from 'antd';
 
@@ -11,6 +11,7 @@ function ForgotPass() {
     const [open, setOpen] = useState(false);
     const [form] = Form.useForm();
     const [loadings, setLoadings] = useState<boolean[]>([]);
+    const [messageApi, contextHolder] = message.useMessage();
 
     const enterLoading = (index: number) => {
         setLoadings((prevLoadings) => {
@@ -36,21 +37,35 @@ function ForgotPass() {
     };
     const onFinish = async (values: string) => {
         try {
-            const response = await AuthService.forgotPassword(values);
-            form.resetFields();
-            if (response?.message == 'Password reset email sent successfully') {
-                notification.success({
-                    message: 'Gửi email thành công',
-                    description:
-                        'Email đặt lại mật khẩu đã được gửi thành công. Vui lòng kiểm tra hộp thư của bạn.',
-                });
-            } else {
-                notification.error({
-                    message: 'Không thể gửi email',
-                    description:
-                        'Có lỗi xảy ra khi gửi email đặt lại mật khẩu. Vui lòng thử lại sau.',
+
+            const response: string | number | any =
+                await AuthService.forgotPassword(values);
+
+       
+        if (response && response.data) {
+            if (response.data.error === 'User not found') {
+                messageApi.open({
+                    type: 'error',
+                    content: 'Tài khoản chưa được tạo.',
                 });
             }
+            if (response.data.error === 'Password reset is not allowed for Google login users') {
+               
+                messageApi.open({
+                    type: 'error',
+                    content: 'Tài khoản Google không được reset mật khẩu.',
+                });
+            }
+            form.resetFields();
+        }
+
+        if (response && response.message === 'Password reset email sent successfully') {
+            form.resetFields();
+            messageApi.open({
+                type: 'success',
+                content: 'Xác nhận email thành công.',
+            });
+        }
         } catch (error) {
             console.log('Error:', error);
         }
@@ -58,6 +73,7 @@ function ForgotPass() {
 
     return (
         <>
+            {contextHolder}
             <p
                 className="hover:text-black text-[#35509a] cursor-pointer mt-2"
                 onClick={showModal}

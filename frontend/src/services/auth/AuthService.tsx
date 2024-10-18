@@ -14,8 +14,8 @@ class AuthService {
             const response = await nestApiInstance.post(
                 '/auth/register',
                 newData,
-            );
-            return response.data.data;
+            );    
+            return response.data;
         } catch (error) {
           
             console.error('Error fetching register:', error);
@@ -56,7 +56,7 @@ class AuthService {
             return response.data;
         } catch (error:any ) {
             console.error('Error fetching login:', error);
-            return error.response.status;
+            return error.response;
         }
     }
     static async resetPassword(

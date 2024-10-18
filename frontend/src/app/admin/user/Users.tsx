@@ -102,23 +102,6 @@ function User() {
         }
     };
 
-    const handleRestore = async (record: DataType) => {
-        if (record._id) {
-            const res = await UserService.restoreUser(record._id); 
-            if (res) {
-                messageApi.open({
-                    type: 'success',
-                    content: 'KHÔI PHỤC THÀNH CÔNG!',
-                });
-                getAllUser();
-            } else {
-                messageApi.open({
-                    type: 'error',
-                    content: 'KHÔI PHỤC THẤT BẠI!',
-                });
-            }
-        }
-    };
 
     const getAllUser = async () => {
         try {
@@ -126,7 +109,9 @@ function User() {
             const data = typeof res === 'string' ? JSON.parse(res) : res;
 
             if (data?.users) {
-                const activeItems = data.users.filter((item: any) => item.active === true);
+                const activeItems = data.users.filter((item: any) => item.active === true).reverse();;
+                console.log(activeItems , 'check activeItems');
+                
                 setDataSource(activeItems);
             } else {
                 setDataSource([]);
@@ -136,11 +121,6 @@ function User() {
         }
     };
 
-    const filterComponent = (
-        <Button type="primary" onClick={() => console.log('Filter clicked')}>
-            Filter
-        </Button>
-    );
 
     return (
         <div>
@@ -150,10 +130,11 @@ function User() {
                 onAdd={handleAdd}
                 onEdit={handleEdit}
                 onDelete={handleDelete}
-                onRestore={handleRestore} 
+                // onRestore={handleRestore} 
                 addLink="/admin/user/actionuser"
                 editLink={(record:any) => `/admin/user/actionuser/${record._id}`}
-                filter={filterComponent} 
+                // filter={filterComponent} 
+                restoreLink="/admin/user/restore"
             />
             {contextHolder}
         </div>

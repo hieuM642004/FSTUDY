@@ -1,12 +1,11 @@
 'use client';
-import { Form, Input } from 'antd';
+import { Form, Input, message } from 'antd';
 import Link from 'next/link';
 
 import WapperItemCard from '@/components/client/WapperItemCard/WapperItemCard';
 import ButtonOutline from '@/components/shared/ButtonPrimary/ButtonOutline';
 import ButtonPrimary from '@/components/shared/ButtonPrimary/ButtonPrimary';
 import AuthService from '@/services/auth/AuthService';
-
 
 const formItemLayout = {
     labelCol: {
@@ -19,30 +18,39 @@ const formItemLayout = {
 
 function Register() {
     const [form] = Form.useForm();
+    const [messageApi, contextHolder] = message.useMessage();
 
     const onFinish = async (values: any) => {
         try {
-                let newdata = {
-                    email: values.email,
-                    password: values.password,
-                    fullname: values.fullname
-                }
-                const response = await AuthService.register(newdata);
-                if(response){
-                    form.resetFields();
-                   
-                }
+            let newdata = {
+                email: values.email,
+                password: values.password,
+                fullname: values.fullname,
+            };
+            const response: any = await AuthService.register(newdata);
+
+            if (response.statusCode === 200) {
+                messageApi.open({
+                    type: 'success',
+                    content:
+                        'Tạo tài khoản thành công.',
+                });
+                form.resetFields();
+            } else if (response.statusCode === 500 &&  response.message === 'Email already exists') {
+                messageApi.open({
+                    type: 'error',
+                    content:
+                        'Email đã tồn tại.',
+                });
+            }
         } catch (error) {
-        
             console.log('Error:', error);
         }
-
     };
-
-  
 
     return (
         <>
+            {contextHolder}
             <div className="w-full pt-[2rem] pb-[3rem] ">
                 <WapperItemCard stylecss="m-auto max-w-[31.25rem] mb-[0]">
                     <p className="mb-4">
@@ -63,7 +71,7 @@ function Register() {
                         scrollToFirstError
                         layout="vertical"
                     >
-                          <Form.Item
+                        <Form.Item
                             name="fullname"
                             label="Họ và Tên"
                             rules={[
@@ -101,9 +109,11 @@ function Register() {
                                     message: 'Vui lòng nhập mật khẩu!',
                                 },
                                 {
-                                    pattern : /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z]{8,}$/ ,
-                                    message: 'Vui lòng có 1 chữ viết hoa, 1 chữ viết thường , có 1 chữ số và trên 8 kí tự',
-                                }
+                                    pattern:
+                                        /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z]{8,}$/,
+                                    message:
+                                        'Vui lòng có 1 chữ viết hoa, 1 chữ viết thường , có 1 chữ số và trên 8 kí tự',
+                                },
                             ]}
                             hasFeedback
                         >
@@ -139,8 +149,6 @@ function Register() {
                         >
                             <Input.Password placeholder="nhập xác nhận mật khẩu" />
                         </Form.Item>
-
-                       
 
                         <ButtonPrimary
                             htmlType="submit"

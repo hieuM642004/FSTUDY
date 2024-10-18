@@ -41,7 +41,7 @@ function PageAddUser() {
                 newLoadings[index] = false;
                 return newLoadings;
             });
-        }, 5000);
+        }, 3000);
     };
     const onFinish = async (values: any) => {
         try {
@@ -179,7 +179,7 @@ function PageAddUser() {
                     />
                 </Form.Item>
                 <Form.Item
-                    label="Ảnh đại diện"
+                    label={<><span className="text-red-500">* </span> Ảnh đại diện</>}
                     rules={[
                         {
                             required: true,

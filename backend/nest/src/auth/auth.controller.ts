@@ -42,7 +42,7 @@ export class AuthController {
     res.cookie('token', jwt.accessToken);
     res.cookie('refreshToken', jwt.refreshToken);
     res.cookie('typeLogin', 'google');
-    res.redirect(`${process.env.BASEURL_FE}`);
+    res.redirect(`${process.env.BASEURL_FE}/home`);
   }
   @Get('LoginGoogle')
   @UseGuards(AuthGuard('jwt'))
