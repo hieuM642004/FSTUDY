@@ -237,7 +237,7 @@ const LessonsHandlePage = ({ id }: { id: string }) => {
                 </div>
 
                 {}
-                {answersDisplay.length > 0 && (
+                {isSubmitted && answersDisplay.length > 0 && (
                     <div style={{ marginTop: 16 }}>
                         <h3>Kết quả câu trả lời:</h3>
                         {answersDisplay.map((answer, index) => (
