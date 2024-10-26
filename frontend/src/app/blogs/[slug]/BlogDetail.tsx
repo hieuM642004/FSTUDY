@@ -45,12 +45,8 @@ function BlogDetail({ id }: string | any) {
                 <div className="pt-4 px-3">
                     {/* Banner  */}
                     <BannerBlog
-                        breadcrumb={[
-                            'trang chủ',
-                            'bài viết',
-                            'IELTS Writing',
-                            'Location and Types of Dance Classes Young People Are Attending - Bài mẫu IELTS Writing Task 1 (Multiple Charts)',
-                        ]}
+                        breadcrumb={['trang chủ', 'bài viết', blogDetail.title]}
+                        props={blogDetail.slug}
                     />
                     {/* title blogdetail */}
                     <div className="text-center">

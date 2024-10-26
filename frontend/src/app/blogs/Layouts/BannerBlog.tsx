@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 
-function BannerBlog({ breadcrumb }: any) {
+function BannerBlog({ breadcrumb, props }: any) {
     return (
         <>
             <div>
@@ -17,7 +17,7 @@ function BannerBlog({ breadcrumb }: any) {
                                                 ? 'text-[#35509a] font-bold'
                                                 : 'text-[#595d68]'
                                         }`}
-                                        href="/blog"
+                                        href="/blogs/"
                                         key={index}
                                     >
                                         {item}
@@ -37,24 +37,23 @@ function BannerBlog({ breadcrumb }: any) {
                             &nbsp; / &nbsp;
                             <Link
                                 className="hover:text-black text-[#35509a] font-bold"
-                                href="/blog"
+                                href="/blogs"
                             >
                                 Bài viết
                             </Link>
                         </>
                     )}
                 </div>
-                <a href="" className="mb-8 block">
-                    <Image
-                        src="https://study4.com/static/img/testonline_banner.jpg"
-                        width={0}
-                        height={0}
-                        sizes="100vw"
-                        style={{ width: '100%', height: 'auto' }}
-                        alt="Picture of the author"
-                        className=""
-                    />
-                </a>
+
+                <Image
+                    src="https://study4.com/static/img/testonline_banner.jpg"
+                    width={0}
+                    height={0}
+                    sizes="100vw"
+                    style={{ width: '100%', height: 'auto' }}
+                    alt="Picture of the author"
+                    className="mb-8 block"
+                />
             </div>
         </>
     );

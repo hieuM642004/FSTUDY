@@ -33,7 +33,7 @@ function Courses({ data }: any) {
 
     return (
         <>
-            <div className="px-3 pt-5 pb-2">
+            <div className="px-3 pt-5 pb-2 " style={{ paddingLeft: '10%' }}>
                 {coursesType.length > 0 && (
                     <div className="flex flex-wrap gap-4">
                         {coursesType.map((courseType: any) => (
@@ -131,7 +131,7 @@ function Courses({ data }: any) {
                                                                                 course.price,
                                                                             )}
                                                                         </span>
-                                                                        <span className="ml-[.5rem] rounded-full text-[#fff] bg-[#e43a45] font-bold">
+                                                                        <span className="ml-[.5rem] rounded-full text-[#fff] bg-[#e43a45] font-bold p-1">
                                                                             -
                                                                             {Math.round(
                                                                                 (course.discount /
