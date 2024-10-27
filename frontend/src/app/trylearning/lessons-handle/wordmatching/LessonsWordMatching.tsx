@@ -6,6 +6,8 @@ import { nestApiInstance } from '../../../../constant/api';
 import { getCookie } from 'cookies-next';
 import { jwtDecode } from 'jwt-decode';
 
+import ButtonPrimary from '@/components/shared/ButtonPrimary/ButtonPrimary';
+
 type WordMatchingData = {
     _id: string;
     words: string[];
@@ -202,13 +204,20 @@ const WordMatchingPage = ({ id }: { id: string }) => {
                         </Card>
                     ))}
                     <div className="mt-4">
-                        <Button
+                        {/* <Button
                             className="menu-toggle-btn btn-primary font-semibold"
                             type="primary"
                             onClick={handleSubmit}
                         >
                             Gửi câu trả lời
-                        </Button>
+                        </Button> */}
+                        <ButtonPrimary
+                            size={'large'}
+                            label={'Gửi câu trả lời'}
+                            onClick={handleSubmit}
+                            htmlType="submit"
+                            className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg"
+                        />
                     </div>
                     {isSubmitted && (
                         <div className="mt-4">

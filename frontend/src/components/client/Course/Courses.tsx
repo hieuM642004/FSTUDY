@@ -31,25 +31,27 @@ function Courses({ data, isUserCourse }: { data?: any; isUserCourse?: boolean })
     };
 
     return (
-        <div className="px-3 pt-5 pb-2">
+
+        <>
+        <div className="px-3 pt-5 pb-2 " style={{ paddingLeft: '10%' }}>
             {coursesType.length > 0 && (
                 <div className="flex flex-wrap gap-4">
                     {coursesType.map((courseType: any) => (
                         <div key={courseType._id} className="w-full mb-6">
                             <h2 className="font-bold text-2xl mb-4 pl-2">
-                               
                                 {courseType.name}:
                             </h2>
                             <div className="flex flex-wrap gap-4">
                                 {data
                                     ?.filter(
                                         (course: any) =>
-                                            course.typeCourse?._id === courseType._id,
+                                            course.typeCourse?._id ===
+                                            courseType._id,
                                     )
                                     .map((course: any) => {
                                         const discountedPrice =
                                             course.price - course.discount;
-
+    
                                         return (
                                             <div
                                                 key={course._id}
@@ -78,6 +80,7 @@ function Courses({ data, isUserCourse }: { data?: any; isUserCourse?: boolean })
                                                                 height: 'auto',
                                                             }}
                                                             alt={course.title}
+                                                            className="mb-4 bg-white w-full min-h-[12.5rem] rounded-lg border-2 h-full"
                                                         />
                                                         <div className="px-4 pt-2 pb-1 font-medium text-lg truncate">
                                                             {course.title}
@@ -91,9 +94,7 @@ function Courses({ data, isUserCourse }: { data?: any; isUserCourse?: boolean })
                                                                     <StarFilled className="text-[20px] text-xl text-[#ffad3b] ml-[2px]" />
                                                                     <StarFilled className="text-[20px] text-xl text-[#ffad3b] ml-[2px]" />
                                                                 </div>
-                                                                <span>
-                                                                    (1,260)
-                                                                </span>
+                                                                <span>(1,260)</span>
                                                                 <span className="ml-[.25rem]">
                                                                     97,61 Học viên
                                                                 </span>
@@ -105,9 +106,7 @@ function Courses({ data, isUserCourse }: { data?: any; isUserCourse?: boolean })
                                                             </div>
                                                             <div className="py-2">
                                                                 <span className="text-[#3cb46e] font-bold text-xl">
-                                                                    {formatPrice(
-                                                                        discountedPrice,
-                                                                    )}
+                                                                    {formatPrice(discountedPrice)}
                                                                 </span>
                                                                 <span className="line-through ml-1">
                                                                     {formatPrice(course.price)}
@@ -121,8 +120,15 @@ function Courses({ data, isUserCourse }: { data?: any; isUserCourse?: boolean })
                                                                     %
                                                                 </span>
                                                             </div>
-                                                         <div className='mt-3'>   <ButtonPrimary label={isUserCourse ? 'Học tiếp' : 'Mua khóa học'}/></div>
-                                                                
+                                                            <div className="mt-3">
+                                                                <ButtonPrimary
+                                                                    label={
+                                                                        isUserCourse
+                                                                            ? 'Học tiếp'
+                                                                            : 'Mua khoá học'
+                                                                    }
+                                                                />
+                                                            </div>
                                                         </div>
                                                     </Link>
                                                 </div>
@@ -135,6 +141,8 @@ function Courses({ data, isUserCourse }: { data?: any; isUserCourse?: boolean })
                 </div>
             )}
         </div>
+    </>
+    
     );
 }
 

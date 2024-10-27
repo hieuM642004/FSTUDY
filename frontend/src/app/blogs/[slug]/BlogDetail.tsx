@@ -19,7 +19,7 @@ function BlogDetail({ id }: string | any) {
     useEffect(() => {
         const fetchBlogs = async () => {
             try {
-                const res = await nestApiInstance.get(`/blog/${id}`);                
+                const res = await nestApiInstance.get(`/blog/${id}`);
                 setBlogDetail(res.data.data);
                 setBlogId(res.data.data._id);
             } catch (error) {
@@ -48,7 +48,7 @@ function BlogDetail({ id }: string | any) {
                         breadcrumb={[
                             'Trang chủ',
                             'Bài viết',
-                          blogDetail?.title
+                            blogDetail?.title,
                         ]}
                     />
                     {/* title blogdetail */}
@@ -132,7 +132,7 @@ function BlogDetail({ id }: string | any) {
                                                 alt="pics"
                                                 width={1000}
                                                 height={0}
-                                                className="w-auto h-auto pb-8"
+                                                className="w-[100%] h-auto pb-8"
                                             />
                                             <div
                                                 dangerouslySetInnerHTML={{

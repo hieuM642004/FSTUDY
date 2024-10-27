@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import React, { useState, useEffect } from 'react';
 import { Card, Radio, Button, message, Progress } from 'antd';
@@ -6,6 +6,8 @@ import { useRouter } from 'next/navigation';
 import { nestApiInstance } from '../../../../constant/api';
 import { getCookie } from 'cookies-next';
 import { jwtDecode } from 'jwt-decode';
+
+import ButtonPrimary from '@/components/shared/ButtonPrimary/ButtonPrimary';
 
 type QuizData = {
     _id: string;
@@ -34,7 +36,9 @@ const LessonsHandlePage = ({ id }: { id: string }) => {
 
             // Fetch quiz progress for the user
             if (userId) {
-                const quizProgressResponse = await nestApiInstance.get(`/course/quiz-progress/${userId}/${id}`);
+                const quizProgressResponse = await nestApiInstance.get(
+                    `/course/quiz-progress/${userId}/${id}`,
+                );
                 const quizProgress = quizProgressResponse.data;
 
                 if (quizProgress) {
@@ -42,16 +46,26 @@ const LessonsHandlePage = ({ id }: { id: string }) => {
                     setCompleted(quizProgress.completed); // Set the completion status
                     setSelectedOptions(quizProgress.selectedAnswers || []); // Pre-fill selected answers if available
                     setAnswersDisplay(
-                        response.data.quiz.map((quiz: QuizData, index: number) => ({
-                            question: quiz.question,
-                            selectedOption: quiz.options[quizProgress.selectedAnswers[index]],
-                            isCorrect: quizProgress.selectedAnswers[index] === quiz.correctAnswer,
-                        }))
+                        response.data.quiz.map(
+                            (quiz: QuizData, index: number) => ({
+                                question: quiz.question,
+                                selectedOption:
+                                    quiz.options[
+                                        quizProgress.selectedAnswers[index]
+                                    ],
+                                isCorrect:
+                                    quizProgress.selectedAnswers[index] ===
+                                    quiz.correctAnswer,
+                            }),
+                        ),
                     );
                 }
             }
         } catch (error) {
-            console.error('Error fetching course detail or quiz progress:', error);
+            console.error(
+                'Error fetching course detail or quiz progress:',
+                error,
+            );
         }
     };
 
@@ -79,13 +93,19 @@ const LessonsHandlePage = ({ id }: { id: string }) => {
         setSelectedOptions(newSelectedOptions);
     };
 
-    const calculateProgress = (correctAnswers: number, totalQuestions: number) => {
+    const calculateProgress = (
+        correctAnswers: number,
+        totalQuestions: number,
+    ) => {
         return Math.round((correctAnswers / totalQuestions) * 100); // Calculate progress as a percentage
     };
 
     const handleSubmit = async () => {
         if (selectedOptions.length !== lessonsCourse.quiz.length) {
-            message.warning('Vui lòng chọn một câu trả lời cho tất cả các câu hỏi!', 1);
+            message.warning(
+                'Vui lòng chọn một câu trả lời cho tất cả các câu hỏi!',
+                1,
+            );
             return;
         }
 
@@ -93,13 +113,17 @@ const LessonsHandlePage = ({ id }: { id: string }) => {
 
         // Calculate the number of correct answers
         const correctAnswers = lessonsCourse.quiz.filter(
-            (quiz: QuizData, index: number) => selectedOptions[index] === quiz.correctAnswer
+            (quiz: QuizData, index: number) =>
+                selectedOptions[index] === quiz.correctAnswer,
         ).length;
 
         const totalQuestions = lessonsCourse.quiz.length;
 
         // Calculate progress
-        const currentProgress = calculateProgress(correctAnswers, totalQuestions);
+        const currentProgress = calculateProgress(
+            correctAnswers,
+            totalQuestions,
+        );
         const isCompleted = currentProgress === 100;
 
         try {
@@ -119,7 +143,10 @@ const LessonsHandlePage = ({ id }: { id: string }) => {
             setCompleted(isCompleted); // Update completed status
 
             if (isCompleted) {
-                message.success('Bạn đã hoàn thành quiz với số câu trả lời đúng!', 1);
+                message.success(
+                    'Bạn đã hoàn thành quiz với số câu trả lời đúng!',
+                    1,
+                );
             } else {
                 message.info(`Tiến độ của bạn là: ${currentProgress}%`, 1);
             }
@@ -133,11 +160,11 @@ const LessonsHandlePage = ({ id }: { id: string }) => {
                 question: quiz.question,
                 selectedOption: quiz.options[selectedOptions[index]],
                 isCorrect: selectedOptions[index] === quiz.correctAnswer,
-            }))
+            })),
         );
     };
 
-    const hasWrongAnswers = answersDisplay.some(answer => !answer.isCorrect); // Check for incorrect answers
+    const hasWrongAnswers = answersDisplay.some((answer) => !answer.isCorrect); // Check for incorrect answers
 
     return (
         <div className="content-sale">
@@ -146,23 +173,33 @@ const LessonsHandlePage = ({ id }: { id: string }) => {
                 {completed && <h3>Bạn đã hoàn thành bài quiz này!</h3>}
                 {lessonsCourse?.quiz.map(
                     (quiz: QuizData, quizIndex: number) => {
-                        const isCorrect = selectedOptions[quizIndex] === quiz.correctAnswer;
+                        const isCorrect =
+                            selectedOptions[quizIndex] === quiz.correctAnswer;
                         return (
                             <Card
                                 key={quiz._id}
-                                title={`Câu hỏi ${quizIndex + 1}: ${quiz.question}`}
+                                title={`Câu hỏi ${quizIndex + 1}: ${
+                                    quiz.question
+                                }`}
                             >
                                 <Radio.Group
-                                    onChange={(e) => handleOptionChange(quizIndex, e)}
+                                    onChange={(e) =>
+                                        handleOptionChange(quizIndex, e)
+                                    }
                                     value={selectedOptions[quizIndex]}
-                                    disabled={completed && isCorrect} 
+                                    disabled={completed && isCorrect}
                                 >
                                     {quiz.options.map(
                                         (option: string, index: number) => (
                                             <Radio
                                                 key={index}
                                                 value={index}
-                                                style={completed && quiz.correctAnswer === index ? { color: 'green' } : undefined} 
+                                                style={
+                                                    completed &&
+                                                    quiz.correctAnswer === index
+                                                        ? { color: 'green' }
+                                                        : undefined
+                                                }
                                             >
                                                 {option}
                                             </Radio>
@@ -171,7 +208,9 @@ const LessonsHandlePage = ({ id }: { id: string }) => {
                                 </Radio.Group>
                                 {}
                                 {isSubmitted && !isCorrect && (
-                                    <p style={{ color: 'red' }}>Đáp án của bạn sai, hãy chọn lại!</p>
+                                    <p style={{ color: 'red' }}>
+                                        Đáp án của bạn sai, hãy chọn lại!
+                                    </p>
                                 )}
                             </Card>
                         );
@@ -179,18 +218,26 @@ const LessonsHandlePage = ({ id }: { id: string }) => {
                 )}
                 <div style={{ marginTop: 16 }}>
                     {}
-                    <Button
+                    {/* <Button
                         className="menu-toggle-btn btn-primary font-semibold"
                         type="primary"
                         onClick={handleSubmit}
                         disabled={!hasWrongAnswers && completed} // Allow submit if there are wrong answers
                     >
                         Gửi lại câu trả lời
-                    </Button>
+                    </Button> */}
+                    <ButtonPrimary
+                        size={'large'}
+                        label={'Gửi câu trả lời'}
+                        onClick={handleSubmit}
+                        disabled={!hasWrongAnswers && completed}
+                        htmlType="submit"
+                        className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg"
+                    />
                 </div>
 
                 {}
-                {answersDisplay.length > 0 && (
+                {isSubmitted && answersDisplay.length > 0 && (
                     <div style={{ marginTop: 16 }}>
                         <h3>Kết quả câu trả lời:</h3>
                         {answersDisplay.map((answer, index) => (
@@ -199,10 +246,12 @@ const LessonsHandlePage = ({ id }: { id: string }) => {
                                     <strong>Câu hỏi:</strong> {answer.question}
                                 </p>
                                 <p>
-                                    <strong>Đáp án đã chọn:</strong> {answer.selectedOption}
+                                    <strong>Đáp án đã chọn:</strong>{' '}
+                                    {answer.selectedOption}
                                 </p>
                                 <p>
-                                    <strong>Kết quả:</strong> {answer.isCorrect ? 'Đúng' : 'Sai'}
+                                    <strong>Kết quả:</strong>{' '}
+                                    {answer.isCorrect ? 'Đúng' : 'Sai'}
                                 </p>
                             </Card>
                         ))}
@@ -212,7 +261,11 @@ const LessonsHandlePage = ({ id }: { id: string }) => {
                 {}
                 <div style={{ marginTop: 16 }}>
                     <h3>Tiến độ hiện tại:</h3>
-                    <Progress percent={progress} status={completed ? 'success' : 'active'} /> {/* Progress bar */}
+                    <Progress
+                        percent={progress}
+                        status={completed ? 'success' : 'active'}
+                    />{' '}
+                    {/* Progress bar */}
                 </div>
             </div>
         </div>
