@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import io from 'socket.io-client';
 import moment from 'moment';
-import { Modal, Select, Typography, Input } from 'antd';
+import { Modal, Select, Typography, Input, message } from 'antd';
 
 import Table from '@/components/admin/Table/Table';
 import iconUser from '../../../../public/images/user_icon.webp';
@@ -120,6 +120,8 @@ const onSearch = (value: string) => {
     console.log('search:', value);
 };
 function Comment() {
+    const [messageApi, contextHolder] = message.useMessage();
+
     const socketRef: any = useRef(null);
     const [CheckSubmit, setCheckSubmit] = useState(false);
     // handler modal
@@ -168,6 +170,10 @@ function Comment() {
             );
 
             setCheckSubmit(!CheckSubmit);
+            messageApi.open({
+                type: 'success',
+                content: 'XÓA THÀNH CÔNG',
+            });
         }
     };
 
@@ -209,6 +215,7 @@ function Comment() {
 
     return (
         <>
+        {contextHolder}
             <Modal
                 title="Bạn chắc chắn muốn xóa?"
                 open={isModalOpen}

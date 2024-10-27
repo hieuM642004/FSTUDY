@@ -2,12 +2,15 @@
 import React from 'react';
 import { Carousel } from 'antd';
 import { CheckOutlined } from '@ant-design/icons';
+import dynamic from 'next/dynamic';
 
 import './HomePage.scss';
 import OnlineCourse from './CoursesOnline/CoursesOnline';
 import Dashboard from '../DashBoard/DashBoard';
 import IELTSCard from '../../../components/client/IELTSCard/IELTSCard';
 import ButtonPrimary from '@/components/shared/ButtonPrimary/ButtonPrimary';
+
+const DashBoardComponent = dynamic(() => import('../DashBoard/DashBoard'), { ssr: false });
 
 const App: React.FC = () => {
     const tests = [
@@ -25,7 +28,7 @@ const App: React.FC = () => {
         <>
             <div className="container">
                 <div>
-                    <Dashboard />
+                    <DashBoardComponent />
                 </div>
                 <div className="banner">
                     <Carousel arrows infinite={false}>

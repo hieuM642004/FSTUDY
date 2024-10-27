@@ -47,6 +47,7 @@ function ForgotPass() {
                     type: 'error',
                     content: 'Tài khoản chưa được tạo.',
                 });
+                return; 
             }
             if (response.data.error === 'Password reset is not allowed for Google login users') {
                
@@ -54,15 +55,15 @@ function ForgotPass() {
                     type: 'error',
                     content: 'Tài khoản Google không được reset mật khẩu.',
                 });
+                return; 
             }
-            form.resetFields();
+           
         }
-
         if (response && response.message === 'Password reset email sent successfully') {
             form.resetFields();
             messageApi.open({
                 type: 'success',
-                content: 'Xác nhận email thành công.',
+                content: 'Xác nhận email thành công vui lòng kiểm tra email.',
             });
         }
         } catch (error) {

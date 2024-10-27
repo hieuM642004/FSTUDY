@@ -79,6 +79,12 @@ function Register() {
                                     required: true,
                                     message: 'Vui lòng  Họ và tên!',
                                 },
+                                {
+                                    validator: (_, value) => 
+                                        value && value.length > 50 
+                                            ? Promise.reject(new Error('Họ và tên không được vượt quá 50 ký tự'))
+                                            : Promise.resolve(),
+                                },
                             ]}
                         >
                             <Input placeholder="nhập Họ và tên" />
@@ -94,6 +100,12 @@ function Register() {
                                 {
                                     required: true,
                                     message: 'Vui lòng nhập Email!',
+                                },
+                                {
+                                    validator: (_, value) => 
+                                        value && value.length > 50 
+                                            ? Promise.reject(new Error('Email không được vượt quá 50 ký tự'))
+                                            : Promise.resolve(),
                                 },
                             ]}
                         >
@@ -113,6 +125,12 @@ function Register() {
                                         /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z]{8,}$/,
                                     message:
                                         'Vui lòng có 1 chữ viết hoa, 1 chữ viết thường , có 1 chữ số và trên 8 kí tự',
+                                },
+                                {
+                                    validator: (_, value) => 
+                                        value && value.length > 50 
+                                            ? Promise.reject(new Error('Mật khẩu không được vượt quá 50 ký tự'))
+                                            : Promise.resolve(),
                                 },
                             ]}
                             hasFeedback
@@ -157,7 +175,7 @@ function Register() {
                             className="w-full  flex justify-center mb-3 "
                         />
                     </Form>
-                    <ButtonOutline
+                    {/* <ButtonOutline
                         size="large"
                         label="Đăng ký với Facebook"
                         className="w-full  mt-2 text-[#35509a]  hover:bg-[#35509a] mb-3"
@@ -166,7 +184,7 @@ function Register() {
                         size="large"
                         label="Đăng ký với Google"
                         className="w-full  mt-2 text-[#db4a39] hover:bg-black mb-3"
-                    />
+                    /> */}
                     <p className="mb-3">
                         Bằng cách đăng ký, bạn đồng ý với{' '}
                         <Link
