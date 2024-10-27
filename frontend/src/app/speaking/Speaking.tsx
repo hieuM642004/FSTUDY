@@ -165,12 +165,12 @@ function Speaking() {
                                         </button>
                                     </div>
                                 )}
-                                {msg.sender === 'user' && similarityPercentage !== null && (
+                                {/* {msg.sender === 'user' && similarityPercentage !== null && (
                                     <div className="mt-2 text-right">
                                         <h4 className="inline">Tỷ lệ phát âm của bạn:</h4>
                                         <p className="inline ml-2">{similarityPercentage}%</p>
                                     </div>
-                                )}
+                                )} */}
                             </div>
                         ))}
                     </div>

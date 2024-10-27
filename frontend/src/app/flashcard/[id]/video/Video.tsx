@@ -101,7 +101,7 @@ function Video({ id }: { id: string }) {
                 </div>
 
                 {loading && (
-                    <div className="flex justify-center mt-4">
+                    <div className="flex justify-center mt-4 my-44">
                         <Spin tip="Loading..." />
                     </div>
                 )}
@@ -168,6 +168,13 @@ function Video({ id }: { id: string }) {
                         type="info"
                     />
                 )}
+                {
+                    !selectedWord && (
+                        <>
+                        <p className='text-xl text-center my-44'>Chọn từ để học qua video</p>
+                        </>
+                    )
+                }
             </div>
         </>
     );

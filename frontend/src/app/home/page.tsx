@@ -2,7 +2,9 @@ import HomePage from './Home/HomePage';
 const Home: React.FC = () => {
     return (
         <>
-            <HomePage />
+            <div className="flex justify-center ">
+                <HomePage />
+            </div>
         </>
     );
 };

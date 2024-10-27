@@ -130,10 +130,7 @@ const Dashboard = () => {
                                                                                     .title
                                                                             }
                                                                         </span>
-                                                                        <span className="bg-orange-400 rounded-lg p-1 text-white">
-                                                                            Học
-                                                                            thử
-                                                                        </span>
+                                                                      
                                                                     </div>
                                                                     <div className="bg-gray-300 h-2 rounded-full mb-2">
                                                                         <div
@@ -147,11 +144,15 @@ const Dashboard = () => {
                                                                         Tiếp tục
                                                                         bài học:{' '}
                                                                         {
-                                                                            item
-                                                                                .course
-                                                                                .detail_short_description
-                                                                        }
+    item.course.detail_short_description.length > 50
+        ? item.course.detail_short_description.substring(0, 50) + '...'
+        : item.course.detail_short_description
+}
+
                                                                     </div>
+                                                                    <span className="bg-orange-400 rounded-lg p-1 mt-2 text-white ">
+                                                                Học thử
+                                                            </span>
                                                                 </div>
                                                             </Link>
                                                         </div>
@@ -194,13 +195,12 @@ const Dashboard = () => {
                                                     href={`detailonlinecourse/${item._id}`}
                                                 >
                                                     <div className="bg-gray-100 p-4 rounded-lg">
+                                                  
                                                         <div className="flex justify-between items-center mb-2 text-black">
                                                             <span className="font-semibold">
                                                                 {item.title}
                                                             </span>
-                                                            <span className="bg-orange-400 rounded-lg p-1 text-white">
-                                                                Học thử
-                                                            </span>
+                                                           
                                                         </div>
                                                         <div className="bg-gray-300 h-2 rounded-full mb-2">
                                                             <div
@@ -213,9 +213,15 @@ const Dashboard = () => {
                                                         <div className="text-gray-600">
                                                             Tiếp tục bài học:{' '}
                                                             {
-                                                                item.detail_short_description
-                                                            }
+    item.detail_short_description.length > 50
+        ? item.detail_short_description.substring(0, 50) + '...'
+        : item.detail_short_description
+}
+
                                                         </div>
+                                                    <span className="bg-orange-400 rounded-lg p-1 mt-2 text-white ">
+                                                                Học thử
+                                                            </span>
                                                     </div>
                                                 </Link>
                                             </div>

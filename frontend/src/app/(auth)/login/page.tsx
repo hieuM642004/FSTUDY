@@ -42,6 +42,8 @@ function Login() {
 
               
                 const decoded: any = jwtDecode(response?.accessToken || '');
+                setCookie('idU', decoded.id);
+                setCookie('name', decoded.username);
                 const idUser: string = decoded.id;
 
                 

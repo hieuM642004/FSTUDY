@@ -28,6 +28,7 @@ import {
     Course,
     CourseType,
     Lesson,
+    PaymentStatus,
     Purchase,
     Quiz,
     Video,
@@ -51,14 +52,21 @@ import { UpdateCourseDto } from './dto/course/update-course.dto';
 const crypto = require('crypto');
 import * as multer from 'multer';
 
-import { Types } from 'mongoose';
+import mongoose, { Model, Types } from 'mongoose';
 import axios from 'axios';
 import { CreateRatingDto } from './dto/rating/rating.dto';
 import { UpdateRatingDto } from './dto/rating/updateRating.dto';
+import { InjectModel } from '@nestjs/mongoose';
+import { User } from '../users/userSchema/user.schema';
 
 @Controller('course')
 export class CourseController {
-    constructor(private readonly courseService: CourseService) {}
+    constructor(private readonly courseService: CourseService,
+        @InjectModel(User.name)
+        private readonly userModel: mongoose.Model<User>, 
+        @InjectModel(Purchase.name)
+        private readonly purchaseModel: mongoose.Model<Purchase>,
+    ) {}
 
     /**
      * Quizzes
@@ -373,7 +381,6 @@ export class CourseController {
     removeContent(@Param('id') id: string) {
         return this.courseService.removeContent(id);
     }
-    
 
     /**
      * Lesson Controller
@@ -413,7 +420,7 @@ export class CourseController {
     ) {
         return this.courseService.addContentToLesson(lessonId, contentId);
     }
-    
+
     @Patch('content/add/:id')
     async addData(
         @Param('id') contentId: string,
@@ -423,17 +430,15 @@ export class CourseController {
         if (!Types.ObjectId.isValid(contentId)) {
             throw new Error('Invalid content ID format');
         }
-    
+
         for (const dataId of dataIds) {
             if (!Types.ObjectId.isValid(dataId)) {
                 throw new Error('Invalid data ID format: ' + dataId);
             }
         }
-    
-        // Call the service to add multiple data to the content
+
         return this.courseService.addMultipleDataToContent(contentId, dataIds);
     }
-    
 
     /**
      * Course Type
@@ -563,16 +568,6 @@ export class CourseController {
     findOneCourse(@Param('id') id: string): Promise<Course> {
         return this.courseService.findOneCourse(id);
     }
-    @Get('statistics/count-all-course')
-    async countCourse(): Promise<number> {
-        try {
-            return await this.courseService.countCourse();
-        } catch (error) {
-            console.error('Error counting courses:', error);
-            throw new InternalServerErrorException('Failed to count courses');
-        }
-    }
-    
     @Get('search/:slug')
     findOneCourseBySlug(@Param('slug') slug: string): Promise<Course> {
         return this.courseService.findOneCourseBySlug(slug);
@@ -616,24 +611,6 @@ export class CourseController {
     ) {
         return this.courseService.addLessontoCourse(lessonId, contentId);
     }
-    @Get('statistics/count-all-course-has-sell')
-    async countCourseHasSell(): Promise<number> {
-        try {
-            return await this.courseService.countCourseHasSell();
-        } catch (error) {
-            console.error('Error counting courses:', error);
-            throw new InternalServerErrorException('Failed to count courses');
-        }
-    }
-    @Get('statistics/total-purchase')
-    async totalPurchase(): Promise<string> {
-        try {
-            return await this.courseService.totalPurchase();
-        } catch (error) {
-            console.error('Error counting courses:', error);
-            throw new InternalServerErrorException('Failed to count courses');
-        }
-    }
 
     @Post('purchase/:courseId')
     async createPurchase(
@@ -658,16 +635,17 @@ export class CourseController {
     ) {
         const ipAddr =
             req.headers['x-forwarded-for'] || req.socket.remoteAddress;
-        //   const ipAddr = req.ip || req.headers['x-forwarded-for'] || '';
+    
         const paymentUrl = await this.courseService.createPurchaseAndPaymentUrl(
             new Types.ObjectId(userId),
             new Types.ObjectId(courseId),
             bankCode,
             ipAddr as string,
         );
-
+    
         return { paymentUrl };
     }
+    
     @Get('/callbackvnpay/:email/:key')
     async handlePostCallbackVnPay(
         @Res() res: Response,
@@ -675,30 +653,39 @@ export class CourseController {
         @Param('email') email: string,
         @Param('key') key: string,
     ) {
-
         const { vnp_ResponseCode, message, partnerCode, orderId, amount } =
             req.query;
+    
         if (!vnp_ResponseCode || !email || !key) {
-
             throw new BadRequestException('Missing required parameters');
         }
+    
         if (vnp_ResponseCode === '00') {
             try {
+                // Update the purchase to COMPLETED
+                const user = await this.userModel.findOne({ email });
+                if (!user) {
+                    throw new InternalServerErrorException('User not found');
+                }
 
-                await this.courseService.sendSuccessEmail(
-                    email as string,
-                    key as string,
+                // Use the user's ObjectId to find the purchase
+                const purchase = await this.purchaseModel.findOne({ user: user._id, purchaseKey: key });
+                if (purchase) {
+                    purchase.paymentStatus = PaymentStatus.COMPLETED; // Sử dụng enum
+                    await purchase.save();
+                    await this.courseService.sendSuccessEmail(email, key);
+                }
+    
+                return res.redirect(
+                    `${process.env.BASEURL_FE}/paid?email=${email}&message=${message}&partnerCode=${partnerCode}&orderId=${orderId}&amount=${amount}`,
                 );
-                // res.redirect(`${process.env.BASEURL_FE}/paid?email=${email}&message=${message}&partnerCode=${partnerCode}&orderId=${orderId}&amount=${amount}`);
             } catch (error) {
-
-                throw new InternalServerErrorException('Error sending email');
+                throw new InternalServerErrorException('Error processing payment');
             }
         } else {
             console.log('Payment failed or cancelled:', vnp_ResponseCode);
+            return res.status(400).json({ message: 'Payment failed' });
         }
-
-        return res.status(204).json(req.body);
     }
 
     @Get('/callback/:email/:key')
@@ -706,16 +693,34 @@ export class CourseController {
         @Res() res: Response,
         @Req() req: Request,
         @Param('email') email: string,
-        @Param('key') transId: string,
-        @Query() query: { resultCode: string },
+        @Param('key') key: string,
+        @Query() query: { resultCode: string; message?: string; partnerCode?: string; orderId?: string; amount?: string },
     ) {
-        const { resultCode, message, partnerCode, orderId, amount } = req.query;
-        if (!resultCode || !email || !transId) {
+        const { resultCode, message, partnerCode, orderId, amount } = query;
+
+        // Kiểm tra thông tin đầu vào
+        if (!resultCode || !email || !key) {
             throw new BadRequestException('Invalid parameters');
         }
+
+        // Xử lý khi thanh toán thành công
         if (resultCode === '0') {
             try {
-                await this.courseService.sendSuccessEmail(email, transId);
+                // Fetch user by email to get their ObjectId
+                const user = await this.userModel.findOne({ email });
+                if (!user) {
+                    throw new InternalServerErrorException('User not found');
+                }
+
+                // Use the user's ObjectId to find the purchase
+                const purchase = await this.purchaseModel.findOne({ user: user._id, purchaseKey: key });
+                if (purchase) {
+                    purchase.paymentStatus = PaymentStatus.COMPLETED;
+                    await purchase.save();
+                    await this.courseService.sendSuccessEmail(email, key);
+                }
+
+                // Chuyển hướng về trang thành công
                 return res.redirect(
                     `${process.env.BASEURL_FE}/paid?email=${email}&message=${message}&partnerCode=${partnerCode}&orderId=${orderId}&amount=${amount}`,
                 );
@@ -725,8 +730,10 @@ export class CourseController {
             }
         }
 
+        // Trả về trạng thái 204 nếu không có kết quả
         return res.status(204).json(req.body);
     }
+    
     @Get('purchase/:userId')
     async getPurchasesByUserId(
         @Param('userId') userId: string,
@@ -798,25 +805,24 @@ export class CourseController {
 
     @Post('rating')
     async createRating(@Body() createRatingDto: CreateRatingDto) {
-      return this.courseService.create(createRatingDto);
-    }
-  
-    @Patch('rating/:ratingId')
-    async updateRating(
-      @Param('ratingId') ratingId: string,
-      @Body() updateRatingDto: UpdateRatingDto,
-    ) {
-      return this.courseService.update(ratingId, updateRatingDto);
+        return this.courseService.create(createRatingDto);
     }
 
-  
+    @Patch('rating/:ratingId')
+    async updateRating(
+        @Param('ratingId') ratingId: string,
+        @Body() updateRatingDto: UpdateRatingDto,
+    ) {
+        return this.courseService.update(ratingId, updateRatingDto);
+    }
+
     @Delete('rating/:ratingId')
     async deleteRating(@Param('ratingId') ratingId: string) {
-      return this.courseService.delete(ratingId);
+        return this.courseService.delete(ratingId);
     }
-  
+
     @Get('rating/:courseId/average')
     async getCourseAverageRating(@Param('courseId') courseId: string) {
-      return this.courseService.getCourseAverageRating(courseId);
+        return this.courseService.getCourseAverageRating(courseId);
     }
 }

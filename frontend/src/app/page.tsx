@@ -5,7 +5,10 @@ import HomePage from './home/Home/HomePage';
 export default function Home() {
     return (
         <main >
-            <HomePage />
+             <div className="flex justify-center ">
+                 <HomePage />
+             </div>
+           
         </main>
     );
 }

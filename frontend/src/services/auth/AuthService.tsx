@@ -14,10 +14,10 @@ class AuthService {
             const response = await nestApiInstance.post(
                 '/auth/register',
                 newData,
-            );    
+            );
             return response.data;
         } catch (error) {
-          
+
             console.error('Error fetching register:', error);
         }
     }
@@ -31,7 +31,7 @@ class AuthService {
             );
             return response.data;
         } catch (error) {
-          
+
             console.error('Error fetching login:', error);
         }
     }
@@ -70,7 +70,7 @@ class AuthService {
             );
             return response.data;
         } catch (error) {
-          
+
             console.error('Error fetching login:', error);
         }
     }
@@ -83,7 +83,7 @@ class AuthService {
             return true;
         }
     };
-    
+
     static async handleRefreshToken(): Promise<any | null> {
         try {
             const RefreshToken = getCookie('refreshToken');
@@ -94,16 +94,16 @@ class AuthService {
             const refreshToken = response.data.refreshToken;
             setCookie('token', accessToken);
             setCookie('refreshToken', refreshToken);
-    
-          
-            return { accessToken, refreshToken }; 
+
+
+            return { accessToken, refreshToken };
         } catch (error) {
             console.error('Error refreshing token:', error);
             return null;
         }
     }
-    
-    
+
+
     // static handleTokenExpired(): void {
     //     try {
     //         deleteCookie('token');
@@ -113,7 +113,7 @@ class AuthService {
     //         console.error('Error handling token expiration:', error);
     //     }
     // }
-    
+
     static async getByIdUser(id: string): Promise<string | any> {
         try {
             const response = await nestApiInstance.get(`users/${id}`);

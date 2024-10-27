@@ -85,9 +85,7 @@ const PageMyCourses = () => {
                                                                         .title
                                                                 }
                                                             </span>
-                                                            <span className="bg-orange-400 rounded-lg p-1 text-white">
-                                                                Học thử
-                                                            </span>
+                                                           
                                                         </div>
                                                         <div className="bg-gray-300 h-2 rounded-full mb-2">
                                                             <div

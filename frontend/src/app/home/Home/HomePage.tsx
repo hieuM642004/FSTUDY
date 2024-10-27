@@ -24,8 +24,8 @@ const App: React.FC = () => {
     return (
         <>
             <div className="container">
-                <div>
                     <Dashboard />
+                <div>
                 </div>
                 <div className="banner">
                     <Carousel arrows infinite={false}>

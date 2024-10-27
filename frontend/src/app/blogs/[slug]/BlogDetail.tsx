@@ -46,10 +46,9 @@ function BlogDetail({ id }: string | any) {
                     {/* Banner  */}
                     <BannerBlog
                         breadcrumb={[
-                            'trang chủ',
-                            'bài viết',
-                            'IELTS Writing',
-                            'Location and Types of Dance Classes Young People Are Attending - Bài mẫu IELTS Writing Task 1 (Multiple Charts)',
+                            'Trang chủ',
+                            'Bài viết',
+                          blogDetail?.title
                         ]}
                     />
                     {/* title blogdetail */}

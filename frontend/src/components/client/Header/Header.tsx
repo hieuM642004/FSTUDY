@@ -55,7 +55,8 @@ const Header = () => {
         deleteCookie('token');
         deleteCookie('refreshToken');
         deleteCookie('typeLogin');
-
+deleteCookie('idU')
+deleteCookie('name')
         dispatch(clearUser());
 
         router.push('/login');
