@@ -116,6 +116,12 @@ function PageAddUser() {
                             required: true,
                             message: 'Vui lòng nhập  Họ và tên!',
                         },
+                        {
+                            validator: (_, value) => 
+                                value && value.length > 50 
+                                    ? Promise.reject(new Error('Họ và tên không được vượt quá 50 ký tự'))
+                                    : Promise.resolve(),
+                        },
                     ]}
                 >
                     <Input placeholder="nhập Họ và tên" />
@@ -150,6 +156,12 @@ function PageAddUser() {
                                 /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z]{8,}$/,
                             message:
                                 'Vui lòng có 1 chữ viết hoa, 1 chữ viết thường , có 1 chữ số và trên 8 kí tự',
+                        },
+                        {
+                            validator: (_, value) => 
+                                value && value.length > 50 
+                                    ? Promise.reject(new Error('Mật khẩu không được vượt quá 50 ký tự'))
+                                    : Promise.resolve(),
                         },
                     ]}
                     hasFeedback

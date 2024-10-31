@@ -1,9 +1,12 @@
 'use client';
 import React from 'react';
 import { Button, Card, Col, Row } from 'antd';
+
 import './HomePage.scss';
 import Dashboard from '../DashBoard/DashBoard';
 import { CaretRightOutlined } from '@ant-design/icons';
+
+
 
 const App: React.FC = () => {
     const data = [
@@ -39,6 +42,7 @@ Chưa thể vượt qua áp lực phòng thi mỗi khi thi IELTS thật, gây �
     ];
 
     return (
+
         <div className="container">
             <Dashboard />
             <div className="banner">
@@ -47,6 +51,7 @@ Chưa thể vượt qua áp lực phòng thi mỗi khi thi IELTS thật, gây �
                     alt="banner1"
                     className="w-full h-auto object-cover rounded-md shadow-md"
                 />
+
             </div>
 
             <div style={{ padding: '2rem' }}>

@@ -13,21 +13,13 @@ const Dashboard = () => {
     const [userCourse, SetUserCourse] = useState<[] | any>();
     const [listCourse, SetListCourse] = useState<[] | any>();
     const dataUser = useTypedSelector((state: RootState) => state.user);
-
     useEffect(() => {
         dispatch(fetchUserData());
-        if (dataUser) {
-            getUserCourse();
-        } else {
-            getAllCourse();
-        }
     }, [dispatch]);
     useEffect(() => {
-        if (dataUser) {
-            getUserCourse();
-            getAllCourse();
-        }
-    }, [dataUser]);
+        getUserCourse();
+        getAllCourse();
+    }, []);
     const getUserCourse = async () => {
         try {
             if (dataUser.id) {
@@ -35,7 +27,6 @@ const Dashboard = () => {
                 const response = await HomeService.getPurchasesByUserId({
                     userId,
                 });
-                console.log('response', response);
                 if (response) {
                     SetUserCourse(response);
                 }
@@ -75,7 +66,7 @@ const Dashboard = () => {
                         <div className="flex flex-wrap">
                             {userCourse?.length > 0 &&
                                 userCourse?.map(
-                                    (item: string | any, index: number) => {                             
+                                    (item: string | any, index: number) => {
                                         return (
                                             <>
                                                 {item?.paymentStatus ===

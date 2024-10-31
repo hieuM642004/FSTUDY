@@ -12,10 +12,12 @@ function Paid() {
     const email = searchParams.get('email');
     const orderId = searchParams.get('orderId');
     const amount: any = searchParams.get('amount');
-    let formattedAmount;
-    if (amount) {
-        formattedAmount = amount.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-    }
+    const formatPrice = (price: number | undefined) => {
+        return price?.toLocaleString('vi-VN', {
+            style: 'currency',
+            currency: 'VND',
+        });
+    };
     useEffect(() => {
         const timeoutId = setTimeout(() => {
             alert('vui lòng check email kích hoạt khóa học');
@@ -23,6 +25,7 @@ function Paid() {
 
         return () => clearTimeout(timeoutId);
     }, []);
+    
     return (
         <>
           
@@ -53,10 +56,9 @@ function Paid() {
                                         {' '}
                                         Tổng tiền:{' '}
                                         <strong className="font-semibold text-green-400 text-2xl">
-                                            {formattedAmount
-                                                ? formattedAmount
+                                            {amount
+                                                ? formatPrice(Number(amount))
                                                 : ''}
-                                            đ
                                         </strong>
                                     </div>
                                     <form className="space-y-3">

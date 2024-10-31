@@ -138,6 +138,12 @@ function PageAddEditUser({ params }: { params: { slug: string } }) {
                                 required: true,
                                 message: 'Vui lòng nhập  Họ và tên!',
                             },
+                            {
+                                validator: (_, value) => 
+                                    value && value.length > 50 
+                                        ? Promise.reject(new Error('Họ và tên không được vượt quá 50 ký tự'))
+                                        : Promise.resolve(),
+                            },
                         ]}
                     >
                         <Input placeholder="nhập Họ và tên" />

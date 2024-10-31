@@ -21,19 +21,19 @@ function UserInfo() {
 
     const enterLoading = (index: number) => {
         setLoadings((prevLoadings) => {
-          const newLoadings = [...prevLoadings];
-          newLoadings[index] = true;
-          return newLoadings;
-        });
-    
-        setTimeout(() => {
-          setLoadings((prevLoadings) => {
             const newLoadings = [...prevLoadings];
-            newLoadings[index] = false;
+            newLoadings[index] = true;
             return newLoadings;
-          });
+        });
+
+        setTimeout(() => {
+            setLoadings((prevLoadings) => {
+                const newLoadings = [...prevLoadings];
+                newLoadings[index] = false;
+                return newLoadings;
+            });
         }, 2000);
-      };
+    };
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files) {
             setFile(e.target.files[0]);
@@ -60,7 +60,7 @@ function UserInfo() {
         const infoDataUser: any = new FormData();
         infoDataUser.append('fullname', values.fullname);
         infoDataUser.append('phone', values.phone);
-        // API bắt buộc birthday không đc cập nhật null cho lần sau 
+        // API bắt buộc birthday không đc cập nhật null cho lần sau
         if (values.birthday) {
             infoDataUser.append('birthday', values.birthday);
         }
@@ -75,7 +75,7 @@ function UserInfo() {
             if (res) {
                 console.log('User updated successfully', res);
                 await dispatch(fetchUserData());
-                setFile(null)
+                setFile(null);
                 messageApi.open({
                     type: 'success',
                     content: 'Cập nhật tài khoản thành công.',
@@ -114,7 +114,22 @@ function UserInfo() {
                         onChange={handleFileChange}
                     />
                 </Form.Item>
-                <Form.Item name="fullname" label="Họ và Tên">
+                <Form.Item
+                    name="fullname"
+                    label="Họ và Tên"
+                    rules={[
+                        {
+                            validator: (_, value) =>
+                                value && value.length > 50
+                                    ? Promise.reject(
+                                          new Error(
+                                              'Họ và Tên không được vượt quá 50 ký tự',
+                                          ),
+                                      )
+                                    : Promise.resolve(),
+                        },
+                    ]}
+                >
                     <Input placeholder="nhập Họ và Tên của bạn" />
                 </Form.Item>
                 <Form.Item
@@ -134,7 +149,7 @@ function UserInfo() {
                     />
                 </Form.Item>
                 <Form.Item name="birthday" label="Ngày sinh ">
-                    <DatePicker />
+                    <DatePicker placeholder="Chọn ngày sinh" />
                 </Form.Item>
                 {checkType ? (
                     <></>
@@ -146,7 +161,8 @@ function UserInfo() {
                                 size="small"
                                 label="Cập nhật"
                                 className="flex justify-center mb-3"
-                                loading={loadings[0]} onClick={() => enterLoading(0)}
+                                loading={loadings[0]}
+                                onClick={() => enterLoading(0)}
                             />
                         </div>
                     </>

@@ -26,7 +26,7 @@ function HandleComment({
         setOpen(false);
     };
 
-    const onFinish = async (values: string) => {
+    const onFinish = async (values: string | any) => {
         try {
             // update
             if (idMySelf) {
@@ -96,6 +96,12 @@ function HandleComment({
                             {
                                 required: true,
                                 message: 'Vui lòng nhập nội dung',
+                            },
+                            {
+                                validator: (_, value) => 
+                                    value && value.length > 500 
+                                        ? Promise.reject(new Error('Nội dung không được vượt quá 500 ký tự'))
+                                        : Promise.resolve(),
                             },
                         ]}
                         label="nhập nội dung"
