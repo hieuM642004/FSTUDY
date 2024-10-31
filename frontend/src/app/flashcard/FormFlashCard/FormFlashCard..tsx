@@ -5,6 +5,7 @@ import { Row, Col, Button, Image, Input } from 'antd';
 import { useEffect, useState } from 'react';
 import './FormFlashCard.scss';
 
+import { message } from 'antd';
 import ButtonPrimary from '@/components/shared/ButtonPrimary/ButtonPrimary';
 import FlashCard from '@/types/FlashCard';
 import FlashCardService from '@/services/FlashCardService';
@@ -29,7 +30,6 @@ function FormFlashCard({
             translatedExample?: string;
         };
     }>({});
-
     const [isWordValid, setIsWordValid] = useState<{
         [index: number]: boolean;
     }>({});
@@ -52,6 +52,7 @@ function FormFlashCard({
 
                     const flashCardData = response;
                     setNameCard(flashCardData.nameCard);
+                  
                     setCards([
                         {
                             nameCard: flashCardData.nameCard,
@@ -120,13 +121,7 @@ function FormFlashCard({
         }
     };
 
-    const removeCard = (index: number) => {
-        const updatedCards = cards.filter((_, i) => i !== index);
-        setCards(updatedCards);
-        if (!id) {
-            saveToLocalStorage(updatedCards);
-        }
-    };
+
     const removeWord = (cardIndex: number, wordIndex: number) => {
         const updatedCards = cards.map((card, i) =>
             i === cardIndex
@@ -397,10 +392,10 @@ function FormFlashCard({
 
     const handleSubmit = async () => {
         if (!nameCard.trim()) {
-            alert('Tên flashcard không được trống');
+            message.warning('Tên flashcard không được trống');
             return;
         }
-
+    
         const flashCardData = {
             nameCard: nameCard.trim(),
             words: [],
@@ -408,111 +403,107 @@ function FormFlashCard({
             isPublic: false,
             userId: dataUser?.id,
         };
-
+    
         if (!cards || cards.length === 0) {
-            alert('Không có flashcard nào được thêm vào');
+            message.warning('Không có flashcard nào được thêm vào');
             return;
         }
-
+    
         for (const card of cards) {
             if (!card.words || card.words.length === 0) {
-                alert('Từ của mỗi thẻ không được trống');
-                continue; // Skip to the next card if no words are available
+                message.warning('Từ của mỗi thẻ không được trống');
+                continue; // Bỏ qua thẻ nếu không có từ nào
             }
-
+    
             for (const word of card.words) {
-                // Check if word has a valid word value
                 if (!word.word.trim()) {
-                    alert('Word cannot be empty');
-                    continue; // Skip empty words
+                    message.warning('Thuật ngữ không được để trống');
+                    continue;
                 }
-
-                // If audioUrl is not available, try to fetch it
+    
+                // Kiểm tra nếu định nghĩa trống
+                if (!word.definition.trim()) {
+                    message.warning('Định nghĩa không được để trống');
+                    return;
+                }
+    
+                // Nếu không có URL âm thanh, cố gắng lấy nó
                 if (!word.audioUrl) {
                     try {
                         word.audioUrl = await fetchAudioUrl(word.word.trim());
                     } catch (error) {
-                        alert(
-                            `Failed to fetch audio URL for word ${word.word}:`,
-                        );
+                        message.error(`Không thể lấy URL âm thanh cho từ ${word.word}`);
                     }
                 }
-
+    
                 flashCardData.words.push(word);
             }
         }
-
+    
         if (flashCardData.words.length === 0) {
-            console.error('No valid words to submit');
+            console.error('Không có từ hợp lệ để gửi');
             return;
         }
-
-        // Set the word count
+    
+        // Set word count
         flashCardData.wordCount = flashCardData.words.length;
-
+    
         try {
             if (id) {
-                const response = await FlashCardService.updateFlashCard(
-                    id,
-                    flashCardData,
-                );
-                setMessageProps({
-                    type: 'success',
-                    content: 'Flashcard updated successfully!',
-                });
+                const response = await FlashCardService.updateFlashCard(id, flashCardData);
+                message.success('Flashcard cập nhật thành công!');
                 router.push('/flashcard');
-                console.log('Update success:', response);
+                console.log('Cập nhật thành công:', response);
             } else {
-                const response = await FlashCardService.addFlashCard(
-                    flashCardData,
-                );
-                setMessageProps({
-                    type: 'success',
-                    content: 'Flashcard add successfully!',
-                });
+                const response = await FlashCardService.addFlashCard(flashCardData);
+                message.success('Flashcard thêm thành công!');
                 router.push('/flashcard');
-                console.log('Add success:', response);
+                console.log('Thêm thành công:', response);
             }
         } catch (error) {
-            console.log('Error:', error);
+            message.error('Có lỗi xảy ra khi xử lý flashcard');
+            console.log('Lỗi:', error);
         }
-
-        console.log('Submitted Data:', flashCardData);
+    
+        console.log('Dữ liệu gửi:', flashCardData);
     };
 
     return (
         <section className="p-6">
-            <Input
-                placeholder="Tên flashcard"
-                variant="borderless"
-                className="mb-4 shadow-md w-40 p-2"
-                value={nameCard}
-                onChange={(e) => setNameCard(e.target.value)}
-            />
-
-            <div className="my-4 mx-auto">
-                {cards?.map((card, cardIndex) => (
-                    <>
-                        {card?.words.map((word, wordIndex) => (
-                            <>
+        <Input
+            placeholder="Tên flashcard"
+            variant="borderless"
+            className="mb-4 shadow-md w-40 p-2"
+            value={nameCard}
+            onChange={(e) => setNameCard(e.target.value)}
+        />
+    
+        <div className="my-4 mx-auto">
+            {cards?.map((card, cardIndex) => {
+                // Tính chỉ số bắt đầu của từ trong thẻ hiện tại
+                const baseIndex = cards
+                    .slice(0, cardIndex)
+                    .reduce((sum, currentCard) => sum + currentCard.words.length, 0);
+    
+                return (
+                    <div key={cardIndex}>
+                        {card?.words.map((word, wordIndex) => {
+                            const globalIndex = baseIndex + wordIndex;
+    
+                            return (
                                 <div
                                     key={wordIndex}
                                     className="w-full bg-white text-black rounded-lg shadow-lg p-4 mb-4 h-52"
                                 >
                                     <div className="flex justify-between items-center border-b border-gray-700 pb-2 mb-4">
                                         <div className="text-lg font-bold">
-                                            {id ? wordIndex + 1 : cardIndex + 1}
+                                            {globalIndex + 1}
                                         </div>
+    
                                         <div className="flex space-x-2">
-                                            <button className="text-gray-400 hover:text-white">
-                                                <MenuOutlined />
-                                            </button>
                                             <button
                                                 onClick={() =>
-                                                    removeWord(
-                                                        cardIndex,
-                                                        wordIndex,
-                                                    )
+                                                    removeWord(cardIndex, wordIndex)
                                                 }
                                                 className="text-gray-400 hover:text-red-500"
                                             >
@@ -521,102 +512,56 @@ function FormFlashCard({
                                         </div>
                                     </div>
                                     <Row justify="space-between" align="middle">
-                                        <Col
-                                            xs={24}
-                                            sm={23}
-                                            md={22}
-                                            lg={22}
-                                            xl={18}
-                                            xxl={16}
-                                        >
+                                        <Col xs={24} sm={23} md={22} lg={22} xl={18} xxl={16}>
                                             <div className="flex flex-col sm:flex-row sm:items-center">
                                                 <div className="w-full sm:w-1/3 mb-4 sm:mb-0">
-                                                    <p className="text-gray-400">
-                                                        THUẬT NGỮ
-                                                    </p>
+                                                    <p className="text-gray-400">THUẬT NGỮ</p>
                                                     <input
                                                         className="w-full text-xl font-semibold text-black border-none focus:outline-none custom-outline"
                                                         value={word?.word}
                                                         onChange={(e) =>
-                                                            handleTermChange(
-                                                                e.target.value,
-                                                                cardIndex,
-                                                                wordIndex,
-                                                            )
+                                                            handleTermChange(e.target.value, cardIndex, wordIndex)
                                                         }
                                                         placeholder="Thuật ngữ"
                                                     />
                                                 </div>
                                                 <div className="w-full sm:w-3/5 sm:ml-4">
-                                                    <p className="text-gray-400">
-                                                        ĐỊNH NGHĨA
-                                                    </p>
+                                                    <p className="text-gray-400">ĐỊNH NGHĨA</p>
                                                     <textarea
                                                         className="w-full text-lg text-black border-none focus:outline-none custom-outline"
                                                         value={word?.definition}
                                                         onChange={(e) =>
-                                                            handleDefinitionChange(
-                                                                cardIndex,
-                                                                wordIndex,
-                                                                e.target.value,
-                                                            )
+                                                            handleDefinitionChange(cardIndex, wordIndex, e.target.value)
                                                         }
                                                         rows={1}
                                                         placeholder="Bạn có thể thay đổi định nghĩa"
                                                     />
                                                     <button
-                                                        onClick={() =>
-                                                            handleCreateExample(
-                                                                cardIndex,
-                                                                wordIndex,
-                                                            )
-                                                        }
-                                                        disabled={
-                                                            !isWordValid[
-                                                                `${cardIndex}-${wordIndex}`
-                                                            ]
-                                                        }
+                                                        onClick={() => handleCreateExample(cardIndex, wordIndex)}
+                                                        disabled={!isWordValid[`${cardIndex}-${wordIndex}`]}
                                                         className={`text-gray-400 hover:text-blue-500 ${
-                                                            !isWordValid[
-                                                                `${cardIndex}-${wordIndex}`
-                                                            ]
+                                                            !isWordValid[`${cardIndex}-${wordIndex}`]
                                                                 ? 'opacity-50 cursor-not-allowed'
                                                                 : ''
                                                         }`}
                                                     >
                                                         Tạo ví dụ
                                                     </button>
-
-                                                    {loading && (
-                                                        <p>Đang tạo...</p>
+    
+                                                    {loading && <p>Đang tạo...</p>}
+    
+                                                    {word.definition && (
+                                                        <button
+                                                            onClick={() => removeExamples(cardIndex, wordIndex)}
+                                                            className="text-gray-400 hover:text-red-500 ml-2"
+                                                        >
+                                                            Xóa ví dụ
+                                                        </button>
                                                     )}
-
-                                                    <>
-                                                        {word.definition && (
-                                                            <button
-                                                                onClick={() =>
-                                                                    removeExamples(
-                                                                        cardIndex,
-                                                                        wordIndex,
-                                                                    )
-                                                                }
-                                                                className="text-gray-400 hover:text-red-500 ml-2"
-                                                            >
-                                                                Xóa ví dụ
-                                                            </button>
-                                                        )}
-                                                    </>
                                                 </div>
                                             </div>
                                         </Col>
-                                        <Col
-                                            xs={24}
-                                            sm={1}
-                                            md={2}
-                                            lg={2}
-                                            xl={6}
-                                            xxl={8}
-                                        >
+                                        <Col xs={24} sm={1} md={2} lg={2} xl={6} xxl={8}>
                                             <div className="relative w-2/4 h-24 sm:w-2/4 border-2 border-dashed border-gray-400 flex items-center justify-center">
                                                 <div className="relative w-full h-full">
                                                     {word?.image && (
@@ -626,24 +571,12 @@ function FormFlashCard({
                                                             alt="Image"
                                                         />
                                                     )}
-
                                                     {!word?.image && (
                                                         <button
-                                                            onClick={() =>
-                                                                handleCreateImage(
-                                                                    cardIndex,
-                                                                    wordIndex,
-                                                                )
-                                                            }
-                                                            disabled={
-                                                                !isWordValid[
-                                                                    `${cardIndex}-${wordIndex}`
-                                                                ]
-                                                            } // Disable nếu từ không hợp lệ
+                                                            onClick={() => handleCreateImage(cardIndex, wordIndex)}
+                                                            disabled={!isWordValid[`${cardIndex}-${wordIndex}`]}
                                                             className={`absolute inset-0 flex items-center justify-center bg-gray-200 rounded ${
-                                                                !isWordValid[
-                                                                    `${cardIndex}-${wordIndex}`
-                                                                ]
+                                                                !isWordValid[`${cardIndex}-${wordIndex}`]
                                                                     ? 'opacity-50 cursor-not-allowed'
                                                                     : ''
                                                             }`}
@@ -652,49 +585,28 @@ function FormFlashCard({
                                                         </button>
                                                     )}
                                                     <div className="flex items-center">
-                                                        {word?.images?.length >
-                                                            0 && (
+                                                        {word?.images?.length > 0 && (
                                                             <div className="flex space-x-2">
-                                                                {word.images.map(
-                                                                    (
-                                                                        imgSrc: any,
-                                                                        imgIndex: any,
-                                                                    ) => (
-                                                                        <Image
-                                                                            key={
-                                                                                imgIndex
-                                                                            }
-                                                                            src={
-                                                                                imgSrc
-                                                                            }
-                                                                            alt="Image"
-                                                                            className={`w-20 h-30 ${
-                                                                                word.image ===
-                                                                                imgSrc
-                                                                                    ? 'border-2 border-blue-500'
-                                                                                    : ''
-                                                                            }`} // Đánh dấu ảnh đã chọn
-                                                                            onClick={() =>
-                                                                                selectImage(
-                                                                                    cardIndex,
-                                                                                    wordIndex,
-                                                                                    imgSrc,
-                                                                                )
-                                                                            }
-                                                                        />
-                                                                    ),
-                                                                )}
+                                                                {word.images.map((imgSrc, imgIndex) => (
+                                                                    <Image
+                                                                        key={imgIndex}
+                                                                        src={imgSrc}
+                                                                        alt="Image"
+                                                                        className={`w-20 h-30 ${
+                                                                            word.image === imgSrc
+                                                                                ? 'border-2 border-blue-500'
+                                                                                : ''
+                                                                        }`}
+                                                                        onClick={() =>
+                                                                            selectImage(cardIndex, wordIndex, imgSrc)
+                                                                        }
+                                                                    />
+                                                                ))}
                                                             </div>
                                                         )}
-
                                                         {word?.image && (
                                                             <button
-                                                                onClick={() =>
-                                                                    removeImage(
-                                                                        cardIndex,
-                                                                        wordIndex,
-                                                                    )
-                                                                }
+                                                                onClick={() => removeImage(cardIndex, wordIndex)}
                                                                 className="text-gray-400 hover:text-red-500 ml-2"
                                                             >
                                                                 <DeleteOutlined />
@@ -706,29 +618,28 @@ function FormFlashCard({
                                         </Col>
                                     </Row>
                                 </div>
-                            </>
-                        ))}
-                    </>
-                ))}
-                <div className="text-center">
-                    <Button onClick={addCard}>Thêm thẻ</Button>
-                </div>
+                            );
+                        })}
+                    </div>
+                );
+            })}
+            <div className="text-center">
+                <Button onClick={addCard}>Thêm thẻ</Button>
             </div>
-            <div className="flex justify-end">
-                <ButtonPrimary
-                    disabled={cards.length === 0}
-                    label={id ? 'Cập nhật Flashcard' : 'Tạo Flashcard'}
-                    size="large"
-                    onClick={handleSubmit}
-                />
-            </div>
-            {messageProps && (
-                <Message
-                    type={messageProps.type}
-                    content={messageProps.content}
-                />
-            )}
-        </section>
+        </div>
+        <div className="flex justify-end">
+            <ButtonPrimary
+                disabled={cards.length === 0}
+                label={id ? 'Cập nhật Flashcard' : 'Tạo Flashcard'}
+                size="large"
+                onClick={handleSubmit}
+            />
+        </div>
+        {messageProps && (
+            <Message type={messageProps.type} content={messageProps.content} />
+        )}
+    </section>
+    
     );
 }
 

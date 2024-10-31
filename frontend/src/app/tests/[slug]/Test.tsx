@@ -8,7 +8,7 @@ import {
     EyeOutlined,
 } from '@ant-design/icons';
 import { useState, useEffect } from 'react';
-import { Avatar, List, Checkbox, Select, Row, Col,Spin } from 'antd';
+import { Avatar, List, Checkbox, Select, Row, Col, Spin, Layout } from 'antd';
 import type { CheckboxProps } from 'antd';
 import ButtonPrimary from '@/components/shared/ButtonPrimary/ButtonPrimary';
 import Target from '@/components/client/Target/Target';
@@ -17,6 +17,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import Comment from '@/components/client/Comment/Comment';
 
+const { Header, Footer, Sider, Content } = Layout;
 const onChange: CheckboxProps['onChange'] = (e) => {
     console.log(`checked = ${e.target.checked}`);
 };
@@ -30,18 +31,20 @@ function Test({ slug }: { slug: string }) {
     const [totalQuestions, setTotalQuestions] = useState<number>(0);
     const [limit, setLimit] = useState<number>(0);
     const [errors, setErrors] = useState<string>('');
-    const{isLoggedIn,userId}=useAuth()
-    const examId = exam?._id ;
+    const { isLoggedIn, userId } = useAuth();
+    const examId = exam?._id;
     useEffect(() => {
         const getExam = async () => {
             const exam = await ExamService.getAllExamById(slug);
             setExam(exam);
-           
-            const totalQuestions = exam.idSession.reduce((sum: any, session :any) => {
-                return sum + (session.idQuestionGroups?.length || 0);
-            }, 0);
-              setTotalQuestions(totalQuestions);
-            
+
+            const totalQuestions = exam.idSession.reduce(
+                (sum: any, session: any) => {
+                    return sum + (session.idQuestionGroups?.length || 0);
+                },
+                0,
+            );
+            setTotalQuestions(totalQuestions);
         };
         getExam();
     }, [slug]);
@@ -60,8 +63,8 @@ function Test({ slug }: { slug: string }) {
     };
 
     const handleTakeTest = () => {
-        if(!isLoggedIn){
-            router.push('/login')
+        if (!isLoggedIn) {
+            router.push('/login');
         }
         if (selectedSessionSlugs.length === 0) {
             setErrors('Bạn phải chọn ít nhất một phần thi để luyện tập!');
@@ -72,10 +75,9 @@ function Test({ slug }: { slug: string }) {
         const query = selectedSessionSlugs
             .map((slug) => `part=${slug}`)
             .join('&');
-          
-                const url = `/practice?exam=${exam?.slug}&${query}&time=${limit}`;
-                router.push(url);
-           
+
+        const url = `/practice?exam=${exam?.slug}&${query}&time=${limit}`;
+        router.push(url);
     };
 
     return (
@@ -83,27 +85,30 @@ function Test({ slug }: { slug: string }) {
             <Row gutter={[16, 16]}>
                 <Col xs={24} sm={24} md={16} lg={18} xl={19}>
                     <span className="bg-blue-100 text-blue-800 text-xs font-semibold mr-2 px-2.5 py-0.5 rounded">
-                        #{exam?.examType} |  #{exam?.description}
+                        #{exam?.examType} | #{exam?.description}
                     </span>
                     <h2 className="font-bold text-2xl sm:text-xl md:text-3xl lg:text-4xl my-2 break-words">
-    {exam && exam?.title}
-</h2>
+                        {exam && exam?.title}
+                    </h2>
 
                     <p className="text-sm">
-                        <ClockCircleOutlined /> {exam?.durition} phút | <EyeOutlined /> {10} |{' '}
-                        <CommentOutlined /> {10}
+                        <ClockCircleOutlined /> {exam?.durition} phút |{' '}
+                        <EyeOutlined /> {10} | <CommentOutlined /> {10}
                     </p>
                     <p className="text-sm">
-                        {exam?.idSession?.length || 0} phần thi | {totalQuestions} câu hỏi
+                        {exam?.idSession?.length || 0} phần thi |{' '}
+                        {totalQuestions} câu hỏi
                     </p>
-            
+
                     <div className="mb-1">
                         <p className="font-bold">Kết quả làm bài của bạn: </p>
                         <div>
                             {examId ? (
                                 <ExamResults id={examId} />
                             ) : (
-                                <div className='flex justify-center p-10'><Spin></Spin></div>
+                                <div className="flex justify-center p-10">
+                                    <Spin></Spin>
+                                </div>
                             )}
                         </div>
                     </div>
@@ -174,11 +179,18 @@ function Test({ slug }: { slug: string }) {
                 </Col>
 
                 <Col xs={24} sm={24} md={8} lg={6} xl={5}>
-                    <Target />
+                <div className='mb-1'><Target /></div>
+                    <div className='flex justify-center items-center'>
+                        <img
+                            src="/images/HỌC CÙNG FSTUDY 2.png"
+                            className="shadow-md rounded-md mb-2"
+                            alt=""
+                        />
+                    </div>
                 </Col>
             </Row>
             <div className="my-7">
-                    <Comment idCourse={exam?._id} />
+                <Comment idCourse={exam?._id} />
             </div>
         </div>
     );

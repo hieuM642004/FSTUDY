@@ -64,40 +64,9 @@ const Dashboard = () => {
                             Xin chào, {dataUser?.name}
                         </h1>
                     </div>
-                    <div className="flex p-3 gap-6 text-lg">
-                        <div>
-                            <p className="text-gray-600">
-                                {' '}
-                                <SnippetsOutlined className="mr-2" />
-                                Tới kỳ thi IELTS Academic
-                            </p>
-                            <b className="text-gray-600 text-2xl">0 ngày</b>
-                        </div>
-                        <div>
-                            <p className="text-gray-600">
-                                <EditOutlined className="mr-2" />
-                                Ngày dự thi
-                            </p>
-                            <p className="text-gray-600">-</p>
-                        </div>
-                        <div>
-                            <p className="text-gray-600">
-                                <EditOutlined className="mr-2" />
-                                Target score
-                            </p>
-                            <p className="text-gray-600">-</p>
-                        </div>
-                    </div>
+                   
                 </div>
-                <div className=" p-4 mb-6">
-                    <h2 className="text-xl font-semibold text-blue-900 mb-2">
-                        Lịch học hôm nay
-                    </h2>
-                    <p className="text-gray-600">
-                        Bạn không có lịch học hôm nay. Vui lòng vào Lịch học của
-                        tôi để xem thêm hoặc tạo mới.
-                    </p>
-                </div>
+               
                 {userCourse ? (
                     <>
                         <h2 className="text-xl font-semibold #35509a  mb-2">

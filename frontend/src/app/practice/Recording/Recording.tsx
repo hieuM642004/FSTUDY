@@ -28,7 +28,7 @@ const Recording: React.FC<ExtendedRecordingProps> = React.memo(
             Array<{ order: number; value: string | number | null }>
         >(() => JSON.parse(localStorage.getItem('answerList') || '[]'));
 
-        // Hàm lưu vào localStorage
+      
         const saveToLocalStorage = (questions: number[]) => {
             const existingQuestions = localStorage.getItem('activeQuestions');
             const existingArray = existingQuestions
@@ -63,7 +63,7 @@ const Recording: React.FC<ExtendedRecordingProps> = React.memo(
             ) => {
                 const value = e.target.value;
 
-                // Cập nhật localDataselection
+              
                 setLocalDataselection((prev) => {
                     const updatedSelection = {
                         ...prev,
@@ -253,62 +253,67 @@ const Recording: React.FC<ExtendedRecordingProps> = React.memo(
                             </Link>
                         </Tooltip>
                     ) : (
-                        <div className="grid grid-cols-2 gap-2">
-                            {(group?.passageText ||
-                                group?.imageUrl ||
-                                group?.audioUrl) && (
-                                <div>
-                                    {group?.imageUrl && (
-                                        <img
-                                            src={group.imageUrl}
-                                            alt="question"
-                                            className="w-full h-auto border-zinc-950 mt-2 object-cover"
-                                        />
-                                    )}
-                                    {group?.passageText && (
-                                        <p className="font-bold">
-                                            {group.passageText}
-                                        </p>
-                                    )}
-                                    {group?.audioUrl && (
-                                        <audio
-                                            src={group.audioUrl}
-                                            controls
-                                            className="w-full mt-2"
-                                        />
-                                    )}
-                                </div>
-                            )}
+                        <div
+    className={`${
+        group.questions.some((question: Question) => question.questionType === 'multiple-choice')
+            ? 'grid grid-cols-1 gap-2'
+            : 'grid grid-cols-2 gap-2'
+    }`}
+>
+    {(group?.passageText || group?.imageUrl || group?.audioUrl) && (
+        <div className="mb-4">
+            {group?.imageUrl && (
+                <img
+                    src={group.imageUrl}
+                    alt="question"
+                    className="max-w-2xl h-auto border-zinc-950 mt-2 object-cover"
+                />
+            )}
+            {group?.passageText && (
+                <p className="font-bold">
+                    {group.passageText}
+                </p>
+            )}
+            {group?.audioUrl && (
+                <audio
+                    src={group.audioUrl}
+                    controls
+                    className="w-full mt-2"
+                />
+            )}
+        </div>
+    )}
 
-                            {group?.questions.length > 0 && (
-                                <div>
-                                    {group.questions.map(
-                                        (question: Question) => (
-                                            <div
-                                                key={question._id}
-                                                className="mb-4"
-                                            >
-                                                <div className="flex items-center">
-                                                    <button className="rounded-full bg-[#e8f2ff] p-1 text-[#35509a] text-xl font-semibold w-10 h-10 flex items-center justify-center">
-                                                        {question.order}
-                                                    </button>
-                                                    {renderInputField(question)}
-                                                    {question.audioUrl && (
-                                                        <audio
-                                                            src={
-                                                                question.audioUrl
-                                                            }
-                                                            controls
-                                                            className="ml-4 w-full"
-                                                        />
-                                                    )}
-                                                </div>
-                                            </div>
-                                        )
-                                    )}
-                                </div>
-                            )}
+    {group?.questions.length > 0 && (
+        <div>
+            {group.questions.map((question: Question) => (
+                <div key={question._id} className="mb-4">
+                    <div className="flex items-start space-x-1">
+                      
+                        <div className="bg-blue-100 text-blue-800 font-bold w-10 h-10 flex items-center justify-center rounded-full text-xl">
+                            {question.order}
                         </div>
+
+                       
+                        <div className="flex-1">
+                            <p className="font-medium mb-2">{question.passageText}</p>
+                            {renderInputField(question)}
+                        </div>
+                        
+                        {question.audioUrl && (
+                            <audio
+                                src={question.audioUrl}
+                                controls
+                                className="ml-4 w-full mt-2"
+                            />
+                        )}
+                    </div>
+                </div>
+            ))}
+        </div>
+    )}
+</div>
+
                     )}
                 </div>
             ));

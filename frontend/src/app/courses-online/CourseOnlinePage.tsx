@@ -22,23 +22,14 @@ function CoureseOnlinePage() {
     return (
         <>
             {/* banner */}
-            <div className="pb-4 pt-4">
-                <div className="pt-8 px-3">
-                    <a href="" className="mb-8 block">
-                        <Image
-                            src="https://study4.com/static/img/testonline_banner.jpg"
-                            width={0}
-                            height={0}
-                            sizes="100vw"
-                            style={{ width: '100%', height: 'auto' }}
-                            alt="Picture of the author"
-                            className=""
-                        />
-                    </a>
-
-                    <div>
-                        <h1 className=" font-bold text-4xl">Khoá học online</h1>
-                    </div>
+            <div className="pb-4 pt-4 ">
+                <div className="relative ">
+                    <div className="absolute inset-0 bg-gray-800 opacity-30 rounded-md"></div>
+                    <img
+                        src="/images/Learn-English-Faster.jpg"
+                        alt="Picture of the author"
+                        className="w-full max-h-96 object-fill rounded-md shadow-md"
+                    />
                 </div>
             </div>
             <div>

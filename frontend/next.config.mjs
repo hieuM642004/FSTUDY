@@ -14,12 +14,17 @@ const nextConfig = {
   },
   env: {
     baseURL: 'http://localhost:4000',
+    ZEN_QUOTES_API_URL: 'https://zenquotes.io/api/random',
   },
   async rewrites() {
     return [
       {
         source: '/api/laban-plugin',
         destination: 'https://laban.vn/stats/dictplg', 
+      },
+      {
+        source: '/api/random-quote',  
+        destination: 'https://zenquotes.io/api/random',  
       },
     ];
   },

@@ -1,3 +1,4 @@
+import Link from "next/link";
 
 const FooterComponent = () => {
     return (
@@ -40,8 +41,7 @@ const FooterComponent = () => {
                     <p className="text-base font-bold tracking-wide text-gray-900">
                         Hỗ trợ
                     </p>
-                    <a href="#">Hướng dẫn sử dụng</a>
-                    <a href="#">Hướng dẫn mua hàng</a>
+                    <Link href="/instruct/buying-guide">Hướng dẫn mua hàng</Link>
                     <a href="#">Chăm sóc khách hàng</a>
                 </div>
                 <div className="flex flex-col gap-2 text-sm text-gray-500">

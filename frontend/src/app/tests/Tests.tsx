@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Input,Spin } from 'antd';
+import { Input, Spin } from 'antd';
 import ButtonPrimary from '@/components/shared/ButtonPrimary/ButtonPrimary';
 import IELTSCard from '../../components/client/IELTSCard/IELTSCard';
 import Pagination from '../../components/shared/Pagination/Pagination';
@@ -14,14 +14,16 @@ import './Tests.scss';
 const Tests: React.FC = () => {
     const [activeTab, setActiveTab] = useState('all');
     const [tests, setTests] = useState<Exams[]>([]);
-    const [examTypes, setExamTypes] = useState<{ label: string; value: string }[]>([]);
+    const [examTypes, setExamTypes] = useState<
+        { label: string; value: string }[]
+    >([]);
     const [searchQuery, setSearchQuery] = useState('');
     const [empty, setEmpty] = useState('');
-    const [loading, setLoading] = useState(true); 
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchExamTypes = async () => {
-            setLoading(true); 
+            setLoading(true);
             const allExams = await ExamService.getAllExams();
 
             const uniqueExamTypes = Array.from(
@@ -37,7 +39,7 @@ const Tests: React.FC = () => {
             ];
 
             setExamTypes(tabs);
-            setLoading(false); 
+            setLoading(false);
         };
 
         fetchExamTypes();
@@ -46,7 +48,8 @@ const Tests: React.FC = () => {
     useEffect(() => {
         const getTests = async () => {
             setLoading(true);
-            let examTypeQuery = activeTab !== 'all' ? `examType=${activeTab}` : '';
+            let examTypeQuery =
+                activeTab !== 'all' ? `examType=${activeTab}` : '';
             const testsData = await ExamService.getAllExams(examTypeQuery);
 
             const formattedTests = testsData?.data.map((exam: any) => ({
@@ -63,27 +66,29 @@ const Tests: React.FC = () => {
             }));
 
             setTests(formattedTests);
-            setLoading(false); 
+            setLoading(false);
         };
 
         getTests();
     }, [activeTab]);
 
     const handleSearch = async () => {
-        setLoading(true); 
-        const searchExams = await ExamService.getAllExams(`title=${searchQuery}`);
+        setLoading(true);
+        const searchExams = await ExamService.getAllExams(
+            `title=${searchQuery}`,
+        );
         if (searchExams.data.length === 0) {
             setEmpty('Không tìm thấy đề thi');
             setTests([]);
         } else {
             setTests(searchExams.data);
         }
-        setLoading(false); 
+        setLoading(false);
     };
 
     return (
         <>
-            <div className="container mx-auto p-6">
+            <div className="mx-auto p-6">
                 <div className="flex flex-col md:flex-row md:space-x-4 mt-4 gap-8">
                     <Target />
                     <div className="md:basis-2/3 order-2 md:order-1">
@@ -120,7 +125,7 @@ const Tests: React.FC = () => {
                     </div>
                 </div>
 
-                {loading ? ( 
+                {loading ? (
                     <div className="flex justify-center items-center h-64">
                         <Spin></Spin>
                     </div>
@@ -129,29 +134,11 @@ const Tests: React.FC = () => {
                         <div className="w-full md:w-64 order-2 md:order-2 mb-4 md:mb-0">
                             <Link href={'#'}>
                                 <Image
-                                    src="https://study4.com/media/home/HomeBanner/files/2022/07/06/Learning_English_with.jpg"
+                                    src="/images/HỌC CÙNG FSTUDY.png"
                                     alt="Banner"
                                     width={400}
                                     height={100}
-                                    className="mb-4"
-                                />
-                            </Link>
-                            <Link href={'#'}>
-                                <Image
-                                    src="https://study4.com/media/home/HomeBanner/files/2023/03/31/Learning_English_with_1.png"
-                                    alt="Banner"
-                                    width={400}
-                                    height={100}
-                                    className="mb-4"
-                                />
-                            </Link>
-                            <Link href={'#'}>
-                                <Image
-                                    src="https://study4.com/media/home/HomeBanner/files/2021/12/01/download_extension.png"
-                                    alt="Banner"
-                                    width={400}
-                                    height={100}
-                                    className="mb-4"
+                                    className="mb-4 rounded-md shadow-md"
                                 />
                             </Link>
                         </div>
