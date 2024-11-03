@@ -741,6 +741,13 @@ export class CourseController {
         const objectId = new Types.ObjectId(userId);
         return this.courseService.getPurchasesByUserId(objectId);
     }
+
+    @Get('/allPurchases/all')
+    async getAllPurchases(): Promise<Purchase[]> {
+        return this.courseService.getAllPurchases();
+    }
+
+
     @Post('/check-status-transaction')
     async checkStatusTransaction(
         @Body() checkStatusTransactionDto,

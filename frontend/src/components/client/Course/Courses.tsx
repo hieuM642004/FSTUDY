@@ -47,8 +47,8 @@ function Courses({
                                 <h2 className="font-bold text-2xl mb-4 pl-2 min-w-80 capitalize">
                                     {courseType.name}:
                                 </h2>
-                               
-                                <Row gutter={[24, 24]} justify="center">
+
+                                <Row gutter={[24, 24]}>
                                     {data
                                         ?.filter(
                                             (course: any) =>
@@ -62,9 +62,9 @@ function Courses({
                                             return (
                                                 <Col
                                                     key={course._id}
-                                                    xs={24} 
-                                                    sm={12} 
-                                                    md={8} 
+                                                    xs={24}
+                                                    sm={12}
+                                                    md={8}
                                                     lg={6}
                                                     className="flex justify-center"
                                                 >
@@ -102,7 +102,6 @@ function Courses({
                                                                 {course.title}
                                                             </div>
                                                             <div className="px-4">
-                                                     
                                                                 <div className="mt-2">
                                                                     <span className="py-[3px] text-xs px-[10px] bg-[#f0f8ff] rounded-full text-[#35509a]">
                                                                         #Khoá
@@ -150,7 +149,9 @@ function Courses({
                             </div>
                         ))}
                     </div>
-                ) : <Spin className='text-center'/>}
+                ) : (
+                    <Spin className="text-center" />
+                )}
             </div>
         </>
     );
