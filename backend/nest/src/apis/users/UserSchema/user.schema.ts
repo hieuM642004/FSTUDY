@@ -47,6 +47,8 @@ export class User {
 
   @Prop()
   refreshToken: string;
+  @Prop()
+  refreshTokenMobile: string;  
 
   @Prop()
   passwordResetToken: string;
