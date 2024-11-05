@@ -25,7 +25,7 @@ function MenuAdmin() {
 
     const handleMenuClick = (e: any) => {
         setActiveKey(e.key);
-        localStorage.setItem('activeTab', e.key); 
+        localStorage.setItem('activeTab', e.key);
     };
 
     const items = [
@@ -36,7 +36,7 @@ function MenuAdmin() {
         },
         {
             key: '2',
-            icon:  <UserOutlined />,
+            icon: <UserOutlined />,
             label: <Link href="/admin/user">Người dùng</Link>,
         },
         {
@@ -139,6 +139,16 @@ function MenuAdmin() {
             icon: <CommentOutlined />,
             label: <Link href="/admin/comment">Bình luận</Link>,
         },
+        {
+            key: '9',
+            icon: <CommentOutlined />,
+            label: <Link href="/admin/topics">Topic</Link>,
+        },
+        {
+            key: '10',
+            icon: <CommentOutlined />,
+            label: <Link href="/admin/purchases">Purchases</Link>,
+        },
     ];
 
     return (
@@ -146,8 +156,8 @@ function MenuAdmin() {
             <Menu
                 theme="dark"
                 mode="inline"
-                selectedKeys={[activeKey]} 
-                onClick={handleMenuClick} 
+                selectedKeys={[activeKey]}
+                onClick={handleMenuClick}
                 items={items}
             />
         </>

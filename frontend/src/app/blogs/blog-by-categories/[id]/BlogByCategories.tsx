@@ -20,7 +20,7 @@ function PageBlogByCategories({ id }: string | any) {
             const response = await nestApiInstance.get(
                 `/blog/childTopic/filter/${id}`,
             );
-            console.log(response.data.data);
+            console.log(response.data);
 
             setBlogs(response.data.data);
         } catch (error) {
@@ -48,7 +48,7 @@ function PageBlogByCategories({ id }: string | any) {
     }, [trigger]);
 
     const handleBlogUpdate = () => {
-        setTrigger((prev) => !prev); // Toggle to trigger useEffect
+        setTrigger((prev) => !prev);
     };
 
     return (

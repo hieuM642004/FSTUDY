@@ -22,6 +22,7 @@ function BlogDetail({ id }: string | any) {
                 const res = await nestApiInstance.get(`/blog/${id}`);
                 setBlogDetail(res.data.data);
                 setBlogId(res.data.data._id);
+                console.log(res.data.data);
             } catch (error) {
                 console.error('Failed to fetch blogs:', error);
             }
@@ -29,7 +30,8 @@ function BlogDetail({ id }: string | any) {
         const fetchAllBlogs = async () => {
             try {
                 const response = await nestApiInstance.get(`/blog`);
-                setBlogs(response.data.data);
+                setBlogs(response?.data?.data?.blogs);
+
                 // setTotalPages(response.data.totalPages || 1);
             } catch (error) {
                 console.error('Error fetching blogs:', error);

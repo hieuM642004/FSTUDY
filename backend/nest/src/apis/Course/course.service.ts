@@ -1410,6 +1410,22 @@ export class CourseService {
         return purchase;
     }
 
+    async getAllPurchases(): Promise<Purchase[]> {
+        const purchases = await this.purchaseModel
+            .find()
+            .populate('user')
+            .populate('course')
+            .exec();
+        
+        if (!purchases || purchases.length === 0) {
+            throw new InternalServerErrorException(
+                'No purchases found',
+            );
+        }
+    
+        return purchases;
+    }
+
 
 
     async create(createRatingDto: CreateRatingDto) {

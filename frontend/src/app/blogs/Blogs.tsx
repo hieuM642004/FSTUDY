@@ -20,7 +20,8 @@ function Blogs() {
         try {
             const response = await nestApiInstance.get(`/blog`);
 
-            setBlogs(response?.data?.data);
+            setBlogs(response?.data?.data?.blogs);
+            console.log(response?.data?.data?.blogs);
         } catch (error) {
             console.error('Error fetching blogs:', error);
         }
