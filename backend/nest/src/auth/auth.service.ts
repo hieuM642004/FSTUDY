@@ -31,39 +31,45 @@ export class AuthService {
 
     async register(user: User, file: Express.Multer.File): Promise<User> {
         try {
-            // Check if the email already exists
-            const existingUser = await this.userModel.findOne({ email: user.email });
-            if (existingUser) {
-                throw new Error('Email already exists');
-            }
-    
-            const hashedPassword = await bcrypt.hash(user.password, 10);
-            const userWithHashedPassword = {
-                ...user,
-                password: hashedPassword,
-            };
-            const userWithAvatar = {
-                ...userWithHashedPassword,
-                typeLogin: TypeLogin.BASIC,
-                role: UserRole.USER
-            };
-    
-            const createdUser = new this.userModel(userWithAvatar);
-            const savedUser = await createdUser.save();
-    
-            const refreshToken = jwt.sign({ user: savedUser }, process.env.JWT_SECRET); // Adjust payload if needed
-            savedUser.refreshToken = refreshToken;
-    
-            await savedUser.save();
-    
-            return savedUser;
+          // Check if the email already exists
+          const existingUser = await this.userModel.findOne({ email: user.email });
+          if (existingUser) {
+            throw new Error('Email already exists');
+          }
+      
+          const hashedPassword = await bcrypt.hash(user.password, 10);
+          const userWithHashedPassword = {
+            ...user,
+            password: hashedPassword,
+          };
+      
+          const userWithAvatar = {
+            ...userWithHashedPassword,
+            typeLogin: TypeLogin.BASIC,
+            role: UserRole.USER
+          };
+      
+          const createdUser = new this.userModel(userWithAvatar);
+          const savedUser = await createdUser.save();
+      
+          // Generate refresh tokens for both web and mobile
+          const refreshTokenWeb = jwt.sign({ id: savedUser._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
+          const refreshTokenMobile = jwt.sign({ id: savedUser._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
+          
+          savedUser.refreshToken = refreshTokenWeb;
+          savedUser.refreshTokenMobile = refreshTokenMobile;
+      
+          await savedUser.save();
+      
+          return savedUser;
         } catch (error) {
-            console.error('Error creating user:', error);
-            throw error;
+          console.error('Error creating user:', error);
+          throw error;
         }
-    }
+      }
+      
     //Login Google
-    async loginGoogle(user: any): Promise<{ accessToken: string; refreshToken: string }> {
+    async loginGoogle(user: any, device: 'web' | 'mobile' = 'web'): Promise<{ accessToken: string; refreshToken: string }> {
         if (!user) {
             return {
                 accessToken: '',
@@ -73,47 +79,49 @@ export class AuthService {
     
         const email = user.emails[0].value;
         const displayName = user.displayName;
-        const userId = user.id; 
+        const userId = user.id;
         const avatar = user.photos[0].value;
         const slug = await this.generateSlug(displayName);
     
         let existingUser = await this.userModel.findOne({ email });
     
-        if (existingUser) {
-            const accessToken = this.jwtService.sign({
-                id: existingUser._id, 
+        const accessToken = this.jwtService.sign({
+            id: existingUser ? existingUser._id : userId,
+            name: displayName,
+            email,
+            avatar,
+            typeLogin: TypeLogin.GOOGLE,
+            slug,
+            role: UserRole.USER,
+            sub: 'access',
+        });
+    
+        const refreshToken = this.jwtService.sign(
+            {
+                id: existingUser ? existingUser._id : userId,
                 name: displayName,
                 email,
                 avatar,
                 typeLogin: TypeLogin.GOOGLE,
                 slug,
                 role: UserRole.USER,
-                sub: 'access',
-            });
+                sub: 'refresh',
+            },
+            { expiresIn: '7d' },
+        );
     
-            const refreshToken = this.jwtService.sign(
-                {
-                    id: existingUser._id, 
-                    name: displayName,
-                    email,
-                    avatar,
-                    typeLogin: TypeLogin.GOOGLE,
-                    slug,
-                    role: UserRole.USER,
-                    sub: 'refresh',
-                },
-                { expiresIn: '7d' },
-            );
-    
-            existingUser.refreshToken = refreshToken;
+        if (existingUser) {
+            if (device === 'mobile') {
+                existingUser.refreshTokenMobile = refreshToken;
+            } else {
+                existingUser.refreshToken = refreshToken;
+            }
             await existingUser.save();
     
             return { accessToken, refreshToken };
         } else {
-            // Create a new user in the database
             const newUser = await this.userModel.create({
-                id: userId, 
-                username: user.fullname,
+                id: userId,
                 fullname: displayName,
                 email,
                 avatar,
@@ -122,33 +130,11 @@ export class AuthService {
                 role: UserRole.USER,
             });
     
-            const accessToken = this.jwtService.sign({
-                id: newUser._id, 
-                username: user.fullname,
-                fullname: displayName,
-                email,
-                avatar,
-                typeLogin: TypeLogin.GOOGLE,
-                slug,
-                role: UserRole.USER,
-                sub: 'access',
-            });
-    
-            const refreshToken = this.jwtService.sign(
-                {
-                    id: newUser._id, 
-                    name: displayName,
-                    email,
-                    avatar,
-                    typeLogin: TypeLogin.GOOGLE,
-                    slug,
-                    role: UserRole.USER,
-                    sub: 'refresh',
-                },
-                { expiresIn: '7d' },
-            );
-    
-            newUser.refreshToken = refreshToken;
+            if (device === 'mobile') {
+                newUser.refreshTokenMobile = refreshToken;
+            } else {
+                newUser.refreshToken = refreshToken;
+            }
             await newUser.save();
     
             return { accessToken, refreshToken };
@@ -250,9 +236,9 @@ export class AuthService {
 
     async login(
         loginDto: LoginDto,
+        device: 'web' | 'mobile' = 'web',
     ): Promise<{ accessToken: string; refreshToken: string }> {
         const { email, password } = loginDto;
-
         const user = await this.userModel.findOne({ email });
 
         if (!user) {
@@ -278,14 +264,55 @@ export class AuthService {
             expiresIn: process.env.JWT_EXPIRES,
         });
 
-        user.refreshToken = this.jwtService.sign(payload, { expiresIn: '7d' });
+        const refreshToken = this.jwtService.sign(payload, { expiresIn: '7d' });
+
+        if (device === 'mobile') {
+            user.refreshTokenMobile = refreshToken;
+        } else {
+            user.refreshToken = refreshToken;
+        }
         await user.save();
-        const res = await this.userModel.findByIdAndUpdate(user._id, payload);
-        res.refreshToken = user.refreshToken;
-        await res.save();
-        return { accessToken, refreshToken: user.refreshToken };
+
+        return { accessToken, refreshToken };
     }
-    async refreshToken(refreshToken: string): Promise<{ accessToken: string; refreshToken: string }> {
+    async refreshToken(
+        refreshToken: string,
+        device: 'web' | 'mobile' = 'web'
+      ): Promise<{ accessToken: string; refreshToken: string }> {
+        const decodedToken = this.jwtService.decode(refreshToken) as { id: string };
+      
+        if (!decodedToken || !decodedToken.id) {
+          throw new UnauthorizedException('Invalid refresh token');
+        }
+      
+        const user = await this.userModel.findById(decodedToken.id);
+      
+        if (!user) {
+          throw new UnauthorizedException('User not found');
+        }
+      
+        const storedRefreshToken = device === 'mobile' ? user.refreshTokenMobile : user.refreshToken;
+        if (storedRefreshToken !== refreshToken) {
+          throw new UnauthorizedException('Refresh token does not match');
+        }
+      
+        const payload = { id: user._id, username: user.fullname, role: user.role, avatar: user.avatar, email: user.email };
+        const newAccessToken = this.jwtService.sign(payload);
+        const newRefreshToken = this.jwtService.sign(payload, { expiresIn: '7d' });
+      
+        if (device === 'mobile') {
+          user.refreshTokenMobile = newRefreshToken;
+        } else {
+          user.refreshToken = newRefreshToken;
+        }
+        await user.save();
+      
+        return { accessToken: newAccessToken, refreshToken: newRefreshToken };
+      }
+      
+
+    
+    async logout(refreshToken: string, device: 'web' | 'mobile' = 'web'): Promise<void> {
         const decodedToken = this.jwtService.decode(refreshToken) as { id: string };
 
         if (!decodedToken || !decodedToken.id) {
@@ -298,33 +325,13 @@ export class AuthService {
             throw new UnauthorizedException('User not found');
         }
 
-        const payload = { id: user._id, username: user.email, role: user.role };
-        const newAccessToken = this.jwtService.sign(payload);
-        const newRefreshToken = this.jwtService.sign(payload, { expiresIn: '7d' });
-
-        return { accessToken: newAccessToken, refreshToken: newRefreshToken };
-    }
-
-    
-    async logout(refreshToken: string): Promise<void> {
-        const decodedToken = this.jwtService.decode(refreshToken) as {
-            id: string;
-        };
-
-        if (!decodedToken || !decodedToken.id) {
-            throw new UnauthorizedException('Invalid refresh token');
+        if (device === 'mobile') {
+            user.refreshTokenMobile = null;
+        } else {
+            user.refreshToken = null;
         }
-
-        const user = await this.userModel.findById(decodedToken.id);
-
-        if (!user) {
-            throw new UnauthorizedException('User not found');
-        }
-
-        user.refreshToken = null;
         await user.save();
     }
-
     async forgotPassword(email: string): Promise<void> {
         const user = await this.userModel.findOne({ email });
         if (user.typeLogin === TypeLogin.GOOGLE) {

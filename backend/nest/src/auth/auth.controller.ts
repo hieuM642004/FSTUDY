@@ -121,10 +121,11 @@ export class AuthController {
   @Post('/login')
   async login(
     @Body() loginDto: LoginDto,
+    @Body('device') device: 'web' | 'mobile' 
   ): Promise<{ accessToken: string; refreshToken: string } | null> {
     try {
       const { accessToken, refreshToken } =
-        await this.authService.login(loginDto);
+        await this.authService.login(loginDto, device);
       return { accessToken, refreshToken };
     } catch (error) {
       throw error;
@@ -133,22 +134,22 @@ export class AuthController {
   
   @Post('/refresh-token')
   async refreshToken(
-      @Body('refresh_token') refresh_token: string ,
-  ): Promise<{ accessToken: string; refreshToken: string } | null> {
-    
-      if (!refresh_token) {
-          console.error('Refresh token is missing');
-          throw new UnauthorizedException('Refresh token is required');
-      }
+    @Body('refresh_token') refresh_token: string,
+    @Body('device') device: 'web' | 'mobile' = 'web' // Default to 'web' if not provided
+  ): Promise<{ accessToken: string; refreshToken: string }> {
+    if (!refresh_token) {
+      throw new UnauthorizedException('Refresh token is required');
+    }
   
-      try {
-          const { accessToken, refreshToken } = await this.authService.refreshToken(refresh_token);
-          return { accessToken, refreshToken };
-      } catch (error) {
-          console.error('Error refreshing token:', error);
-          throw new UnauthorizedException('Invalid refresh token');
-      }
+    try {
+      const { accessToken, refreshToken } = await this.authService.refreshToken(refresh_token, device);
+      return { accessToken, refreshToken };
+    } catch (error) {
+      console.error('Error refreshing token:', error);
+      throw new UnauthorizedException('Invalid refresh token');
+    }
   }
+  
   @Post('/logout')
   async logout(
     @Body() body: any,
