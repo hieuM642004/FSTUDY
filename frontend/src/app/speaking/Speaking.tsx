@@ -5,32 +5,31 @@ import { ReactMic, ReactMicStopEvent } from 'react-mic';
 import FlashCardService from '@/services/FlashCardService';
 import WavEncoder from 'wav-encoder';
 import { AudioOutlined, LoadingOutlined, RobotOutlined, SendOutlined, SoundOutlined, StopOutlined, UserOutlined } from '@ant-design/icons';
-import { Spin } from 'antd';
-
+import { Spin, Row, Col } from 'antd'; // Import thêm Row và Col từ Ant Design
 
 interface Message {
     sender: 'user' | 'system';
     content: string;
-    audioUrl?: string; 
+    audioUrl?: string;
 }
 
 function Speaking() {
     const [record, setRecord] = useState(false);
-    const [audioBlob, setAudioBlob] = useState<Blob | null>(null); 
-    const [conversation, setConversation] = useState<Message[]>([]); 
-    const [step, setStep] = useState(0); 
-    const [expectedResponse, setExpectedResponse] = useState<string | null>(null);
-    const [similarityPercentage, setSimilarityPercentage] = useState<number | null>(null); 
-    const [end, setEnd] = useState(''); 
+    const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
+    const [conversation, setConversation] = useState<Message[]>([]);
+    const [step, setStep] = useState(0);
+    const [end, setEnd] = useState('');
     const [topics, setTopics] = useState<string[]>([]);
-    const [selectedTopic, setSelectedTopic] = useState<string | null>(null); 
+    const [selectedTopic, setSelectedTopic] = useState<string | null>(null);
     const [loadingSend, setLoadingSend] = useState(false);
     const [loadingRecieve, setLoadingRecieve] = useState(false);
+    const [evaluation, setEvaluation] = useState<string | null>(null); // Đánh giá từ backend
+    const [conversationHistory, setConversationHistory] = useState<string | null>(null); // Lịch sử hội thoại từ backend
 
     useEffect(() => {
         const fetchTopics = async () => {
             try {
-                const response = await FlashCardService.getTopicInConversation(); 
+                const response = await FlashCardService.getTopicInConversation();
                 setTopics(response.topics);
             } catch (error) {
                 console.error('Error fetching topics:', error);
@@ -38,28 +37,40 @@ function Speaking() {
         };
         fetchTopics();
     }, []);
-    
+
     const selectTopic = async (topic: string) => {
         setLoadingRecieve(true);
         setSelectedTopic(topic);
         setStep(0);
+        setEvaluation(null); // Reset evaluation when a new topic is selected
+        setConversationHistory(null); // Reset conversation history
         try {
             const response = await FlashCardService.startConversation(topic);
-            const { text_response, audio_file_url, expected_user_response } = response.data;
+            const { text_response, audio_file_url } = response.data;
+    
+            // Thêm phản hồi từ hệ thống vào hội thoại
             setConversation([{ sender: 'system', content: text_response, audioUrl: audio_file_url }]);
-            setExpectedResponse(expected_user_response);
+    
+            // Tự động phát âm thanh từ backend
+            if (audio_file_url) {
+                const audio = new Audio(audio_file_url);
+                audio.play();
+            }
+    
             setLoadingRecieve(false);
         } catch (error) {
             console.error('Error fetching first system response:', error);
+            setLoadingRecieve(false);
         }
     };
-  
+    
+
     const startRecording = () => {
         setRecord(true);
     };
 
     const stopRecording = async (recordedData: ReactMicStopEvent) => {
-        setRecord(false); 
+        setRecord(false);
         try {
             const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
             const audioContext = new AudioContext();
@@ -67,7 +78,7 @@ function Speaking() {
             const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
             const wavData = await WavEncoder.encode({
                 sampleRate: audioBuffer.sampleRate,
-                channelData: [audioBuffer.getChannelData(0)] 
+                channelData: [audioBuffer.getChannelData(0)]
             });
             const wavBlob = new Blob([wavData], { type: 'audio/wav' });
             setAudioBlob(wavBlob);
@@ -77,42 +88,55 @@ function Speaking() {
     };
 
     const sendAudio = async () => {
-        if (!audioBlob || !selectedTopic) return;
-        setLoadingSend(true); 
+        if (!audioBlob || !selectedTopic || !conversation.length) return;
+        setLoadingSend(true);
+    
+        // Tạo FormData để gửi file âm thanh
         const formData = new FormData();
-        const stepToSend = step === 0 ? step + 1 : step;
-        formData.append('file', audioBlob, 'user_audio.wav');
-        formData.append('topic', selectedTopic);
-        formData.append('step', String(stepToSend));  
+        formData.append('audio_file', audioBlob, 'user_audio.wav'); // Gửi file âm thanh với tên 'user_audio.wav'
+    
+        // Lấy câu hỏi của hệ thống từ hội thoại hiện tại
+        const system_response = conversation[conversation.length - 1]?.content || '';
+        if (!system_response) {
+            console.error('System response is empty');
+            setLoadingSend(false);
+            return;
+        }
+        formData.append('system_response', system_response); // Gửi câu hỏi của hệ thống
+    
         try {
             const response = await FlashCardService.speaking(formData);
-            const { text_response, user_input_text, similarity_percentage, expected_user_response, audio_file_url, next_step } = response.data;
-            if (response.data.error && response.data.error === "End of conversation") {
+            console.log(response); // Log toàn bộ phản hồi để kiểm tra dữ liệu
+    
+            const { text_response, audio_file_url, user_response_text, evaluation, conversation_history } = response.data;
+    
+            if (evaluation && conversation_history) {
                 setEnd('Kết thúc');
+                setEvaluation(evaluation); // Hiển thị đánh giá từ mô hình
+                setConversationHistory(conversation_history); // Lưu lịch sử hội thoại
                 console.log("Conversation has ended");
                 return;
             }
-            setSimilarityPercentage(similarity_percentage);
+    
+            // Thêm phản hồi của người dùng và câu trả lời tiếp theo của hệ thống vào hội thoại
             setConversation((prev) => [
                 ...prev,
-                { sender: 'user', content: user_input_text || '...User Speech...' },
+                { sender: 'user', content: user_response_text }, // Sử dụng nội dung văn bản từ âm thanh
                 { sender: 'system', content: text_response, audioUrl: audio_file_url }
             ]);
+    
             const audio = new Audio(audio_file_url);
             audio.play();
-            setStep(next_step); 
-            setExpectedResponse(expected_user_response);
+            setStep((prevStep) => prevStep + 1);
         } catch (error) {
             console.error('Error sending audio:', error);
         } finally {
-            setLoadingSend(false); 
+            setLoadingSend(false);
             setAudioBlob(null);
         }
     };
+    
 
-    const continueConversation = () => {
-        setStep((prevStep) => prevStep + 1);
-    };
     function getRandomBgColor() {
         const colors = [
             'bg-red-500',
@@ -127,31 +151,31 @@ function Speaking() {
         ];
         return colors[Math.floor(Math.random() * colors.length)];
     }
+
     return (
         <div className='p-10'>
             <h2 className='text-2xl font-semibold p-4 shadow-md rounded-md mb-3'>Luyện tập speaking</h2>
             {!selectedTopic && (
-               <div className='mb-4'>
-               {topics && topics.length > 0 ? (
-                   <div className='grid grid-cols-2 gap-4'> 
-                       {topics.map((topic) => (
-                           <button
-                               key={topic}
-                               onClick={() => selectTopic(topic)}
-                               className={`text-white font-semibold py-2 px-4 rounded ${getRandomBgColor()}`} 
-                           >
-                               {topic.charAt(0).toUpperCase() + topic.slice(1)}
-                           </button>
-                       ))}
-                   </div>
-               ) : (
-                  <span className='flex justify-center'><Spin ></Spin></span>
-               )}
-           </div>
+                <div className='mb-4'>
+                    {topics && topics.length > 0 ? (
+                        <div className='grid grid-cols-2 gap-4'>
+                            {topics.map((topic) => (
+                                <button
+                                    key={topic}
+                                    onClick={() => selectTopic(topic)}
+                                    className={`text-white font-semibold py-2 px-4 rounded ${getRandomBgColor()}`}
+                                >
+                                    {topic.charAt(0).toUpperCase() + topic.slice(1)}
+                                </button>
+                            ))}
+                        </div>
+                    ) : (
+                        <span className='flex justify-center'><Spin /></span>
+                    )}
+                </div>
             )}
             {selectedTopic && (
                 <div>
-                    <span className='flex justify-center'>{loadingRecieve && <Spin /> }</span>
                     <div className='border p-4 mb-4' style={{ maxHeight: '300px', overflowY: 'auto' }}>
                         {conversation.map((msg, index) => (
                             <div key={index} className={`mb-2 ${msg.sender === 'user' ? 'text-right' : 'text-left'}`}>
@@ -165,43 +189,52 @@ function Speaking() {
                                         </button>
                                     </div>
                                 )}
-                                {/* {msg.sender === 'user' && similarityPercentage !== null && (
-                                    <div className="mt-2 text-right">
-                                        <h4 className="inline">Tỷ lệ phát âm của bạn:</h4>
-                                        <p className="inline ml-2">{similarityPercentage}%</p>
-                                    </div>
-                                )} */}
                             </div>
                         ))}
                     </div>
-                    <div className='flex justify-center mb-2'>
-                        {expectedResponse && (
-                            <div className="flex">
-                                <h4>Phản hồi mong đợi tiếp theo:</h4>
-                                <p>{expectedResponse}</p>
+                    <Row gutter={16}>
+                        <Col span={12}>
+                            <div className="border p-4 rounded bg-gray-100">
+                                <h4 className="font-semibold mb-2">Đánh giá:</h4>
+                                {evaluation ? (
+                                    <div dangerouslySetInnerHTML={{ __html: evaluation }}></div>
+                                ) : (
+                                    <Spin />
+                                )}
                             </div>
-                        )}
-                        <ReactMic record={record} className="sound-wave h-8 rounded-md" onStop={stopRecording} mimeType="audio/wav" />
-                    </div>
-                    <div className='flex justify-center'>
-                        <button onClick={startRecording} disabled={record} className='bg-[#35509a] p-2 rounded-md text-white'>
-                            <AudioOutlined />
-                        </button>
-                        <button onClick={stopRecording} disabled={!record} className='ml-2 p-2 bg-gray-200 rounded-md text-black'>
-                            <StopOutlined />
-                        </button>
-                        {audioBlob && (
-                            <div>
-                                <button onClick={sendAudio} className='ml-2 p-2 bg-gray-200 rounded-md text-black'>
-                                    {loadingSend ? <LoadingOutlined /> : <SendOutlined />}
-                                </button>
+                        </Col>
+                        <Col span={12}>
+                            <div className="border p-4 rounded bg-white">
+                                <h4 className="font-semibold mb-2">Lịch sử hội thoại:</h4>
+                                {conversationHistory ? (
+                                    <div dangerouslySetInnerHTML={{ __html: conversationHistory }}></div>
+                                ) : (
+                                    <Spin />
+                                )}
                             </div>
-                        )}
-                    </div>
-                 
-                    <p>{end}</p>
+                        </Col>
+                    </Row>
                 </div>
             )}
+            <div className='flex justify-center mb-2'>
+                <ReactMic record={record} className="sound-wave h-8 rounded-md" onStop={stopRecording} mimeType="audio/wav" />
+            </div>
+            <div className='flex justify-center'>
+                <button onClick={startRecording} disabled={record} className='bg-[#35509a] p-2 rounded-md text-white'>
+                    <AudioOutlined />
+                </button>
+                <button onClick={stopRecording} disabled={!record} className='ml-2 p-2 bg-gray-200 rounded-md text-black'>
+                    <StopOutlined />
+                </button>
+                {audioBlob && (
+                    <div>
+                        <button onClick={sendAudio} className='ml-2 p-2 bg-gray-200 rounded-md text-black'>
+                            {loadingSend ? <LoadingOutlined /> : <SendOutlined />}
+                        </button>
+                    </div>
+                )}
+            </div>
+            <p>{end}</p>
         </div>
     );
 }

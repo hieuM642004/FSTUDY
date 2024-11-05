@@ -9,7 +9,7 @@ function Dropdowns({items , title , stylecss} : any) {
                 <a onClick={(e) => e.preventDefault()}>
                     <Space>
                       {title}
-                        <DownOutlined />
+                      
                     </Space>
                 </a>
             </Dropdown>

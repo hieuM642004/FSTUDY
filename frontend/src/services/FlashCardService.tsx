@@ -116,18 +116,16 @@ static async startConversation(topic: string) {
 }
 
     
-    static async speaking(data:any) {
-        try {
-            const response = await pythonApiInstance.post(
-                `/conversation`, 
-               data
-            );
-            return response;
-        } catch (error) {
-            console.error('Error in getMeasuringProficiency:', error);
-            throw error;
-        }
+static async speaking(data: any) {
+    try {
+        // Gọi endpoint mới `/process-user-response`
+        const response = await pythonApiInstance.post(`/process-user-response`, data);
+        return response;
+    } catch (error) {
+        console.error('Error in speaking:', error);
+        throw error;
     }
+}
     static async getTopicInConversation() {
         try {
             const response = await pythonApiInstance.get(`/get-topics`);

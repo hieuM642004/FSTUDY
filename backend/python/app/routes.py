@@ -250,49 +250,59 @@ def search_video():
     return jsonify(results), 200
 
 
-cred = credentials.Certificate('./app/keyfirebase.json')
-firebase_admin.initialize_app(cred, {
-    'storageBucket': 'podcast-4073a.appspot.com'
-})
-
+cred = Credentials.from_service_account_file('./app/sheet.json', scopes=['https://www.googleapis.com/auth/spreadsheets'])
+client = gspread.authorize(cred)
 spreadsheet_id = '1_YqlF-DWDpsOhv2KlFoKsE6bypYnkBvoRr9ZCIhtXxc'
 sheet_name = 'fsyudy'
 
+firebase_cred = credentials.Certificate('./app/keyfirebase.json')
+firebase_admin.initialize_app(firebase_cred, {
+    'storageBucket': 'podcast-4073a.appspot.com'
+})
+
+# Biến toàn cục để lưu trữ trạng thái hội thoại
+user_responses_list = []
+current_step = 0
+system_responses_cache = []
+current_topic = ""  # Thêm biến để lưu trữ chủ đề hiện tại
+
+# Đọc dữ liệu từ Google Sheets
 def read_data_from_sheets(spreadsheet_id, sheet_name):
-  
-    creds = Credentials.from_service_account_file('./app/sheet.json', scopes=['https://www.googleapis.com/auth/spreadsheets'])
-    
-    
-    client = gspread.authorize(creds)
-    
-    
     workbook = client.open_by_key(spreadsheet_id)
-    
-   
     worksheet = workbook.worksheet(sheet_name)
-    
-   
     values = worksheet.get_all_values()
-    
     if not values:
         print('No data found.')
     return values
 
-
+# Lấy dữ liệu hội thoại theo chủ đề
 def get_conversation_data(topic):
-    
     data = read_data_from_sheets(spreadsheet_id, sheet_name)
-
-   
     filtered_data = [row for row in data if row[0] == topic]
-
-   
     system_responses = [row[2] for row in filtered_data]
-    user_expected_responses = [row[3] for row in filtered_data]
-    
-    return system_responses, user_expected_responses
+    return system_responses
+
+# Chuyển văn bản thành giọng nói
+def text_to_speech(text, output_file):
+    tts = gTTS(text=text, lang='en')
+    tts.save(output_file)
+    return output_file
 
 
+# Chuyển âm thanh thành văn bản
+def audio_to_text(audio_file_path):
+    recognizer = sr.Recognizer()
+    try:
+        with sr.AudioFile(audio_file_path) as source:
+            audio_data = recognizer.record(source)
+            text = recognizer.recognize_google(audio_data)
+            return text
+    except sr.UnknownValueError:
+        return "Speech recognition could not understand the audio"
+    except sr.RequestError as e:
+        return f"Speech recognition service error: {str(e)}"
+
+# Tải lên Firebase
 def upload_audio_to_firebase(local_file_path, audio_name):
     bucket = storage.bucket()
     blob = bucket.blob(f'audio/{audio_name}')
@@ -300,120 +310,126 @@ def upload_audio_to_firebase(local_file_path, audio_name):
     blob.make_public()
     return blob.public_url
 
-
-def text_to_speech(text, output_file):
-    tts = gTTS(text=text, lang='en')
-    tts.save(output_file)
-    return output_file
-
-def speech_to_text(audio_file_path):
-    recognizer = sr.Recognizer()
-    with sr.AudioFile(audio_file_path) as source:
-        audio = recognizer.record(source)
-    try:
-        text = recognizer.recognize_google(audio, language="en-US")
-        return text
-    except sr.UnknownValueError:
-        return "Sorry, I couldn't understand what you said."
-    except sr.RequestError:
-        return "Could not request results from the speech recognition service."
-
-def calculate_similarity(user_input, expected_response):
-    ratio = difflib.SequenceMatcher(None, user_input.strip().lower(), expected_response.strip().lower()).ratio()
-    return round(ratio * 100, 2)
-
+# API: Lấy danh sách chủ đề
 @generate_response_api.route('/get-topics', methods=['GET'])
 def get_topics():
-   
     data = read_data_from_sheets(spreadsheet_id, sheet_name)
-
-   
-    topics = list(set(row[0] for row in data[1:]))  
-
+    topics = list(set(row[0] for row in data[1:]))
     return jsonify({"topics": topics})
 
+# API: Bắt đầu hội thoại
 @generate_response_api.route('/start-conversation', methods=['POST'])
 def start_conversation():
+    global current_step, system_responses_cache, user_responses_list, current_topic
     topic = request.form.get('topic', '')
-
- 
-    system_responses, user_expected_responses = get_conversation_data(topic)
-
-    if not system_responses:
+    
+    # Lấy dữ liệu hội thoại cho chủ đề
+    system_responses_cache = get_conversation_data(topic)
+    if not system_responses_cache:
         return jsonify({"error": "Invalid topic"}), 400
 
-  
-    system_response = system_responses[0]
-    expected_user_response = user_expected_responses[0]
+    current_topic = topic  # Lưu chủ đề hiện tại
+    current_step = 0  # Đặt bước bắt đầu về 0
+    user_responses_list = []  # Đặt lại danh sách phản hồi
+    system_response = system_responses_cache[current_step]
 
-
-    audio_file = f"response_{topic}_0.mp3"
+    # Chuyển văn bản thành giọng nói
+    audio_file = f"response_{topic}_{current_step}.mp3"
     text_to_speech(system_response, audio_file)
-
-  
     audio_url = upload_audio_to_firebase(audio_file, audio_file)
-
     os.remove(audio_file)
 
-   
     return jsonify({
         "text_response": system_response,
-        "audio_file_url": audio_url,
-        "expected_user_response": expected_user_response
+        "audio_file_url": audio_url
     })
 
+@generate_response_api.route('/process-user-response', methods=['POST'])
+def process_user_response():
+    global current_step, system_responses_cache, user_responses_list, current_topic
 
-@generate_response_api.route('/conversation', methods=['POST'])
-def conversation():
-    step = int(request.form.get('step', 1))
-    topic = request.form.get('topic', '')
+    # Nhận file âm thanh từ yêu cầu
+    audio_file = request.files.get('audio_file')
+    if not audio_file or current_step >= len(system_responses_cache):
+        return jsonify({"error": "Invalid input or conversation already ended"}), 400
 
-   
-    system_responses, user_expected_responses = get_conversation_data(topic)
+    # Lưu file âm thanh tạm thời
+    audio_file_path = f"./temp_audio_{current_step}.wav"
+    audio_file.save(audio_file_path)
 
-    if not system_responses:
-        return jsonify({"error": "Invalid topic"}), 400
+    # Chuyển đổi âm thanh thành văn bản
+    user_response_text = audio_to_text(audio_file_path)
+    os.remove(audio_file_path)  # Xóa file âm thanh tạm sau khi xử lý
 
- 
-    if step < len(system_responses):
-        system_response = system_responses[step]
-        expected_user_response = user_expected_responses[step]
+    # Lưu phản hồi của người dùng vào danh sách tạm thời
+    user_responses_list.append({
+        "system_response": system_responses_cache[current_step],
+        "user_response": user_response_text
+    })
+
+    # Kiểm tra xem có tiếp tục hay không
+    current_step += 1
+    if current_step < len(system_responses_cache):
+        # Tiếp tục với câu hỏi tiếp theo
+        system_response = system_responses_cache[current_step]
+        audio_file = f"response_{current_topic}_{current_step}.mp3"
+        text_to_speech(system_response, audio_file)
+        audio_url = upload_audio_to_firebase(audio_file, audio_file)
+        os.remove(audio_file)
+
+        return jsonify({
+            "text_response": system_response,
+            "audio_file_url": audio_url,
+            "user_response_text": user_response_text 
+        })
     else:
-        return jsonify({"error": "End of conversation"}), 400
+        # Kết thúc hội thoại và gửi dữ liệu lên Gemini
+        conversation_history = "".join(
+            f"<div class='conversation'><strong>System:</strong> {item['system_response']}<br>"
+            f"<strong>User:</strong> {item['user_response']}</div><br>"
+            for item in user_responses_list
+        )
 
-    
-    if 'file' not in request.files:
-        return jsonify({"error": "No audio file found"}), 400
+        # Tạo prompt yêu cầu mô hình Gemini trả về nội dung HTML
+        prompt = (
+            f"Please evaluate the user's responses based on the IELTS Speaking criteria. "
+            f"Here is the conversation in HTML format:\n\n{conversation_history}\n\n"
+            f"Provide a detailed assessment in HTML format based on the following IELTS criteria:\n\n"
+            f"<h2>IELTS Speaking Assessment</h2>"
+            f"<h3>1. Fluency and Coherence</h3>"
+            f"<p>Comment on the fluency, natural flow of speech, and the logical arrangement of ideas, and provide a score out of 9.</p>"
+            f"<h3>2. Lexical Resource</h3>"
+            f"<p>Evaluate the variety and appropriateness of the vocabulary used, including any paraphrasing or idiomatic expressions, and provide a score out of 9.</p>"
+            f"<h3>3. Grammatical Range and Accuracy</h3>"
+            f"<p>Assess the range and accuracy of grammatical structures, mentioning any mistakes or strengths, and provide a score out of 9.</p>"
+            f"<h3>4. Pronunciation</h3>"
+            f"<p>Discuss the clarity of the pronunciation, stress, intonation, and any areas of difficulty, and provide a score out of 9.</p>"
+            f"<h3>Overall Performance</h3>"
+            f"<p>Provide a summary of the overall performance, along with recommendations for improvement.</p>"
+        )
 
-    file = request.files['file']
-    if file.filename == '':
-        return jsonify({"error": "No file selected"}), 400
+        # Sử dụng mô hình Gemini để đánh giá phản hồi
+        model = genai.GenerativeModel("gemini-1.5-flash")
+        response = model.generate_content(prompt)
+        evaluation_html = response.text.strip()
 
-    file_path = os.path.join("temp_user_audio.wav")
-    file.save(file_path)
+        # Tạo HTML cho lịch sử hội thoại
+        conversation_history_html = (
+            "<div class='conversation-history'>"
+            "<h3>Conversation History</h3>"
+            f"{conversation_history}"
+            "</div>"
+        )
 
-    
-    user_input = speech_to_text(file_path)
-    os.remove(file_path)
+        # Đặt lại trạng thái
+        current_step = 0
+        system_responses_cache = []
+        user_responses_list.clear()
 
-   
-    similarity_percentage = calculate_similarity(user_input, expected_user_response)
-
-    
-    audio_file = f"response_{topic}_{step}.mp3"
-    text_to_speech(system_response, audio_file)
-    audio_url = upload_audio_to_firebase(audio_file, audio_file)
-    os.remove(audio_file)
-
-    return jsonify({
-        "text_response": system_response,
-        "user_input_text": user_input,
-        "similarity_percentage": similarity_percentage,
-        "audio_file_url": audio_url,
-        "next_step": step + 1,
-        "expected_user_response": expected_user_response
-    })
-
+        return jsonify({
+            "evaluation": evaluation_html,
+            "conversation_history": conversation_history_html
+        })
 
 
 

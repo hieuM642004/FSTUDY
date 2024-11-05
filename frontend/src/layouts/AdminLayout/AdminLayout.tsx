@@ -99,6 +99,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
                             user={user as any}
                             isAdmin={isAdmin}
                             itemsdropdown={itemsdropdown}
+                            
                         />
                     </div>
                 </Header>

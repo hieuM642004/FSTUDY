@@ -22,6 +22,7 @@ const User: React.FC<UserAvatarDropdownProps> = ({
     return (
         <Dropdowns
             items={itemsdropdown}
+            
             title={
                 user?.avatar ? (
                     <>

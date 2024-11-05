@@ -140,11 +140,7 @@ function Login() {
                             className="w-full flex justify-center mb-3"
                         />
                     </Form>
-                    <ButtonOutline
-                        size="large"
-                        label="Đăng nhập với Facebook"
-                        className="w-full mt-2 text-[#35509a] hover:bg-[#35509a] mb-3"
-                    />
+             
                     <ButtonOutline
                         size="large"
                         label="Đăng nhập với Google"
