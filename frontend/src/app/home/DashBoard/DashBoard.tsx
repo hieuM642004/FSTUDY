@@ -7,6 +7,9 @@ import { useTypedSelector } from '@/hooks/useTypedSelector';
 import { RootState } from '@/lib/redux/store';
 import { fetchUserData } from '@/lib/redux/features/user/userSlice';
 import HomeService from '@/services/home/HomeService';
+import { Typography } from 'antd';
+
+const { Paragraph } = Typography;
 
 const Dashboard = () => {
     const dispatch = useAppDispatch();
@@ -137,11 +140,20 @@ const Dashboard = () => {
                                                                     <div className="text-gray-600">
                                                                         Tiếp tục
                                                                         bài học:{' '}
-                                                                        {
-                                                                            item
-                                                                                .course
-                                                                                .detail_short_description
-                                                                        }
+                                                                        <Paragraph
+                                                                            ellipsis={{
+                                                                                rows: 3,
+                                                                                expandable:
+                                                                                    true,
+                                                                                symbol: 'xem thêm',
+                                                                            }}
+                                                                        >
+                                                                            {
+                                                                                item
+                                                                                    .course
+                                                                                    .detail_short_description
+                                                                            }
+                                                                        </Paragraph>
                                                                     </div>
                                                                 </div>
                                                             </Link>
@@ -203,9 +215,18 @@ const Dashboard = () => {
                                                         </div>
                                                         <div className="text-gray-600">
                                                             Tiếp tục bài học:{' '}
-                                                            {
-                                                                item.detail_short_description
-                                                            }
+                                                            <Paragraph
+                                                                ellipsis={{
+                                                                    rows: 3,
+                                                                    expandable:
+                                                                        true,
+                                                                    symbol: 'xem thêm',
+                                                                }}
+                                                            >
+                                                                {
+                                                                    item.detail_short_description
+                                                                }
+                                                            </Paragraph>
                                                         </div>
                                                     </div>
                                                 </Link>
