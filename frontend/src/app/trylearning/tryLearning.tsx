@@ -9,8 +9,9 @@ import {
 } from '@ant-design/icons';
 import { Button, Layout, Menu, Skeleton, Tooltip } from 'antd';
 import { nestApiInstance } from '../../constant/api';
-import { jwtDecode } from 'jwt-decode'; 
+import { jwtDecode } from 'jwt-decode';
 import { getCookie } from 'cookies-next';
+import Link from 'next/link';
 
 // Import các component chính xác
 import LessonsHandlePage from './lessons-handle/quizz/LessonsQuiz';
@@ -24,14 +25,26 @@ const TryLearningPages = ({ id }: { id: any }) => {
     const [collapsed, setCollapsed] = useState(false);
     const [lessonsCourse, setLessonsCourse] = useState<any>(null);
     const [selectedKey, setSelectedKey] = useState<string | null>(null);
-    const [selectedContent, setSelectedContent] = useState<React.ReactNode>(null);
+    const [selectedContent, setSelectedContent] =
+        useState<React.ReactNode>(null);
     const [progressData, setProgressData] = useState<any>({});
     const [userId, setUserId] = useState<string | null>(null);
     const [userPurchased, setUserPurchased] = useState<boolean>(false);
+    const [checkIsFree, setCheckIsFree] = useState(false);
 
     const fetchLessonsCourse = async () => {
         try {
             const response = await nestApiInstance.get(`/course/${id}`);
+            console.log('check data:', response.data.lessons);
+            const res = response.data;
+
+            res?.lessons?.some((lesson: any) => {
+                if (lesson?.isFree) {
+                    console.log('checked');
+                    setCheckIsFree(true);
+                    return;
+                }
+            });
             setLessonsCourse(response.data);
         } catch (error) {
             console.error('Error fetching course detail:', error);
@@ -41,7 +54,9 @@ const TryLearningPages = ({ id }: { id: any }) => {
     const fetchProgressData = async () => {
         if (userId) {
             try {
-                const response = await nestApiInstance.get(`/course/progressAll/${userId}`);
+                const response = await nestApiInstance.get(
+                    `/course/progressAll/${userId}`,
+                );
                 setProgressData(response.data);
             } catch (error) {
                 console.error('Error fetching progress data:', error);
@@ -52,7 +67,9 @@ const TryLearningPages = ({ id }: { id: any }) => {
     const checkUserPurchase = async () => {
         if (userId) {
             try {
-                const response = await nestApiInstance.get(`/course/check/${userId}/${id}`);
+                const response = await nestApiInstance.get(
+                    `/course/check/${userId}/${id}`,
+                );
                 setUserPurchased(response.data.paymentStatus === 'COMPLETED');
             } catch (error) {
                 console.error('Error checking user purchase:', error);
@@ -83,9 +100,17 @@ const TryLearningPages = ({ id }: { id: any }) => {
     }, [id, userId]);
 
     useEffect(() => {
-        if (lessonsCourse && lessonsCourse.lessons && lessonsCourse.lessons.length > 0) {
+        if (
+            lessonsCourse &&
+            lessonsCourse.lessons &&
+            lessonsCourse.lessons.length > 0
+        ) {
             const firstLesson = lessonsCourse.lessons[0];
-            if (firstLesson && firstLesson.content && firstLesson.content.length > 0) {
+            if (
+                firstLesson &&
+                firstLesson.content &&
+                firstLesson.content.length > 0
+            ) {
                 const firstContent = firstLesson.content[0];
                 if (firstContent) {
                     selectContentBasedOnType(firstContent);
@@ -96,13 +121,25 @@ const TryLearningPages = ({ id }: { id: any }) => {
 
     const selectContentBasedOnType = (content: any) => {
         if (content.quiz?.length > 0) {
-            handleMenuClick(`quiz-${content._id}`, <LessonsHandlePage id={content._id} />);
+            handleMenuClick(
+                `quiz-${content._id}`,
+                <LessonsHandlePage id={content._id} />,
+            );
         } else if (content.fill_in_the_blank?.length > 0) {
-            handleMenuClick(`fill_in_the_blank-${content._id}`, <FillInTheBlankPage id={content._id} />);
+            handleMenuClick(
+                `fill_in_the_blank-${content._id}`,
+                <FillInTheBlankPage id={content._id} />,
+            );
         } else if (content.video?.length > 0) {
-            handleMenuClick(`video-${content._id}`, <VideoPage id={content._id} />);
+            handleMenuClick(
+                `video-${content._id}`,
+                <VideoPage id={content._id} />,
+            );
         } else if (content.word_matching?.length > 0) {
-            handleMenuClick(`word_matching-${content._id}`, <WordMatchingPage id={content._id} />);
+            handleMenuClick(
+                `word_matching-${content._id}`,
+                <WordMatchingPage id={content._id} />,
+            );
         }
     };
 
@@ -111,13 +148,19 @@ const TryLearningPages = ({ id }: { id: any }) => {
 
         switch (type) {
             case 'quiz':
-                progressItem = progressData.quiz?.find((item: any) => item.quizId === contentId);
+                progressItem = progressData.quiz?.find(
+                    (item: any) => item.quizId === contentId,
+                );
                 break;
             case 'fill_in_the_blank':
-                progressItem = progressData.fillInTheBlank?.find((item: any) => item.fillInTheBlankId === contentId);
+                progressItem = progressData.fillInTheBlank?.find(
+                    (item: any) => item.fillInTheBlankId === contentId,
+                );
                 break;
             case 'video':
-                progressItem = progressData.video?.find((item: any) => item.videoId === contentId);
+                progressItem = progressData.video?.find(
+                    (item: any) => item.videoId === contentId,
+                );
                 break;
             case 'word_matching':
                 const wordMatching = progressData.wordMatching;
@@ -139,90 +182,129 @@ const TryLearningPages = ({ id }: { id: any }) => {
         setSelectedContent(component);
     };
 
-    const items = lessonsCourse?.lessons?.map((lesson: any, lessonIndex: number) => {
-        const childrenItems: any[] = [];
+    const items =
+        lessonsCourse?.lessons?.map((lesson: any, lessonIndex: number) => {
+            const childrenItems: any[] = [];
 
-        if (!lesson.isFree && !userPurchased) {
+            if (!lesson.isFree && !userPurchased) {
+                return {
+                    key: `sub${lessonIndex + 1}`,
+                    label: (
+                        <Tooltip title="Xin vui lòng kích hoạt khóa học">
+                            <span>{lesson.title} </span>
+                        </Tooltip>
+                    ),
+                    icon: <BookOutlined />,
+                    disabled: true,
+                };
+            }
+
+            lesson?.content?.forEach((content: any) => {
+                Object.keys(content).forEach((contentType) => {
+                    switch (contentType) {
+                        case 'quiz':
+                            if (content.quiz?.length > 0) {
+                                childrenItems.push({
+                                    key: `quiz-${content._id}`,
+                                    label: (
+                                        <>
+                                            Quiz{' '}
+                                            {getProgressStatus(
+                                                content._id,
+                                                'quiz',
+                                            )}
+                                        </>
+                                    ),
+                                    onClick: () =>
+                                        handleMenuClick(
+                                            `quiz-${content._id}`,
+                                            <LessonsHandlePage
+                                                id={content._id}
+                                            />,
+                                        ),
+                                });
+                            }
+                            break;
+                        case 'fill_in_the_blank':
+                            if (content.fill_in_the_blank?.length > 0) {
+                                childrenItems.push({
+                                    key: `fill_in_the_blank-${content._id}`,
+                                    label: (
+                                        <>
+                                            Fill in the Blank{' '}
+                                            {getProgressStatus(
+                                                content._id,
+                                                'fill_in_the_blank',
+                                            )}
+                                        </>
+                                    ),
+                                    onClick: () =>
+                                        handleMenuClick(
+                                            `fill_in_the_blank-${content._id}`,
+                                            <FillInTheBlankPage
+                                                id={content._id}
+                                            />,
+                                        ),
+                                });
+                            }
+                            break;
+                        case 'video':
+                            if (content.video?.length > 0) {
+                                childrenItems.push({
+                                    key: `video-${content._id}`,
+                                    label: (
+                                        <>
+                                            Video{' '}
+                                            {getProgressStatus(
+                                                content._id,
+                                                'video',
+                                            )}
+                                        </>
+                                    ),
+                                    onClick: () =>
+                                        handleMenuClick(
+                                            `video-${content._id}`,
+                                            <VideoPage id={content._id} />,
+                                        ),
+                                });
+                            }
+                            break;
+                        case 'word_matching':
+                            if (content.word_matching?.length > 0) {
+                                childrenItems.push({
+                                    key: `word_matching-${content._id}`,
+                                    label: (
+                                        <>
+                                            Word Matching{' '}
+                                            {getProgressStatus(
+                                                content._id,
+                                                'word_matching',
+                                            )}
+                                        </>
+                                    ),
+                                    onClick: () =>
+                                        handleMenuClick(
+                                            `word_matching-${content._id}`,
+                                            <WordMatchingPage
+                                                id={content._id}
+                                            />,
+                                        ),
+                                });
+                            }
+                            break;
+                        default:
+                            break;
+                    }
+                });
+            });
+
             return {
                 key: `sub${lessonIndex + 1}`,
-                label: (
-                    <Tooltip title="Xin vui lòng kích hoạt khóa học">
-                        <span>{lesson.title} </span>
-                    </Tooltip>
-                ),
+                label: lesson.title,
                 icon: <BookOutlined />,
-                disabled: true,
+                children: childrenItems,
             };
-        }
-
-        lesson?.content?.forEach((content: any) => {
-            Object.keys(content).forEach((contentType) => {
-                switch (contentType) {
-                    case 'quiz':
-                        if (content.quiz?.length > 0) {
-                            childrenItems.push({
-                                key: `quiz-${content._id}`,
-                                label: (
-                                    <>
-                                        Quiz {getProgressStatus(content._id, 'quiz')}
-                                    </>
-                                ),
-                                onClick: () => handleMenuClick(`quiz-${content._id}`, <LessonsHandlePage id={content._id} />),
-                            });
-                        }
-                        break;
-                    case 'fill_in_the_blank':
-                        if (content.fill_in_the_blank?.length > 0) {
-                            childrenItems.push({
-                                key: `fill_in_the_blank-${content._id}`,
-                                label: (
-                                    <>
-                                        Fill in the Blank {getProgressStatus(content._id, 'fill_in_the_blank')}
-                                    </>
-                                ),
-                                onClick: () => handleMenuClick(`fill_in_the_blank-${content._id}`, <FillInTheBlankPage id={content._id} />),
-                            });
-                        }
-                        break;
-                    case 'video':
-                        if (content.video?.length > 0) {
-                            childrenItems.push({
-                                key: `video-${content._id}`,
-                                label: (
-                                    <>
-                                        Video {getProgressStatus(content._id, 'video')}
-                                    </>
-                                ),
-                                onClick: () => handleMenuClick(`video-${content._id}`, <VideoPage id={content._id} />),
-                            });
-                        }
-                        break;
-                    case 'word_matching':
-                        if (content.word_matching?.length > 0) {
-                            childrenItems.push({
-                                key: `word_matching-${content._id}`,
-                                label: (
-                                    <>
-                                        Word Matching {getProgressStatus(content._id, 'word_matching')}
-                                    </>
-                                ),
-                                onClick: () => handleMenuClick(`word_matching-${content._id}`, <WordMatchingPage id={content._id} />),
-                            });
-                        }
-                        break;
-                    default:
-                        break;
-                }
-            });
-        });
-
-        return {
-            key: `sub${lessonIndex + 1}`,
-            label: lesson.title,
-            icon: <BookOutlined />,
-            children: childrenItems,
-        };
-    }) || [];
+        }) || [];
 
     const toggleCollapsed = () => {
         setCollapsed(!collapsed);
@@ -233,10 +315,15 @@ const TryLearningPages = ({ id }: { id: any }) => {
     }
 
     return (
-        <Layout className='h-auto'>
-            <Sider trigger={null} collapsible collapsed={collapsed} className='bg-white border-solid border-r-2 border-zinc-200'>
+        <Layout className="h-auto">
+            <Sider
+                trigger={null}
+                collapsible
+                collapsed={collapsed}
+                className="bg-white border-solid border-r-2 border-zinc-200"
+            >
                 <Menu
-                    className='bg-white mt-3'
+                    className="bg-white mt-3"
                     mode="inline"
                     selectedKeys={[selectedKey || '1']}
                     items={items}
@@ -246,7 +333,13 @@ const TryLearningPages = ({ id }: { id: any }) => {
                 <Header style={{ padding: 0, background: '#fff' }}>
                     <Button
                         type="text"
-                        icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+                        icon={
+                            collapsed ? (
+                                <MenuUnfoldOutlined />
+                            ) : (
+                                <MenuFoldOutlined />
+                            )
+                        }
                         onClick={toggleCollapsed}
                         style={{
                             fontSize: '16px',
@@ -263,7 +356,22 @@ const TryLearningPages = ({ id }: { id: any }) => {
                         background: '#fff',
                     }}
                 >
-                    {selectedContent || 'Chọn một bài học để hiển thị nội dung'}
+                    {/* {checkIsFree
+                        ? selectedContent
+                        : 'Hãy đăng ký khóa học để bắt đầu.'} */}
+
+                    {checkIsFree ? (
+                        selectedContent
+                    ) : (
+                        <p className="text-lg text-center font-bold text-gray-600 mt-4">
+                            Hãy{' '}
+                            <Link href={`/detailonlinecourse/${id}`}>
+                                Đăng ký
+                            </Link>{' '}
+                            khóa học để bắt đầu.
+                        </p>
+                    )}
+                    {/* {selectedContent || 'Chọn một bài học để hiển thị nội dung'} */}
                 </Content>
             </Layout>
         </Layout>

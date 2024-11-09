@@ -75,20 +75,6 @@ function NavBar() {
                                         #Khóa học online
                                     </span>
                                 </div>
-                                <div className="course-rating mt-2">
-                                    <span className="average text-xl font-bold text-[#ffad3b] ml-[2px]">
-                                        4.9
-                                    </span>
-                                    <StarFilled className="text-[1.25rem]  text-[#ffad3b] ml-[2px]" />
-                                    <StarFilled className="text-[1.25rem]  text-[#ffad3b] ml-[2px]" />
-                                    <StarFilled className="text-[1.25rem]  text-[#ffad3b] ml-[2px]" />
-                                    <StarFilled className="text-[1.25rem]  text-[#ffad3b] ml-[2px]" />
-                                    <StarFilled className="text-[1.25rem]  text-[#ffad3b] ml-[2px]" />
-                                    <span className="ml-1">(892 Đánh giá)</span>
-                                    <span className="ml-1">
-                                        123,668 Học viên
-                                    </span>
-                                </div>
                                 <div className="course-overview  lg:mt-2 text-[1rem]">
                                     <div>
                                         <p
@@ -159,7 +145,7 @@ function NavBar() {
                     <div className="">
                         <div className="p-4">
                             <div className="mb-2 font-bold text-[1.15rem]">
-                                Ưu đãi đặc biệt tháng 6/2024:
+                                Ưu đãi đặc biệt tháng 12/2024:
                             </div>
                             <div className="flex mb-2">
                                 <div className="text-[#3cb46e] text-[1.85rem] font-bold">
@@ -172,7 +158,8 @@ function NavBar() {
                                     <span className="line-through text-[#677788] text-[.86rem]">
                                         {formatPrice(courseDetail.price)}
                                     </span>
-                                    <span className="text-[#e43a45] text-[0.86rem] font-bold">
+                                    <span className="ml-[.5rem] rounded-full text-[#fff] bg-[#e43a45] font-bold p-1 w-fit">
+                                        -{' '}
                                         {Math.round(
                                             (courseDetail.discount /
                                                 courseDetail.price) *
@@ -360,22 +347,7 @@ function NavBar() {
                                                 {item.title}
                                             </a>
                                         </h3>
-                                        <div className="course-rating mb-2">
-                                            <span className="average text-xl font-bold text-[#ffad3b] ml-[2px]">
-                                                5.0
-                                            </span>
-                                            <StarFilled className="text-[20px] text-xl text-[#ffad3b] ml-[2px]" />
-                                            <StarFilled className="text-[20px] text-xl text-[#ffad3b] ml-[2px]" />
-                                            <StarFilled className="text-[20px] text-xl text-[#ffad3b] ml-[2px]" />
-                                            <StarFilled className="text-[20px] text-xl text-[#ffad3b] ml-[2px]" />
-                                            <StarFilled className="text-[20px] text-xl text-[#ffad3b] ml-[2px]" />
-                                            <span className="ml-2">
-                                                (211 Đánh giá)
-                                            </span>
-                                            <span className="ml-2">
-                                                16,335 Học viên
-                                            </span>
-                                        </div>
+
                                         <div className="series-syllabus-course-overview">
                                             <p
                                                 className="mb-4 italic"
@@ -421,20 +393,7 @@ function NavBar() {
                                         </div>
                                     </div>
                                     <div className="">
-                                        <div className="review-stats course-rating">
-                                            <span className="average text-[1.5rem] font-bold text-[#ffad3b] ml-[2px]">
-                                                5.0
-                                            </span>
-
-                                            <StarFilled className="text-[20px] text-xl text-[#ffad3b] ml-[2px]" />
-                                            <StarFilled className="text-[20px] text-xl text-[#ffad3b] ml-[2px]" />
-                                            <StarFilled className="text-[20px] text-xl text-[#ffad3b] ml-[2px]" />
-                                            <StarFilled className="text-[20px] text-xl text-[#ffad3b] ml-[2px]" />
-                                            <StarFilled className="text-[20px] text-xl text-[#ffad3b] ml-[2px]" />
-                                        </div>
-                                        <div className="reviews-stats-text">
-                                            Đánh giá trung bình
-                                        </div>
+                                        <div className="reviews-stats-text"></div>
                                     </div>
                                 </div>
                             </div>
