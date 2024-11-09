@@ -27,18 +27,18 @@ function Dashboard() {
 
         const fetchCourses = async () => {
             try {
-                // const course = await nestApiInstance.get(
-                //     `/course/statistics/count-all-course`,
-                // );
-                // setCourses(course.data);
-                // const courseHasSell = await nestApiInstance.get(
-                //     `/course/statistics/count-all-course-has-sell`,
-                // );
-                // setcourseHasSell(courseHasSell.data);
-                // const totalPurchase = await nestApiInstance.get(
-                //     `/course/statistics/total-purchase`,
-                // );
-                // settotalPurchase(totalPurchase.data);
+                const course = await nestApiInstance.get(
+                    `/course/statistics/count-all-course`,
+                );
+                setCourses(course.data);
+                const courseHasSell = await nestApiInstance.get(
+                    `/course/statistics/count-all-course-has-sell`,
+                );
+                setcourseHasSell(courseHasSell.data);
+                const totalPurchase = await nestApiInstance.get(
+                    `/course/statistics/total-purchase`,
+                );
+                settotalPurchase(totalPurchase.data);
                 const exams = await nestApiInstance.get(`/exams/static-exam`);
                 setExams(exams.data);
                 const examTurn = await nestApiInstance.get(

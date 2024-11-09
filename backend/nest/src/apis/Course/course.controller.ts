@@ -61,12 +61,41 @@ import { User } from '../users/userSchema/user.schema';
 
 @Controller('course')
 export class CourseController {
-    constructor(private readonly courseService: CourseService,
+    constructor(
+        private readonly courseService: CourseService,
         @InjectModel(User.name)
-        private readonly userModel: mongoose.Model<User>, 
+        private readonly userModel: mongoose.Model<User>,
         @InjectModel(Purchase.name)
         private readonly purchaseModel: mongoose.Model<Purchase>,
     ) {}
+    //Static
+    @Get('statistics/count-all-course')
+    async countCourse(): Promise<number> {
+        try {
+            return await this.courseService.countCourse();
+        } catch (error) {
+            console.error('Error counting courses:', error);
+            throw new InternalServerErrorException('Failed to count courses');
+        }
+    }
+    @Get('statistics/count-all-course-has-sell')
+    async countCourseHasSell(): Promise<number> {
+        try {
+            return await this.courseService.countCourseHasSell();
+        } catch (error) {
+            console.error('Error counting courses:', error);
+            throw new InternalServerErrorException('Failed to count courses');
+        }
+    }
+    @Get('statistics/total-purchase')
+    async totalPurchase(): Promise<string> {
+        try {
+            return await this.courseService.totalPurchase();
+        } catch (error) {
+            console.error('Error counting courses:', error);
+            throw new InternalServerErrorException('Failed to count courses');
+        }
+    }
 
     /**
      * Quizzes
@@ -635,17 +664,17 @@ export class CourseController {
     ) {
         const ipAddr =
             req.headers['x-forwarded-for'] || req.socket.remoteAddress;
-    
+
         const paymentUrl = await this.courseService.createPurchaseAndPaymentUrl(
             new Types.ObjectId(userId),
             new Types.ObjectId(courseId),
             bankCode,
             ipAddr as string,
         );
-    
+
         return { paymentUrl };
     }
-    
+
     @Get('/callbackvnpay/:email/:key')
     async handlePostCallbackVnPay(
         @Res() res: Response,
@@ -655,11 +684,11 @@ export class CourseController {
     ) {
         const { vnp_ResponseCode, message, partnerCode, orderId, amount } =
             req.query;
-    
+
         if (!vnp_ResponseCode || !email || !key) {
             throw new BadRequestException('Missing required parameters');
         }
-    
+
         if (vnp_ResponseCode === '00') {
             try {
                 // Update the purchase to COMPLETED
@@ -669,18 +698,23 @@ export class CourseController {
                 }
 
                 // Use the user's ObjectId to find the purchase
-                const purchase = await this.purchaseModel.findOne({ user: user._id, purchaseKey: key });
+                const purchase = await this.purchaseModel.findOne({
+                    user: user._id,
+                    purchaseKey: key,
+                });
                 if (purchase) {
                     purchase.paymentStatus = PaymentStatus.COMPLETED; // Sử dụng enum
                     await purchase.save();
                     await this.courseService.sendSuccessEmail(email, key);
                 }
-    
+
                 return res.redirect(
                     `${process.env.BASEURL_FE}/paid?email=${email}&message=${message}&partnerCode=${partnerCode}&orderId=${orderId}&amount=${amount}`,
                 );
             } catch (error) {
-                throw new InternalServerErrorException('Error processing payment');
+                throw new InternalServerErrorException(
+                    'Error processing payment',
+                );
             }
         } else {
             console.log('Payment failed or cancelled:', vnp_ResponseCode);
@@ -694,7 +728,14 @@ export class CourseController {
         @Req() req: Request,
         @Param('email') email: string,
         @Param('key') key: string,
-        @Query() query: { resultCode: string; message?: string; partnerCode?: string; orderId?: string; amount?: string },
+        @Query()
+        query: {
+            resultCode: string;
+            message?: string;
+            partnerCode?: string;
+            orderId?: string;
+            amount?: string;
+        },
     ) {
         const { resultCode, message, partnerCode, orderId, amount } = query;
 
@@ -713,7 +754,10 @@ export class CourseController {
                 }
 
                 // Use the user's ObjectId to find the purchase
-                const purchase = await this.purchaseModel.findOne({ user: user._id, purchaseKey: key });
+                const purchase = await this.purchaseModel.findOne({
+                    user: user._id,
+                    purchaseKey: key,
+                });
                 if (purchase) {
                     purchase.paymentStatus = PaymentStatus.COMPLETED;
                     await purchase.save();
@@ -733,7 +777,7 @@ export class CourseController {
         // Trả về trạng thái 204 nếu không có kết quả
         return res.status(204).json(req.body);
     }
-    
+
     @Get('purchase/:userId')
     async getPurchasesByUserId(
         @Param('userId') userId: string,
@@ -746,7 +790,6 @@ export class CourseController {
     async getAllPurchases(): Promise<Purchase[]> {
         return this.courseService.getAllPurchases();
     }
-
 
     @Post('/check-status-transaction')
     async checkStatusTransaction(

@@ -99,6 +99,26 @@ export class CourseService {
         private readonly googleDriveUploader: GoogleDriveUploader,
         private readonly firebaseService: FirebaseService,
     ) {}
+
+    // Statistic Service
+    async countCourse(): Promise<number> {
+        return await this.courseModel.countDocuments();
+    }
+
+    async countCourseHasSell(): Promise<number> {
+        return await this.purchaseModel.countDocuments({
+            paymentStatus: PaymentStatus.COMPLETED,
+        });
+    }
+
+    async totalPurchase(): Promise<string> {
+        const total = await this.purchaseModel.aggregate([
+            { $match: { paymentStatus: PaymentStatus.COMPLETED } },
+            { $group: { _id: null, totalAmount: { $sum: '$amount' } } },
+        ]);
+        return total.length > 0 ? total[0].totalAmount.toString() : '0';
+    }
+
     /**
      * Service of Course Type form here
      *  */
@@ -462,8 +482,13 @@ export class CourseService {
     async getVideoProgress(userId: string) {
         return this.videoProgressModel.find({ userId }).exec();
     }
-    async updateQuizProgress(quizId: string, correctAnswers: number, totalQuestions: number, userId: string) {
-        const progress = (correctAnswers / totalQuestions) * 100; 
+    async updateQuizProgress(
+        quizId: string,
+        correctAnswers: number,
+        totalQuestions: number,
+        userId: string,
+    ) {
+        const progress = (correctAnswers / totalQuestions) * 100;
         const completed = progress >= 100;
 
         const existingProgress = await this.quizProgressModel
@@ -540,9 +565,10 @@ export class CourseService {
     async getAllProgress(userId: string) {
         const videoProgress = await this.getVideoProgress(userId);
         const quizProgress = await this.getQuizProgress(userId);
-        const fillInTheBlankProgress = await this.getFillInTheBlankProgress(userId);
+        const fillInTheBlankProgress =
+            await this.getFillInTheBlankProgress(userId);
         const wordMatchingProgress = await this.getWordMatchingProgress(userId);
-    
+
         return {
             video: videoProgress,
             quiz: quizProgress,
@@ -625,7 +651,7 @@ export class CourseService {
         if (!Types.ObjectId.isValid(contentId)) {
             throw new Error('Invalid content ID format');
         }
-    
+
         const content = await this.contentModel.findById(contentId);
         if (!content) {
             throw new Error('Content not found');
@@ -636,7 +662,9 @@ export class CourseService {
             }
             const contentType = await this.inferContentType(dataId);
             if (!contentType) {
-                throw new Error(`Content type could not be determined for data ID: ${dataId}`);
+                throw new Error(
+                    `Content type could not be determined for data ID: ${dataId}`,
+                );
             }
             const arrayFieldName = this.getArrayFieldName(contentType);
             if (!arrayFieldName) {
@@ -646,12 +674,12 @@ export class CourseService {
                 content[arrayFieldName].push(dataId);
             }
         }
-    
+
         // Save updated content
         const updatedContent = await content.save();
         return updatedContent;
     }
-    
+
     private async inferContentType(
         dataId: string,
     ): Promise<ContentType | null> {
@@ -1102,7 +1130,9 @@ export class CourseService {
         }
 
         // Check if the course exists
-        const course = await this.courseModel.findById(courseId).select('price discount');
+        const course = await this.courseModel
+            .findById(courseId)
+            .select('price discount');
         if (!course) {
             throw new InternalServerErrorException('Course does not exist');
         }
@@ -1113,7 +1143,9 @@ export class CourseService {
         }
 
         // Calculate final price
-        const finalPrice = course.discount ? coursePrice - course.discount : coursePrice;
+        const finalPrice = course.discount
+            ? coursePrice - course.discount
+            : coursePrice;
 
         // Check for existing purchase with COMPLETED status
         const existingPurchase = await this.purchaseModel.findOne({
@@ -1123,7 +1155,9 @@ export class CourseService {
         });
 
         if (existingPurchase) {
-            throw new InternalServerErrorException('User has already registered for this course');
+            throw new InternalServerErrorException(
+                'User has already registered for this course',
+            );
         }
 
         // Check for existing PENDING purchase
@@ -1139,7 +1173,9 @@ export class CourseService {
             purchase = pendingPurchase;
             purchase.purchaseKey = uuidv4();
             purchase.purchaseDate = new Date();
-            purchase.expiryDate = new Date(new Date().setFullYear(new Date().getFullYear() + 1));
+            purchase.expiryDate = new Date(
+                new Date().setFullYear(new Date().getFullYear() + 1),
+            );
         } else {
             // Create new purchase
             purchase = new this.purchaseModel({
@@ -1147,7 +1183,9 @@ export class CourseService {
                 course: courseId,
                 purchaseKey: uuidv4(),
                 purchaseDate: new Date(),
-                expiryDate: new Date(new Date().setFullYear(new Date().getFullYear() + 1)),
+                expiryDate: new Date(
+                    new Date().setFullYear(new Date().getFullYear() + 1),
+                ),
                 paymentMethod: 'Momo',
                 paymentStatus: PaymentStatus.PENDING,
             });
@@ -1215,8 +1253,7 @@ export class CourseService {
             throw new InternalServerErrorException('MoMo payment error');
         }
     }
-    
-    
+
     async findPurchaseByKey(email: string, purchaseKey: string) {
         return this.purchaseModel.findOne({
             user: email,
@@ -1233,24 +1270,24 @@ export class CourseService {
         if (!isValidObjectId(userId) || !isValidObjectId(courseId)) {
             throw new BadRequestException('Invalid UserId or CourseId');
         }
-    
+
         // Check if the user exists
         const userExists = await this.userModel.exists({ _id: userId });
         if (!userExists) {
             throw new InternalServerErrorException('User does not exist');
         }
-    
+
         // Check if the course exists and get its price
         const course = await this.courseModel.findById(courseId);
         if (!course) {
             throw new InternalServerErrorException('Course does not exist');
         }
-    
+
         const coursePrice = course.price;
         if (!coursePrice) {
             throw new InternalServerErrorException('Course price is not set');
         }
-    
+
         // Calculate final price based on discount
         let finalPrice: number;
         const discountPrice = course.discount;
@@ -1259,20 +1296,23 @@ export class CourseService {
         } else {
             finalPrice = coursePrice;
         }
-    
+
         // Check if the user has already registered for this course
         let existingPurchase = await this.purchaseModel.findOne({
             user: userId,
             course: courseId,
             paymentStatus: { $in: ['COMPLETED', 'PENDING'] },
         });
-    
-        if (existingPurchase && existingPurchase.paymentStatus === 'COMPLETED') {
+
+        if (
+            existingPurchase &&
+            existingPurchase.paymentStatus === 'COMPLETED'
+        ) {
             throw new InternalServerErrorException(
                 'User has already completed registration for this course',
             );
         }
-    
+
         // If purchase exists with status PENDING, reuse it, otherwise create a new purchase
         if (!existingPurchase) {
             const purchaseKey = uuidv4();
@@ -1289,7 +1329,7 @@ export class CourseService {
             });
             await existingPurchase.save();
         }
-    
+
         // Create the VNPay payment URL
         const user = await this.userModel.findById(userId);
         const tmnCode = process.env.VNP_TMN_CODE;
@@ -1302,7 +1342,7 @@ export class CourseService {
         const orderId = `${padZero(date.getHours())}${padZero(date.getMinutes())}${padZero(date.getSeconds())}`;
         const locale = 'vn';
         const currCode = 'VND';
-    
+
         let vnp_Params: any = {
             vnp_Version: '2.1.0',
             vnp_Command: 'pay',
@@ -1317,22 +1357,21 @@ export class CourseService {
             vnp_IpAddr: ipAddr,
             vnp_CreateDate: createDate,
         };
-    
+
         if (bankCode) {
             vnp_Params['vnp_BankCode'] = bankCode;
         }
-    
+
         // Sort the parameters before signing
         vnp_Params = this.sortObject(vnp_Params);
         const signData = qs.stringify(vnp_Params);
         const hmac = crypto.createHmac('sha512', secretKey);
         const signed = hmac.update(signData, 'utf-8').digest('hex');
         vnp_Params['vnp_SecureHash'] = signed;
-    
+
         const paymentUrl = `${vnpUrl}?${qs.stringify(vnp_Params)}`;
         return paymentUrl;
     }
-    
 
     private sortObject(obj: any): any {
         const sorted: any = {};
@@ -1344,7 +1383,7 @@ export class CourseService {
     }
     async getPurchasesByUserId(userId: Types.ObjectId): Promise<Purchase[]> {
         const purchases = await this.purchaseModel
-            .find({ user: userId  , paymentStatus: PaymentStatus.COMPLETED })
+            .find({ user: userId, paymentStatus: PaymentStatus.COMPLETED })
             .populate('user')
             .populate('course')
             .exec();
@@ -1373,30 +1412,36 @@ export class CourseService {
             throw new Error('Failed to send password reset email');
         }
     }
-    async checkUserPurchase(userId: string, courseId: string): Promise<{ paymentStatus: string }> {
+    async checkUserPurchase(
+        userId: string,
+        courseId: string,
+    ): Promise<{ paymentStatus: string }> {
         // Find the user by ID
         const user = await this.userModel.findById(userId);
-        
+
         // Handle case where user is not found
         if (!user) {
             throw new NotFoundException(`User with ID ${userId} not found`);
         }
-    
+
         // Find the purchase record for the given user and course
-        const purchase = await this.purchaseModel.findOne({ user: userId, course: courseId });
-    
+        const purchase = await this.purchaseModel.findOne({
+            user: userId,
+            course: courseId,
+        });
+
         // Log the user information for debugging
         console.log('User Info:', user);
-    
+
         // Handle case where purchase is not found
         if (!purchase) {
             return { paymentStatus: 'NOT_FOUND' }; // User has not purchased the course
         }
-    
+
         // Return the payment status from the found purchase record
         return { paymentStatus: purchase.paymentStatus };
     }
-    
+
     async completePurchase(purchaseKey: string): Promise<Purchase> {
         const purchase = await this.purchaseModel.findOneAndUpdate(
             { purchaseKey, paymentStatus: PaymentStatus.PENDING },
@@ -1416,83 +1461,78 @@ export class CourseService {
             .populate('user')
             .populate('course')
             .exec();
-        
+
         if (!purchases || purchases.length === 0) {
-            throw new InternalServerErrorException(
-                'No purchases found',
-            );
+            throw new InternalServerErrorException('No purchases found');
         }
-    
+
         return purchases;
     }
-
-
 
     async create(createRatingDto: CreateRatingDto) {
         const existingRating = await this.ratingModel.findOne({
             userId: new Types.ObjectId(createRatingDto.userId),
             courseId: new Types.ObjectId(createRatingDto.courseId),
-          });
-        
-          if (existingRating) {
-            throw new BadRequestException('Rating already exists for this user and course');
-          }
+        });
+
+        if (existingRating) {
+            throw new BadRequestException(
+                'Rating already exists for this user and course',
+            );
+        }
         const newRating = new this.ratingModel({
             ...createRatingDto,
             userId: new Types.ObjectId(createRatingDto.userId),
-            courseId: new Types.ObjectId(createRatingDto.courseId), 
+            courseId: new Types.ObjectId(createRatingDto.courseId),
         });
         await newRating.save();
         return newRating;
     }
-      
-      async update(ratingId: string, updateRatingDto: UpdateRatingDto) {
+
+    async update(ratingId: string, updateRatingDto: UpdateRatingDto) {
         const rating = await this.ratingModel.findByIdAndUpdate(
-          ratingId,
-          {
-            ...updateRatingDto,
-            userId: new Types.ObjectId(updateRatingDto.userId), 
-            courseId: new Types.ObjectId(updateRatingDto.courseId), 
-          },
-          { new: true }
+            ratingId,
+            {
+                ...updateRatingDto,
+                userId: new Types.ObjectId(updateRatingDto.userId),
+                courseId: new Types.ObjectId(updateRatingDto.courseId),
+            },
+            { new: true },
         );
         if (!rating) {
-          throw new NotFoundException('Rating not found');
+            throw new NotFoundException('Rating not found');
         }
         return rating;
-      }
+    }
 
-    
-      async delete(ratingId: string) {
+    async delete(ratingId: string) {
         const result = await this.ratingModel.findByIdAndDelete(ratingId);
         if (!result) {
-          throw new NotFoundException('Rating not found');
+            throw new NotFoundException('Rating not found');
         }
         return result;
-      }
-    
-      async getCourseAverageRating(courseId: string) {
+    }
+
+    async getCourseAverageRating(courseId: string) {
         const courseObjectId = new Types.ObjectId(courseId);
-      
+
         const ratings = await this.ratingModel.aggregate([
-          { $match: { courseId: courseObjectId } },
-          {
-            $group: {
-              _id: '$courseId',
-              averageRating: { $avg: '$rating' },
-              totalRatings: { $sum: 1 },
+            { $match: { courseId: courseObjectId } },
+            {
+                $group: {
+                    _id: '$courseId',
+                    averageRating: { $avg: '$rating' },
+                    totalRatings: { $sum: 1 },
+                },
             },
-          },
         ]);
         if (ratings.length === 0) {
-          return { averageRating: 0, totalRatings: 0 }; // Không có đánh giá
+            return { averageRating: 0, totalRatings: 0 }; // Không có đánh giá
         }
-      
+
         return {
-          averageRating: ratings[0].averageRating.toFixed(2), // Định dạng với 2 chữ số thập phân
-          totalRatings: ratings[0].totalRatings,
+            averageRating: ratings[0].averageRating.toFixed(2), // Định dạng với 2 chữ số thập phân
+            totalRatings: ratings[0].totalRatings,
         };
-      }
-      
-      
+    }
 }

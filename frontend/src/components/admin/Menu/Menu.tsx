@@ -5,8 +5,10 @@ import {
     AppstoreOutlined,
     CommentOutlined,
     ContainerOutlined,
+    PicLeftOutlined,
     RadiusUpleftOutlined,
     ReconciliationOutlined,
+    ShoppingCartOutlined,
     SnippetsOutlined,
     UserOutlined,
     VideoCameraOutlined,
@@ -141,12 +143,12 @@ function MenuAdmin() {
         },
         {
             key: '9',
-            icon: <CommentOutlined />,
+            icon: <PicLeftOutlined />,
             label: <Link href="/admin/topics">Topic</Link>,
         },
         {
             key: '10',
-            icon: <CommentOutlined />,
+            icon: <ShoppingCartOutlined />,
             label: <Link href="/admin/purchases">Purchases</Link>,
         },
     ];

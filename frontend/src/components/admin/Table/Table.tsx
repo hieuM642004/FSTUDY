@@ -155,6 +155,7 @@ function Table<T extends object>({
                 dataSource={Array.isArray(dataSource) ? dataSource : []}
                 pagination={pagination}
                 scroll={{ x: 1000 }}
+                className='shadow-lg'
                 rowKey={rowKey}
                 {...props}
             />
