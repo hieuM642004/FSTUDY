@@ -276,10 +276,10 @@ export const CourseSchema = SchemaFactory.createForClass(Course);
 
 export enum PaymentStatus {
     PENDING = 'PENDING',
-    COMPLETED = 'COMPLETED',
+    COMPLETED = 'COMPLETED', 
+    SUCCESS = 'SUCCESS',
     FAILED = 'FAILED',
 }
-
 @Schema({ timestamps: true })
 export class Purchase {
     @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true })

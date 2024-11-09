@@ -31,7 +31,7 @@ import {
 } from './courseSchema/course.schema';
 import { ResponseData } from 'src/global/globalClass';
 import { HttpStatus } from 'src/global/globalEnum';
-
+import { ConfigService } from '@nestjs/config';
 import { CreateCourseTypeDto } from './dto/CourseType/create-course-type.dto';
 import { CreateQuizDto } from './dto/quiz/createQuiz.dto';
 import { UpdateQuizDto } from './dto/quiz/updateQuiz.dto';
@@ -57,7 +57,12 @@ import { Vimeo } from '@vimeo/vimeo';
 import FirebaseService from 'src/providers/storage/firebase/firebase.service';
 import { CreateRatingDto } from './dto/rating/rating.dto';
 import { UpdateRatingDto } from './dto/rating/updateRating.dto';
-import { log } from 'console';
+import * as mjml from 'mjml';
+import * as handlebars from 'handlebars';
+import * as fs from 'fs';
+import { firstValueFrom } from 'rxjs';
+import { HttpService } from '@nestjs/axios';
+
 
 // import { Vimeo } from 'vimeo';
 
@@ -66,6 +71,8 @@ export class CourseService {
     // private readonly VIMEO_ACCESS_TOKEN = process.env.VIMEO_ACCESS_TOKEN;
 
     constructor(
+        private readonly configService: ConfigService, 
+        private readonly httpService: HttpService,
         @InjectModel(CourseType.name)
         private readonly courseTypeModel: mongoose.Model<CourseType>,
         @InjectModel(Course.name)
@@ -99,25 +106,66 @@ export class CourseService {
         private readonly googleDriveUploader: GoogleDriveUploader,
         private readonly firebaseService: FirebaseService,
     ) {}
-
-    // Statistic Service
+    /**
+     * Static
+     *  */
+    // count all courses
     async countCourse(): Promise<number> {
-        return await this.courseModel.countDocuments();
+        try {
+            return await this.courseModel.countDocuments().exec();
+        } catch (error) {
+            console.error('Error querying countDocuments:', error); 
+            throw error;
+        }
     }
-
+    // count all courses
     async countCourseHasSell(): Promise<number> {
-        return await this.purchaseModel.countDocuments({
-            paymentStatus: PaymentStatus.COMPLETED,
-        });
+        try {
+            return await this.purchaseModel.countDocuments().exec();
+        } catch (error) {
+            console.error('Error querying countDocuments:', error); 
+            throw error;
+        }
     }
-
     async totalPurchase(): Promise<string> {
-        const total = await this.purchaseModel.aggregate([
-            { $match: { paymentStatus: PaymentStatus.COMPLETED } },
-            { $group: { _id: null, totalAmount: { $sum: '$amount' } } },
-        ]);
-        return total.length > 0 ? total[0].totalAmount.toString() : '0';
+        try {
+            const result = await this.purchaseModel.aggregate([
+                {
+                    $lookup: {
+                        from: 'courses',
+                        localField: 'course',
+                        foreignField: '_id',
+                        as: 'courseDetails',
+                    },
+                },
+                {
+                    $unwind: '$courseDetails',
+                },
+                {
+                    $group: {
+                        _id: null,
+                        totalAmount: { $sum: '$courseDetails.price' },
+                    },
+                },
+            ]);
+    
+            if (result.length === 0) {
+                return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(0);
+            }
+    
+            const totalAmount = result[0].totalAmount;
+            return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(totalAmount);
+        } catch (error) {
+            console.error('Error querying total purchase amount:', error);
+            throw error;
+        }
     }
+    
+    
+    
+
+
+
 
     /**
      * Service of Course Type form here
@@ -482,13 +530,8 @@ export class CourseService {
     async getVideoProgress(userId: string) {
         return this.videoProgressModel.find({ userId }).exec();
     }
-    async updateQuizProgress(
-        quizId: string,
-        correctAnswers: number,
-        totalQuestions: number,
-        userId: string,
-    ) {
-        const progress = (correctAnswers / totalQuestions) * 100;
+    async updateQuizProgress(quizId: string, correctAnswers: number, totalQuestions: number, userId: string) {
+        const progress = (correctAnswers / totalQuestions) * 100; 
         const completed = progress >= 100;
 
         const existingProgress = await this.quizProgressModel
@@ -565,10 +608,9 @@ export class CourseService {
     async getAllProgress(userId: string) {
         const videoProgress = await this.getVideoProgress(userId);
         const quizProgress = await this.getQuizProgress(userId);
-        const fillInTheBlankProgress =
-            await this.getFillInTheBlankProgress(userId);
+        const fillInTheBlankProgress = await this.getFillInTheBlankProgress(userId);
         const wordMatchingProgress = await this.getWordMatchingProgress(userId);
-
+    
         return {
             video: videoProgress,
             quiz: quizProgress,
@@ -651,7 +693,7 @@ export class CourseService {
         if (!Types.ObjectId.isValid(contentId)) {
             throw new Error('Invalid content ID format');
         }
-
+    
         const content = await this.contentModel.findById(contentId);
         if (!content) {
             throw new Error('Content not found');
@@ -662,9 +704,7 @@ export class CourseService {
             }
             const contentType = await this.inferContentType(dataId);
             if (!contentType) {
-                throw new Error(
-                    `Content type could not be determined for data ID: ${dataId}`,
-                );
+                throw new Error(`Content type could not be determined for data ID: ${dataId}`);
             }
             const arrayFieldName = this.getArrayFieldName(contentType);
             if (!arrayFieldName) {
@@ -674,11 +714,49 @@ export class CourseService {
                 content[arrayFieldName].push(dataId);
             }
         }
-
+    
         // Save updated content
         const updatedContent = await content.save();
         return updatedContent;
     }
+
+    // async addDataToContent(
+    //     contentId: string,
+    //     dataId: string,
+    // ): Promise<Content> {
+    //     if (
+    //         !Types.ObjectId.isValid(contentId) ||
+    //         !Types.ObjectId.isValid(dataId)
+    //     ) {
+    //         throw new Error('Invalid ID format');
+    //     }
+
+    //     // Determine content type
+    //     const contentType = await this.inferContentType(dataId);
+
+    //     if (!contentType) {
+    //         throw new Error('Content type could not be determined');
+    //     }
+
+    //     const arrayFieldName = this.getArrayFieldName(contentType);
+
+    //     if (!arrayFieldName) {
+    //         throw new Error('Invalid content type');
+    //     }
+
+    //     // Update content with the determined content type
+    //     const updatedContent = await this.contentModel.findByIdAndUpdate(
+    //         contentId,
+    //         { $addToSet: { [arrayFieldName]: dataId } },
+    //         { new: true },
+    //     );
+
+    //     if (!updatedContent) {
+    //         throw new Error('Content not found');
+    //     }
+
+    //     return updatedContent;
+    // }
 
     private async inferContentType(
         dataId: string,
@@ -1123,13 +1201,13 @@ export class CourseService {
         userId: Types.ObjectId,
         courseId: Types.ObjectId,
     ): Promise<any> {
-        // Check if the user exists
-        const user = await this.userModel.findById(userId).select('email');
-        if (!user) {
+        const userExists = await this.userModel.exists({ _id: userId });
+        if (!userExists) {
             throw new InternalServerErrorException('User does not exist');
         }
 
-        // Check if the course exists
+        const user = await this.userModel.findById(userId);
+
         const course = await this.courseModel
             .findById(courseId)
             .select('price discount');
@@ -1138,68 +1216,67 @@ export class CourseService {
         }
 
         const coursePrice = course.price;
-        if (coursePrice === undefined) {
+        if (!coursePrice) {
             throw new InternalServerErrorException('Course price is not set');
         }
 
-        // Calculate final price
-        const finalPrice = course.discount
-            ? coursePrice - course.discount
-            : coursePrice;
+        let finalPrice: number;
+        const discountPrice = course.discount;
+        if (discountPrice) {
+            finalPrice = coursePrice - discountPrice;
+        } else {
+            finalPrice = coursePrice;
+        }
 
-        // Check for existing purchase with COMPLETED status
-        const existingPurchase = await this.purchaseModel.findOne({
+        const existingCompletedPurchase = await this.purchaseModel.findOne({
             user: userId,
             course: courseId,
-            paymentStatus: PaymentStatus.COMPLETED,
+            paymentStatus: { $in: ['SUCCESS', 'COMPLETED'] }, // Check for SUCCESS or COMPLETED statuses
         });
-
-        if (existingPurchase) {
+        if (existingCompletedPurchase) {
             throw new InternalServerErrorException(
                 'User has already registered for this course',
             );
         }
-
-        // Check for existing PENDING purchase
-        let purchase;
-        const pendingPurchase = await this.purchaseModel.findOne({
+        
+        // Check if there is a pending purchase that can be updated
+        const existingPendingPurchase = await this.purchaseModel.findOne({
             user: userId,
             course: courseId,
-            paymentStatus: PaymentStatus.PENDING,
+            paymentStatus: 'PENDING', // Check for PENDING status
         });
-
-        if (pendingPurchase) {
-            // Update existing PENDING purchase
-            purchase = pendingPurchase;
-            purchase.purchaseKey = uuidv4();
-            purchase.purchaseDate = new Date();
-            purchase.expiryDate = new Date(
-                new Date().setFullYear(new Date().getFullYear() + 1),
-            );
+        
+        const purchaseKey = uuidv4();
+        const purchaseDate = new Date();
+        const expiryDate = new Date(new Date().setFullYear(purchaseDate.getFullYear() + 1));
+        
+        if (existingPendingPurchase) {
+            // Update the existing purchase if it's in PENDING status
+            existingPendingPurchase.purchaseKey = purchaseKey;
+            existingPendingPurchase.purchaseDate = purchaseDate;
+            existingPendingPurchase.expiryDate = expiryDate;
+            existingPendingPurchase.paymentMethod = 'Momo';
+            await existingPendingPurchase.save();
         } else {
-            // Create new purchase
-            purchase = new this.purchaseModel({
+            // Create a new purchase if there's no existing PENDING purchase
+            const newPurchase = new this.purchaseModel({
                 user: userId,
                 course: courseId,
-                purchaseKey: uuidv4(),
-                purchaseDate: new Date(),
-                expiryDate: new Date(
-                    new Date().setFullYear(new Date().getFullYear() + 1),
-                ),
+                purchaseKey,
+                purchaseDate,
+                expiryDate,
                 paymentMethod: 'Momo',
                 paymentStatus: PaymentStatus.PENDING,
             });
+            await newPurchase.save();
         }
-
-        const savedPurchase = await purchase.save();
-
         // MoMo Payment integration
         const baseUrl = process.env.BASE_URL || 'http://localhost:4000';
         const accessKey = 'F8BBA842ECF85';
         const secretKey = 'K951B6PE1waDMi640xX08PD3vg6EkVlz';
-        const orderInfo = 'Pay with MoMo';
+        const orderInfo = 'pay with MoMo';
         const partnerCode = 'MOMO';
-        const redirectUrl = `${baseUrl}/course/callback/${user.email}/${purchase.purchaseKey}`;
+        const redirectUrl = `http://localhost:4000/course/callback/${user.email}/${purchaseKey}`;
         const ipnUrl = `${baseUrl}/course/callback`;
         const requestType = 'payWithMethod';
         const amount = finalPrice.toString();
@@ -1213,7 +1290,6 @@ export class CourseService {
             .createHmac('sha256', secretKey)
             .update(rawSignature)
             .digest('hex');
-
         const requestBody = {
             partnerCode,
             partnerName: 'Test',
@@ -1254,12 +1330,6 @@ export class CourseService {
         }
     }
 
-    async findPurchaseByKey(email: string, purchaseKey: string) {
-        return this.purchaseModel.findOne({
-            user: email,
-            purchaseKey: purchaseKey,
-        });
-    }
     async createPurchaseAndPaymentUrl(
         userId: Types.ObjectId,
         courseId: Types.ObjectId,
@@ -1298,44 +1368,57 @@ export class CourseService {
         }
 
         // Check if the user has already registered for this course
-        let existingPurchase = await this.purchaseModel.findOne({
+      // Check if the user already has a pending registration for this course
+      const existingCompletedPurchase = await this.purchaseModel.findOne({
+        user: userId,
+        course: courseId,
+        paymentStatus: { $in: ['SUCCESS', 'COMPLETED'] }, // Check for SUCCESS or COMPLETED statuses
+    });
+    if (existingCompletedPurchase) {
+        throw new InternalServerErrorException(
+            'User has already registered for this course',
+        );
+    }
+    
+    // Check if there is a pending purchase that can be updated
+    const existingPendingPurchase = await this.purchaseModel.findOne({
+        user: userId,
+        course: courseId,
+        paymentStatus: 'PENDING', // Check for PENDING status
+    });
+    
+    const purchaseKey = uuidv4();
+    const purchaseDate = new Date();
+    const expiryDate = new Date(new Date().setFullYear(purchaseDate.getFullYear() + 1));
+    
+    if (existingPendingPurchase) {
+        // Update the existing purchase if it's in PENDING status
+        existingPendingPurchase.purchaseKey = purchaseKey;
+        existingPendingPurchase.purchaseDate = purchaseDate;
+        existingPendingPurchase.expiryDate = expiryDate;
+        existingPendingPurchase.paymentMethod = 'VNPay';
+        await existingPendingPurchase.save();
+    } else {
+        // Create a new purchase if there's no existing PENDING purchase
+        const newPurchase = new this.purchaseModel({
             user: userId,
             course: courseId,
-            paymentStatus: { $in: ['COMPLETED', 'PENDING'] },
+            purchaseKey,
+            purchaseDate,
+            expiryDate,
+            paymentMethod: 'VNPay',
+            paymentStatus: PaymentStatus.PENDING,
         });
+        await newPurchase.save();
+    }
 
-        if (
-            existingPurchase &&
-            existingPurchase.paymentStatus === 'COMPLETED'
-        ) {
-            throw new InternalServerErrorException(
-                'User has already completed registration for this course',
-            );
-        }
-
-        // If purchase exists with status PENDING, reuse it, otherwise create a new purchase
-        if (!existingPurchase) {
-            const purchaseKey = uuidv4();
-            existingPurchase = new this.purchaseModel({
-                user: userId,
-                course: courseId,
-                purchaseKey,
-                purchaseDate: new Date(),
-                expiryDate: new Date(
-                    new Date().setFullYear(new Date().getFullYear() + 1),
-                ),
-                paymentMethod: 'VNPay',
-                paymentStatus: PaymentStatus.PENDING,
-            });
-            await existingPurchase.save();
-        }
 
         // Create the VNPay payment URL
         const user = await this.userModel.findById(userId);
         const tmnCode = process.env.VNP_TMN_CODE;
         const secretKey = process.env.VNP_HASH_SECRET;
         const vnpUrl = process.env.VNP_URL;
-        const returnUrl = `http://localhost:4000/course/callbackvnpay/${user.email}/${existingPurchase.purchaseKey}`;
+        const returnUrl = `http://localhost:4000/course/callbackvnpay/${user.email}/${purchaseKey}`;
         const date = new Date();
         const padZero = (num: number) => num.toString().padStart(2, '0');
         const createDate = `${date.getFullYear()}${padZero(date.getMonth() + 1)}${padZero(date.getDate())}${padZero(date.getHours())}${padZero(date.getMinutes())}${padZero(date.getSeconds())}`;
@@ -1383,7 +1466,7 @@ export class CourseService {
     }
     async getPurchasesByUserId(userId: Types.ObjectId): Promise<Purchase[]> {
         const purchases = await this.purchaseModel
-            .find({ user: userId, paymentStatus: PaymentStatus.COMPLETED })
+            .find({ user: userId })
             .populate('user')
             .populate('course')
             .exec();
@@ -1395,56 +1478,103 @@ export class CourseService {
 
         return purchases;
     }
+    async getAllPurchases(): Promise<Purchase[]> {
+        const purchases = await this.purchaseModel
+            .find()
+            .populate('user')
+            .populate('course')
+            .exec();
+        
+        if (!purchases || purchases.length === 0) {
+            throw new InternalServerErrorException(
+                'No purchases found',
+            );
+        }
+    
+        return purchases;
+    }
+    
+    async sendTemplateMessage(phone: string, templateId: string, templateData: object, trackingId: string) {
+        const url = 'http://127.0.0.1:8000/api/system/zalo/send-zalo-template-message'; // URL of your Laravel API
+        const accessToken = this.configService.get<string>('ZALO_ACCESS_TOKEN'); // Access token from .env
+    
+        const data = {
+          phone,
+          template_id: templateId,
+          template_data: templateData,
+          tracking_id: trackingId,
+        };
+        console.log(data);
+        
+    
+        try {
+          const response = await firstValueFrom(
+            this.httpService.post(url, data, {
+              headers: {
+                'Content-Type': 'application/json',
+                access_token: accessToken,
+              },
+            }),
+          );
+          return response.data;
+        } catch (error) {
+          throw new Error(`Error calling Laravel API: ${error.message}`);
+        }
+      }
+
     async sendSuccessEmail(email: string, key: string): Promise<void> {
+        // Load MJML template from file
+        const mjmlTemplate = fs.readFileSync('src/providers/mail/templates/activation.mjml', 'utf8');
+    
+        // Compile template with Handlebars
+        const template = handlebars.compile(mjmlTemplate);
+    
+        // Data to be passed to the template
+        const templateData = {
+            name: email, 
+            activationKey: key,
+        };
+    
+        // Render MJML template to HTML
+        const htmlContent = mjml(template(templateData)).html;
+    
+        // Prepare email options
         const mailOptions = {
             from: '<hieu@78544@gmail.com>',
             to: email,
-            subject: 'Password Reset Request',
-            html: `
-                <p>Active key : ${key}</p>
-              `,
+            subject: 'Kích hoạt khóa học của bạn',
+            html: htmlContent,
         };
-
+    
         try {
             await transporter.sendMail(mailOptions);
+            console.log('Activation email sent successfully to', email);
         } catch (error) {
-            console.error('Failed to send password reset email:', error);
-            throw new Error('Failed to send password reset email');
+            console.error('Failed to send activation email:', error);
+            throw new Error('Failed to send activation email');
         }
     }
-    async checkUserPurchase(
-        userId: string,
-        courseId: string,
-    ): Promise<{ paymentStatus: string }> {
-        // Find the user by ID
+    async checkUserPurchase(userId: string, courseId: string): Promise<{ paymentStatus: string }> {
         const user = await this.userModel.findById(userId);
-
-        // Handle case where user is not found
+        
         if (!user) {
             throw new NotFoundException(`User with ID ${userId} not found`);
         }
-
-        // Find the purchase record for the given user and course
-        const purchase = await this.purchaseModel.findOne({
-            user: userId,
-            course: courseId,
-        });
-
-        // Log the user information for debugging
+    
+        const purchase = await this.purchaseModel.findOne({ user: userId, course: courseId });
+    
         console.log('User Info:', user);
-
-        // Handle case where purchase is not found
+    
         if (!purchase) {
-            return { paymentStatus: 'NOT_FOUND' }; // User has not purchased the course
+            return { paymentStatus: 'NOT_FOUND' }; 
         }
-
-        // Return the payment status from the found purchase record
+    
         return { paymentStatus: purchase.paymentStatus };
     }
-
+    
     async completePurchase(purchaseKey: string): Promise<Purchase> {
         const purchase = await this.purchaseModel.findOneAndUpdate(
-            { purchaseKey, paymentStatus: PaymentStatus.PENDING },
+            { purchaseKey, paymentStatus: PaymentStatus.SUCCESS },
             { $set: { paymentStatus: PaymentStatus.COMPLETED } },
             { new: true },
         );
@@ -1455,84 +1585,76 @@ export class CourseService {
         return purchase;
     }
 
-    async getAllPurchases(): Promise<Purchase[]> {
-        const purchases = await this.purchaseModel
-            .find()
-            .populate('user')
-            .populate('course')
-            .exec();
 
-        if (!purchases || purchases.length === 0) {
-            throw new InternalServerErrorException('No purchases found');
-        }
-
-        return purchases;
-    }
 
     async create(createRatingDto: CreateRatingDto) {
         const existingRating = await this.ratingModel.findOne({
             userId: new Types.ObjectId(createRatingDto.userId),
             courseId: new Types.ObjectId(createRatingDto.courseId),
-        });
-
-        if (existingRating) {
-            throw new BadRequestException(
-                'Rating already exists for this user and course',
-            );
-        }
+          });
+        
+          if (existingRating) {
+            throw new BadRequestException('Rating already exists for this user and course');
+          }
         const newRating = new this.ratingModel({
             ...createRatingDto,
             userId: new Types.ObjectId(createRatingDto.userId),
-            courseId: new Types.ObjectId(createRatingDto.courseId),
+            courseId: new Types.ObjectId(createRatingDto.courseId), 
         });
         await newRating.save();
         return newRating;
     }
-
-    async update(ratingId: string, updateRatingDto: UpdateRatingDto) {
+      
+      async update(ratingId: string, updateRatingDto: UpdateRatingDto) {
         const rating = await this.ratingModel.findByIdAndUpdate(
-            ratingId,
-            {
-                ...updateRatingDto,
-                userId: new Types.ObjectId(updateRatingDto.userId),
-                courseId: new Types.ObjectId(updateRatingDto.courseId),
-            },
-            { new: true },
+          ratingId,
+          {
+            ...updateRatingDto,
+            userId: new Types.ObjectId(updateRatingDto.userId), 
+            courseId: new Types.ObjectId(updateRatingDto.courseId), 
+          },
+          { new: true }
         );
         if (!rating) {
-            throw new NotFoundException('Rating not found');
+          throw new NotFoundException('Rating not found');
         }
         return rating;
-    }
-
-    async delete(ratingId: string) {
+      }
+    
+      async findAllByCourse(courseId: string) {
+        return this.ratingModel.find({ courseId: new Types.ObjectId(courseId) }).exec();
+      }
+    
+      async delete(ratingId: string) {
         const result = await this.ratingModel.findByIdAndDelete(ratingId);
         if (!result) {
-            throw new NotFoundException('Rating not found');
+          throw new NotFoundException('Rating not found');
         }
         return result;
-    }
-
-    async getCourseAverageRating(courseId: string) {
+      }
+    
+      async getCourseAverageRating(courseId: string) {
         const courseObjectId = new Types.ObjectId(courseId);
-
+      
         const ratings = await this.ratingModel.aggregate([
-            { $match: { courseId: courseObjectId } },
-            {
-                $group: {
-                    _id: '$courseId',
-                    averageRating: { $avg: '$rating' },
-                    totalRatings: { $sum: 1 },
-                },
+          { $match: { courseId: courseObjectId } },
+          {
+            $group: {
+              _id: '$courseId',
+              averageRating: { $avg: '$rating' },
+              totalRatings: { $sum: 1 },
             },
+          },
         ]);
         if (ratings.length === 0) {
-            return { averageRating: 0, totalRatings: 0 }; // Không có đánh giá
+          return { averageRating: 0, totalRatings: 0 }; // Không có đánh giá
         }
-
+      
         return {
-            averageRating: ratings[0].averageRating.toFixed(2), // Định dạng với 2 chữ số thập phân
-            totalRatings: ratings[0].totalRatings,
+          averageRating: ratings[0].averageRating.toFixed(2), // Định dạng với 2 chữ số thập phân
+          totalRatings: ratings[0].totalRatings,
         };
-    }
+      }
+      
+      
 }
