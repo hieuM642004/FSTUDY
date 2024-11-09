@@ -8,7 +8,8 @@ import { CourseController } from './course.controller';
 import { CourseService } from './course.service';
 import { User, UserSchema } from '../users/userSchema/user.schema';
 import FirebaseService from 'src/providers/storage/firebase/firebase.service';
-
+import { HttpModule } from '@nestjs/axios';
+import { ConfigModule } from '@nestjs/config';
 @Module({
   imports: [
     MongooseModule.forFeature([
@@ -30,6 +31,7 @@ import FirebaseService from 'src/providers/storage/firebase/firebase.service';
 
 
     ]),
+    HttpModule, ConfigModule
   ],
   controllers: [CourseController],
   providers: [CourseService, GoogleDriveUploader,FirebaseService],
