@@ -1255,7 +1255,7 @@ export class CourseService {
             existingPendingPurchase.purchaseKey = purchaseKey;
             existingPendingPurchase.purchaseDate = purchaseDate;
             existingPendingPurchase.expiryDate = expiryDate;
-            existingPendingPurchase.paymentMethod = 'VNPay';
+            existingPendingPurchase.paymentMethod = 'Momo';
             await existingPendingPurchase.save();
         } else {
             // Create a new purchase if there's no existing PENDING purchase
