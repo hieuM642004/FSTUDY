@@ -120,11 +120,11 @@ function NavBar() {
                             href: '#part-3',
                             title: 'Chương trình học',
                         },
-                        {
-                            key: 'part-4',
-                            href: '#part-4',
-                            title: 'Đánh giá (991)',
-                        },
+                        // {
+                        //     key: 'part-4',
+                        //     href: '#part-4',
+                        //     title: 'Đánh giá (991)',
+                        // },
                     ]}
                 />
             </div>
@@ -361,7 +361,7 @@ function NavBar() {
                             ))}
                     </div>
                     {/* đánh giá  */}
-                    <div
+                    {/* <div
                         id="part-4"
                         style={{
                             width: '100%',
@@ -401,7 +401,7 @@ function NavBar() {
                         <WapperItemCard>
                             <Evaluate />
                         </WapperItemCard>
-                    </div>
+                    </div> */}
                 </div>
             </div>
         </>

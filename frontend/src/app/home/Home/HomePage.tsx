@@ -5,10 +5,12 @@ import { Button, Card, Col, Row } from 'antd';
 import './HomePage.scss';
 import Dashboard from '../DashBoard/DashBoard';
 import { CaretRightOutlined } from '@ant-design/icons';
-
-
+import { getCookie } from 'cookies-next';
 
 const App: React.FC = () => {
+    const token = getCookie('token') as string;
+    console.log(token);
+
     const data = [
         {
             title: '5 lợi ích khi học IELTS',
@@ -42,18 +44,16 @@ Chưa thể vượt qua áp lực phòng thi mỗi khi thi IELTS thật, gây �
     ];
 
     return (
-
         <div className="container">
-            <Dashboard />
+            {token && <Dashboard />}
+
             <div className="banner">
                 <img
                     src="/images/Kiểm tra trình độ.png"
                     alt="banner1"
                     className="w-full h-auto object-cover rounded-md shadow-md"
                 />
-
             </div>
-
             <div style={{ padding: '2rem' }}>
                 {data.map((item, index) => (
                     <Row

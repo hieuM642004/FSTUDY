@@ -8,7 +8,9 @@ import ButtonOutline from '@/components/shared/ButtonPrimary/ButtonOutline';
 const FreeLessons = ({ data }: { data: any }) => {
     const [loading, setLoading] = useState(false);
     const [open, setOpen] = useState(false);
+    const [checkIsFree, setCheckIsFree] = useState(false);
     const [stateData, setStateData] = useState(data);
+    const checkFree = '';
     const showModal = () => {
         setOpen(true);
     };
@@ -27,7 +29,7 @@ const FreeLessons = ({ data }: { data: any }) => {
 
     useEffect(() => {
         setStateData(data);
-        console.log(stateData);
+        console.log('test', stateData);
     }, [data]);
 
     return (
@@ -67,9 +69,17 @@ const FreeLessons = ({ data }: { data: any }) => {
                                                     >
                                                         {item.title}
                                                     </Link>
-                                                    <div className="bg-[#76a5fb] p-[0.2rem] text-white font-medium rounded-lg">
+                                                    {/* <div className="bg-[#76a5fb] p-[0.2rem] text-white font-medium rounded-lg">
                                                         Học thử
-                                                    </div>
+                                                      
+                                                    </div> */}
+                                                    {item?.isFree ? (
+                                                        <div className="bg-[#76a5fb] p-[0.2rem] text-white font-medium rounded-lg">
+                                                            Học thử
+                                                        </div>
+                                                    ) : (
+                                                        ''
+                                                    )}
                                                 </li>
                                             ),
                                         )}
