@@ -1,26 +1,20 @@
 'use client';
-import { Spin } from 'antd';
-import React, { useState, useEffect } from 'react';
-
-export default function Loading() {
-    const [spinning, setSpinning] = useState(false);
-    const [percent, setPercent] = useState(0);
-    useEffect(() => {
-        setSpinning(true);
-        let ptg = -10;
-
-        const interval = setInterval(() => {
-            ptg += 5;
-            setPercent(ptg);
-
-            if (ptg > 120) {
-                clearInterval(interval);
-                setSpinning(false);
-                setPercent(0);
-            }
-        }, 100);
-    },[]);
-
-   
-    return <Spin spinning={spinning} percent={percent} fullscreen />;
+function Loading() {
+    return (
+        <>
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900 bg-opacity-50 backdrop-blur-sm">
+                <div className="text-center">
+                    <div className="inline-block animate-spin rounded-full border-t-4 border-blue-500 border-opacity-50 border-r-4 border-b-4 h-16 w-16 mb-4"></div>
+                    <div className="text-xl font-bold text-white mb-2">
+                        FSTUDY
+                    </div>
+                    <div className="text-white text-opacity-80">
+                        Đang tải...
+                    </div>
+                </div>
+            </div>
+        </>
+    );
 }
+
+export default Loading;

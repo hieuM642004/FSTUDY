@@ -1,10 +1,9 @@
-
 import { Roboto } from 'next/font/google';
 import './globals.scss';
 import StyledComponentsRegistry from '../lib/AntdRegistry';
 import LayoutWrapper from './LayoutWrapper';
 import LiveChatScript from '@/components/client/ChatAI/ChatAI';
-import Script from 'next/script';
+import { Suspense } from 'react';
 
 const roboto = Roboto({
     weight: ['400', '700'],
@@ -23,8 +22,9 @@ const RootLayout = ({ children }: React.PropsWithChildren) => {
         <html lang="en">
             <body className={roboto.className}>
                 <StyledComponentsRegistry>
-                    <LayoutWrapper>{children}
-                    <LiveChatScript />  
+                    <LayoutWrapper>
+                        {children}
+                        <LiveChatScript />
                     </LayoutWrapper>
                 </StyledComponentsRegistry>
             </body>

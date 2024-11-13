@@ -242,7 +242,7 @@ function FlashCard({ id }: { id: string }) {
                         <Tag color="magenta">
                             <p className="py-2 text-sm">
                                 Flashcard:{' '}
-                                {flashCard ? flashCard.nameCard : <Spin />}
+                                {flashCard && flashCard.nameCard }
                             </p>
                         </Tag>
 
