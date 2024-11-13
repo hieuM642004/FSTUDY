@@ -28,7 +28,7 @@ function CoureseOnlinePage() {
                     <img
                         src="/images/2024.png"
                         alt="Picture of the author"
-                        className="w-full max-h-96 object-fill rounded-md shadow-md"
+                        className="w-full h-96 rounded-md shadow-md"
                     />
                 </div>
             </div>

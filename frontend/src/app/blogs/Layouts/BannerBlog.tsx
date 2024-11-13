@@ -45,14 +45,10 @@ function BannerBlog({ breadcrumb, props }: any) {
                     )}
                 </div>
 
-                <Image
-                    src="https://study4.com/static/img/testonline_banner.jpg"
-                    width={0}
-                    height={0}
-                    sizes="100vw"
-                    style={{ width: '100%', height: 'auto' }}
+                <img
+                    src="/images/blog-banner.png"
                     alt="Picture of the author"
-                    className="mb-8 block"
+                    className="mb-8 w-full h-96 object-cover rounded-md shadow-md"
                 />
             </div>
         </>

@@ -135,7 +135,7 @@ function LearnAbout({ onSearch }: any) {
                 </div>
             </div>
             {/* Learn About */}
-            <div className="mb-4">
+            {/* <div className="mb-4">
                 <h4 className="text-xl font-bold mb-4">Tìm hiểu thêm</h4>
                 <div className="flex flex-col rounded-lg">
                     <Link
@@ -157,7 +157,7 @@ function LearnAbout({ onSearch }: any) {
                         🎧 KHÓA HỌC IELTS INTENSIVE LISTENING
                     </Link>
                 </div>
-            </div>
+            </div> */}
             {/* Advertisement */}
             <div>
                 <Link href="" className="mb-3 block">
