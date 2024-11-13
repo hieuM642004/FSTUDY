@@ -59,7 +59,6 @@ const PageMyCourses = () => {
     return (
         <div className=" bg-blue-50 p-10">
             <div className="max-w-7xl m-auto">
-              
                 {userCourse ? (
                     <>
                         <h2 className="text-xl font-semibold #35509a  mb-2">
@@ -85,7 +84,6 @@ const PageMyCourses = () => {
                                                                         .title
                                                                 }
                                                             </span>
-                                                           
                                                         </div>
                                                         <div className="bg-gray-300 h-2 rounded-full mb-2">
                                                             <div
@@ -97,10 +95,15 @@ const PageMyCourses = () => {
                                                         </div>
                                                         <div className="text-gray-600">
                                                             Tiếp tục bài học:{' '}
-                                                            {
-                                                                item.course
-                                                                    .detail_short_description
-                                                            }
+                                                            {item.course
+                                                                .detail_short_description
+                                                                .length > 100
+                                                                ? item.course.detail_short_description.substring(
+                                                                      0,
+                                                                      100,
+                                                                  ) + '...'
+                                                                : item.course
+                                                                      .detail_short_description}
                                                         </div>
                                                     </div>
                                                 </Link>
@@ -126,9 +129,9 @@ const PageMyCourses = () => {
                 ) : (
                     <>
                         <h2 className=" font-semibold #35509a text-center">
-                            Bạn chưa mua khóa học nào <Link href={"/courses-online"}>mua ngay</Link> 
+                            Bạn chưa mua khóa học nào{' '}
+                            <Link href={'/courses-online'}>mua ngay</Link>
                         </h2>
-                       
                     </>
                 )}
             </div>

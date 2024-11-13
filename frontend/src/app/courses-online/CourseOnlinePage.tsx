@@ -26,7 +26,7 @@ function CoureseOnlinePage() {
                 <div className="relative ">
                     <div className="absolute inset-0 bg-gray-800 opacity-30 rounded-md"></div>
                     <img
-                        src="/images/Learn-English-Faster.jpg"
+                        src="/images/2024.png"
                         alt="Picture of the author"
                         className="w-full max-h-96 object-fill rounded-md shadow-md"
                     />

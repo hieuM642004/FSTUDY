@@ -162,15 +162,16 @@ function LearnAbout({ onSearch }: any) {
             <div>
                 <Link href="" className="mb-3 block">
                     <Image
-                        src="https://study4.com/media/home/HomeBanner/files/2022/07/06/Learning_English_with.jpg"
+                        src="/images/HỌC CÙNG FSTUDY 2.png"
                         width={0}
                         height={0}
                         sizes="100vw"
                         style={{ width: '100%', height: 'auto' }}
                         alt="Learning English"
+                        className='rounded-md shadow-md'
                     />
                 </Link>
-                <Link href="" className="mb-3 block">
+                {/* <Link href="" className="mb-3 block">
                     <Image
                         src="https://study4.com/media/home/HomeBanner/files/2021/12/01/download_extension.png"
                         width={0}
@@ -179,9 +180,9 @@ function LearnAbout({ onSearch }: any) {
                         style={{ width: '100%', height: 'auto' }}
                         alt="Download Extension"
                     />
-                </Link>
+                </Link> */}
                 {/* List Group FB */}
-                <div>
+                {/* <div>
                     <div className="text-center border mb-3">
                         <Image
                             src="https://scontent.fsgn5-10.fna.fbcdn.net/v/t39.30808-6/225605814_137648018518630_1539189158239507292_n.png?stp=dst-png_s370x247&_nc_cat=107&ccb=1-7&_nc_sid=1760b9&_nc_eui2=AeFszJH9ggzus_v2V_9j7D2ULTlQJT_4jnYtOVAlP_iOduYseFkcXbLtiCMMcbcS80tbS97zDf04juzM1WekhLSa&_nc_ohc=KfGV9WukLlgQ7kNvgFtSfF_&_nc_ht=scontent.fsgn5-10.fna&oh=00_AYBUeSJ5ABI62H6dqx-_w5zIdm0YrPPb7LOwHvsD1LY55Q&oe=669536AA"
@@ -229,7 +230,7 @@ function LearnAbout({ onSearch }: any) {
                             </Link>
                         </div>
                     </div>
-                </div>
+                </div> */}
             </div>
         </div>
     );

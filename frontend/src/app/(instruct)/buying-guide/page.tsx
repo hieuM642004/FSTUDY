@@ -6,7 +6,7 @@ const { Title, Paragraph } = Typography;
 function Buying() {
     return (
         <>
-            <div className="mx-auto shadow-md rounded-md w-4/5 my-7 p-3">
+            <div className="mx-auto shadow-md rounded-md w-4/5 my-20 p-3">
                 <Typography>
                     <Title>Hướng dẫn thanh toán</Title>
                     <Paragraph>

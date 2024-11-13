@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 
 import PurchaseService from '@/services/purchase/PurchaseService';
 import ButtonPrimary from '@/components/shared/ButtonPrimary/ButtonPrimary';
+import Link from 'next/link';
 type FieldType = {
     activationCode?: string;
     phoneNumber?: string;
@@ -94,13 +95,12 @@ const App: React.FC = () => {
                     khóa học.
                 </h1>
                 <div className="mt-4">
-                    <a href="#" className="text-blue-800 hover:text-blue-900">
-                        Hướng dẫn mua hàng
-                    </a>
-                    <br />
-                    <a href="#" className="text-blue-800 hover:text-blue-900">
-                        Kiểm tra tài khoản đã kích hoạt khóa học
-                    </a>
+                    <Link
+                        href="/buying-guide"
+                        className="text-blue-800 hover:text-blue-900"
+                    >
+                        Hướng dẫn mua khóa học
+                    </Link>
                 </div>
             </Form>
         </div>

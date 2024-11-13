@@ -167,12 +167,11 @@ const Tests: React.FC = () => {
                     <Pagination />
                 </div>
                 <div className="pt-8">
-                    <Image
-                        src="https://study4.com/static/img/testonline_banner.jpg"
+                    <img
+                        src="/images/education-typography-banner-vector-26430325.jpg"
                         alt="Avatar"
-                        width={1146}
-                        height={400}
-                        className="bg-gray-300 mb-2 w-full"
+                  
+                        className="bg-gray-300 mb-2 w-full object-cover h-[288] rounded-md shadow-md"
                     />
                 </div>
             </div>

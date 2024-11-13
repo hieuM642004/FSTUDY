@@ -31,7 +31,6 @@ function Video({ id }: { id: string }) {
         fetchData();
     }, [id]);
 
-
     const handleSelectChange = async (value: string) => {
         setSelectedWord(value);
         setLoading(true);
@@ -39,7 +38,7 @@ function Video({ id }: { id: string }) {
         try {
             const response = await FlashCardService.searchVideo(value);
             const results = response.data;
-            console.log(results)
+            console.log(results);
             setSearchResults(results);
             setCurrentVideoIndex(0);
         } catch (error) {
@@ -121,7 +120,7 @@ function Video({ id }: { id: string }) {
                                 ref={iframeRef}
                                 width="1000"
                                 height="400"
-                                className="mx-auto"
+                                className="mx-auto rounded-md shadow-md"
                                 src={`${searchResults[currentVideoIndex].video_url}&enablejsapi=1`} // Current video
                                 frameBorder="0"
                                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -140,25 +139,28 @@ function Video({ id }: { id: string }) {
                         </Row>
 
                         <div className="vocabulary ml-2 mt-4">
-    <h3 className="font-bold text-xl">Từ vựng liên quan:</h3>
-    <TextSelectorWrapper>
-    <div>
-        {Object.entries(searchResults[currentVideoIndex].vocabulary).map(
-            ([word, videoUrl], i) => (
-                <span
-                    key={i}
-                    className="bg-slate-300 px-2 my-1 py-1 mx-1 inline-block rounded-md cursor-pointer"
-                    onClick={() => handleWordClick(videoUrl)} 
-                >
-                    {word}
-                </span>
-            ),
-        )}
-    </div>
-</TextSelectorWrapper>
-
-</div>
-
+                            <h3 className="font-bold text-xl">
+                                Từ vựng liên quan:
+                            </h3>
+                            <TextSelectorWrapper>
+                                <div>
+                                    {Object.entries(
+                                        searchResults[currentVideoIndex]
+                                            .vocabulary,
+                                    ).map(([word, videoUrl], i) => (
+                                        <span
+                                            key={i}
+                                            className="bg-slate-300 px-2 my-1 py-1 mx-1 inline-block rounded-md cursor-pointer"
+                                            onClick={() =>
+                                                handleWordClick(videoUrl)
+                                            }
+                                        >
+                                            {word}
+                                        </span>
+                                    ))}
+                                </div>
+                            </TextSelectorWrapper>
+                        </div>
                     </>
                 )}
 
@@ -168,13 +170,13 @@ function Video({ id }: { id: string }) {
                         type="info"
                     />
                 )}
-                {
-                    !selectedWord && (
-                        <>
-                        <p className='text-xl text-center my-44'>Chọn từ để học qua video</p>
-                        </>
-                    )
-                }
+                {!selectedWord && (
+                    <>
+                        <p className="text-xl text-center my-44">
+                            Chọn từ để học qua video
+                        </p>
+                    </>
+                )}
             </div>
         </>
     );

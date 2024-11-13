@@ -9,9 +9,9 @@ import { fetchUserData } from '@/lib/redux/features/user/userSlice';
 
 import './MyAccount.scss';
 import PageMyCourses from './courses/Courses';
-import PageMyPosts from './posts/Posts';
 import PageMyStatistics from './examstatistics/ExamStatistics';
 import { useTypedSelector } from '@/hooks/useTypedSelector';
+import { Tooltip } from 'antd';
 
 const PageMyAccountInfo: React.FC = () => {
     const [activeTab, setActiveTab] = useState('courses');
@@ -29,10 +29,10 @@ const PageMyAccountInfo: React.FC = () => {
 
     return (
         <>
-            <div className="account-info mx-auto p-6">
-                <div className="relative flex flex-col items-center pb-10">
+            <div className="account-info mx-auto p-6 shadow-md rounded-md">
+                <div className="relative flex flex-col items-center">
                     <Image
-                        src="https://study4.com/static/img/user_banner.jpg"
+                        src="/images/user_banner.jpg"
                         alt="banner"
                         width={1170}
                         height={200}
@@ -62,7 +62,9 @@ const PageMyAccountInfo: React.FC = () => {
                         )}
 
                         <Link href={'/my-account/settings'}>
-                            <EditOutlined className="absolute bottom-0 right-0   bg-white rounded-full p-2" />
+                            <Tooltip title="Chỉnh sửa" placement="right">
+                                <EditOutlined className="absolute bottom-0 right-0   bg-white rounded-full p-2" />
+                            </Tooltip>
                         </Link>
                     </div>
 
@@ -70,12 +72,6 @@ const PageMyAccountInfo: React.FC = () => {
                         <h1 className="text-3xl md:text-2xl sm:text-xl font-bold mt-2">
                             {dataUser?.email}
                         </h1>
-                        <Link
-                            href={'#'}
-                            className="text-sm  px-4  rounded-lg hover:bg-gray-200 items-center hover:text-black mt-2 pt-1"
-                        >
-                            Trang công khai
-                        </Link>
                     </div>
                 </div>
                 <div className="border-b border-gray-200 pt-5">
@@ -100,7 +96,6 @@ const PageMyAccountInfo: React.FC = () => {
                         >
                             Kết quả luyện thi
                         </button>
-                        
                     </div>
                 </div>
                 {activeTab === 'courses' && <PageMyCourses />}

@@ -177,19 +177,9 @@ function FlashCard({ id }: { id: string }) {
                 </Link>
             ),
         },
+       
         {
             key: '3',
-            label: (
-                <Link
-                    href={`/flashcard/${flashCard?._id}/practice-reading`}
-                    className="ml-4"
-                >
-                    Luyện đọc
-                </Link>
-            ),
-        },
-        {
-            key: '4',
             label: (
                 <button
                     className="px-4 py-2 rounded-md"

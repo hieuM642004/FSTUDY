@@ -1,5 +1,6 @@
 'use client';
 import { Spin } from 'antd';
+import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
 function Target() {
@@ -29,7 +30,7 @@ function Target() {
     return (
         <>
             <div className="rounded-lg order-1 md:order-2 md:mb-0">
-                <div className="text-center my-auto p-3 bg-orange-200 max-w-64 min-w-64 rounded-md min-h-32">
+                {/* <div className="text-center my-auto p-3 bg-orange-200 max-w-64 min-w-64 rounded-md min-h-32">
                     {quote || author ? (
                         <>
                             <blockquote className="border-l-4 border-gray-500 italic pl-4 max-w-md">
@@ -42,7 +43,8 @@ function Target() {
                     ) : (
                         <Spin className="text-center" />
                     )}
-                </div>
+                </div> */}
+              <Link href={'/speaking'}>  <img src="/images/Speaking with AI.png" alt="" className='w-64 h-44 shadow-md rounded-md object-cover'/></Link>
             </div>
         </>
     );
