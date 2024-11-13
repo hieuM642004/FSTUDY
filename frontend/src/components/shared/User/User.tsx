@@ -20,38 +20,40 @@ const User: React.FC<UserAvatarDropdownProps> = ({
     itemsdropdown,
 }) => {
     return (
-        <Dropdowns
-            items={itemsdropdown}
-            
-            title={
-                user?.avatar ? (
-                    <>
-                        <Badge count={isAdmin ? <KeyOutlined className='text-amber-500'/> : ''}>
-                            <Image
-                                src={user?.avatar}
-                                width={30}
-                                height={30}
-                                alt="User Avatar"
-                                className="mr-2 rounded-full"
-                            />
-                        </Badge>
-                    </>
-                ) : (
-                    <>
-                        <Badge count={isAdmin ? <KeyOutlined className='text-amber-500'/> : ''}>
-                            <Image
-                                src="/images/user_icon.png"
-                                width={30}
-                                height={30}
-                                alt="Default Avatar"
-                                className="mr-2 rounded-full"
-                            />
-                        </Badge>
-                    </>
-                )
-            }
-            stylecss=" text-normal"
-        />
+        <div className='mr-4'>
+            <Dropdowns
+                items={itemsdropdown}
+                
+                title={
+                    user?.avatar ? (
+                        <>
+                            <Badge count={isAdmin ? <KeyOutlined className='text-amber-500'/> : ''}>
+                                <Image
+                                    src={user?.avatar}
+                                    width={30}
+                                    height={30}
+                                    alt="User Avatar"
+                                    className="mr-2 rounded-full"
+                                />
+                            </Badge>
+                        </>
+                    ) : (
+                        <>
+                            <Badge count={isAdmin ? <KeyOutlined className='text-amber-500'/> : ''}>
+                                <Image
+                                    src="/images/user_icon.png"
+                                    width={30}
+                                    height={30}
+                                    alt="Default Avatar"
+                                    className="mr-2 rounded-full"
+                                />
+                            </Badge>
+                        </>
+                    )
+                }
+                stylecss=" text-normal"
+            />
+        </div>
     );
 };
 
