@@ -47,150 +47,138 @@ const Dashboard = () => {
     };
 
     return (
-        <div className=" bg-blue-50 p-10">
-            <div className="max-w-7xl m-auto">
-                <div className="mt-6 flex flex-wrap justify-between">
-                    <div>
-                        <h1 className="text-4xl font-bold text-blue-900 mb-4 ">
+        <div className="min-h-screen bg-blue-50">
+            <div className="container mx-auto px-4 py-10">
+                <div className="max-w-6xl mx-auto">
+                    <div className="mb-8">
+                        <h1 className="text-4xl font-bold text-blue-900">
                             Xin chào, {dataUser?.name}
                         </h1>
                     </div>
-                   
-                </div>
-               
-                {userCourse ? (
-                    <>
-                        <h2 className="text-xl font-semibold #35509a  mb-2">
-                            {userCourse ? <div>KHÓA HỌC ĐÃ MUA</div> : <></>}
-                        </h2>
-                        <div className="flex flex-wrap">
-                            {userCourse?.length > 0 &&
-                                userCourse?.map(
-                                    (item: string | any, index: number) => {
-                                        return (
-                                            <>
-                                                {item?.paymentStatus ===
-                                                    'COMPLETED' && (
-                                                    <>
-                                                        <div
-                                                            key={
-                                                                item.course._id
-                                                            }
-                                                            className="bg-white p-4  mb-3  rounded-lg shadow-md w-min-20 w-[20rem] mx-2 transition ease-in-out delay-150 hover:-translate-y-1 hover:scale-80 duration-300"
-                                                        >
-                                                            <Link
-                                                                href={`learning/${item.course._id}`}
-                                                            >
-                                                                <div className="bg-gray-100 p-4 rounded-lg">
-                                                                    <div className="flex justify-between items-center mb-2 text-black">
-                                                                        <span className="font-semibold">
-                                                                            {
-                                                                                item
-                                                                                    .course
-                                                                                    .title
-                                                                            }
-                                                                        </span>
-                                                                      
-                                                                    </div>
-                                                                    <div className="bg-gray-300 h-2 rounded-full mb-2">
-                                                                        <div
-                                                                            className="bg-orange-500 h-2 rounded-full"
-                                                                            style={{
-                                                                                width: '0%',
-                                                                            }}
-                                                                        ></div>
-                                                                    </div>
-                                                                    <div className="text-gray-600">
-                                                                        Tiếp tục
-                                                                        bài học:{' '}
-                                                                        {
-    item.course.detail_short_description.length > 50
-        ? item.course.detail_short_description.substring(0, 50) + '...'
-        : item.course.detail_short_description
-}
 
-                                                                    </div>
-                                                                    <span className="bg-orange-400 rounded-lg p-1 mt-2 text-white ">
-                                                                Học thử
-                                                            </span>
-                                                                </div>
-                                                            </Link>
-                                                        </div>
-                                                    </>
-                                                )}
-                                            </>
-                                        );
-                                    },
-                                )}
-                        </div>
-                        {userCourse ? (
-                            <>
-                                {' '}
-                                <Link
-                                    href="my-account"
-                                    className="text-blue-500 mt-2 inline-block"
-                                >
-                                    Xem tất cả &gt;&gt;
-                                </Link>
-                            </>
-                        ) : (
-                            <></>
-                        )}
-                    </>
-                ) : (
-                    <>
-                        <h2 className="text-xl font-semibold #35509a  mb-2">
-                            TOÀN BỘ KHÓA HỌC
-                        </h2>
-                        <div className="flex flex-wrap">
-                            {listCourse?.length > 0 &&
-                                listCourse?.map(
-                                    (item: string | any, index: number) => {
-                                        return (
-                                            <div
-                                                key={item._id}
-                                                className="bg-white  mb-3  p-4 rounded-lg shadow-md w-min-20 w-[20rem] mx-2 transition ease-in-out delay-150 hover:-translate-y-1 hover:scale-80 duration-300"
-                                            >
-                                                <Link
-                                                    href={`detailonlinecourse/${item._id}`}
+                    {userCourse ? (
+                        <div className="space-y-6">
+                            <h2 className="text-xl font-semibold text-[#35509a]">
+                                KHÓA HỌC ĐÃ MUA
+                            </h2>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                                {userCourse?.length > 0 &&
+                                    userCourse?.map(
+                                        (item: any) =>
+                                            item?.paymentStatus ===
+                                                'COMPLETED' && (
+                                                <div
+                                                    key={item.course._id}
+                                                    className="bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
                                                 >
-                                                    <div className="bg-gray-100 p-4 rounded-lg">
-                                                  
-                                                        <div className="flex justify-between items-center mb-2 text-black">
-                                                            <span className="font-semibold">
-                                                                {item.title}
-                                                            </span>
-                                                           
+                                                    <Link
+                                                        href={`learning/${item.course._id}`}
+                                                    >
+                                                        <div className="p-6">
+                                                            <div className="flex justify-between items-start mb-4">
+                                                                <h3 className="font-semibold text-gray-900">
+                                                                    {
+                                                                        item
+                                                                            .course
+                                                                            .title
+                                                                    }
+                                                                </h3>
+                                                            </div>
+                                                            <div className="space-y-4">
+                                                                <div className="relative h-2 bg-gray-200 rounded-full">
+                                                                    <div
+                                                                        className="absolute h-2 bg-orange-500 rounded-full"
+                                                                        style={{
+                                                                            width: '0%',
+                                                                        }}
+                                                                    />
+                                                                </div>
+                                                                <p className="text-gray-600 text-sm">
+                                                                    Tiếp tục bài
+                                                                    học:{' '}
+                                                                    {item.course
+                                                                        .detail_short_description
+                                                                        .length >
+                                                                    50
+                                                                        ? item.course.detail_short_description.substring(
+                                                                              0,
+                                                                              50,
+                                                                          ) +
+                                                                          '...'
+                                                                        : item
+                                                                              .course
+                                                                              .detail_short_description}
+                                                                </p>
+                                                                <span className="inline-block bg-orange-400 text-white text-sm px-3 py-1 rounded-lg">
+                                                                    Học thử
+                                                                </span>
+                                                            </div>
                                                         </div>
-                                                        <div className="bg-gray-300 h-2 rounded-full mb-2">
+                                                    </Link>
+                                                </div>
+                                            ),
+                                    )}
+                            </div>
+                            <Link
+                                href="my-account"
+                                className="inline-block text-blue-500 hover:text-blue-600 font-medium"
+                            >
+                                Xem tất cả &gt;&gt;
+                            </Link>
+                        </div>
+                    ) : (
+                        <div className="space-y-6">
+                            <h2 className="text-xl font-semibold text-[#35509a]">
+                                TOÀN BỘ KHÓA HỌC
+                            </h2>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                                {listCourse?.length > 0 &&
+                                    listCourse?.map((item: any) => (
+                                        <div
+                                            key={item._id}
+                                            className="bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
+                                        >
+                                            <Link
+                                                href={`detailonlinecourse/${item._id}`}
+                                            >
+                                                <div className="p-6">
+                                                    <div className="flex justify-between items-start mb-4">
+                                                        <h3 className="font-semibold text-gray-900">
+                                                            {item.title}
+                                                        </h3>
+                                                    </div>
+                                                    <div className="space-y-4">
+                                                        <div className="relative h-2 bg-gray-200 rounded-full">
                                                             <div
-                                                                className="bg-orange-500 h-2 rounded-full"
+                                                                className="absolute h-2 bg-orange-500 rounded-full"
                                                                 style={{
                                                                     width: '0%',
                                                                 }}
-                                                            ></div>
+                                                            />
                                                         </div>
-                                                        <div className="text-gray-600">
+                                                        <p className="text-gray-600 text-sm">
                                                             Tiếp tục bài học:{' '}
-                                                            {
-    item.detail_short_description.length > 50
-        ? item.detail_short_description.substring(0, 50) + '...'
-        : item.detail_short_description
-}
-
-                                                        </div>
-                                                    <span className="bg-orange-400 rounded-lg p-1 mt-2 text-white ">
-                                                                Học thử
-                                                            </span>
+                                                            {item
+                                                                .detail_short_description
+                                                                .length > 50
+                                                                ? item.detail_short_description.substring(
+                                                                      0,
+                                                                      50,
+                                                                  ) + '...'
+                                                                : item.detail_short_description}
+                                                        </p>
+                                                        <span className="inline-block bg-orange-400 text-white text-sm px-3 py-1 rounded-lg">
+                                                            Học thử
+                                                        </span>
                                                     </div>
-                                                </Link>
-                                            </div>
-                                        );
-                                    },
-                                )}
+                                                </div>
+                                            </Link>
+                                        </div>
+                                    ))}
+                            </div>
                         </div>
-                    </>
-                )}
+                    )}
+                </div>
             </div>
         </div>
     );

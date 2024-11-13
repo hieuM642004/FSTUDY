@@ -88,8 +88,8 @@ const Tests: React.FC = () => {
 
     return (
         <>
-            <div className="mx-auto p-6">
-                <div className="flex flex-col md:flex-row md:space-x-4 mt-4 gap-8">
+            <div className="container mx-auto max-w-7xl p-6">
+                <div className="flex flex-col md:flex-row md:space-x-4 mt-4 gap-8 justify-center">
                     <Target />
                     <div className="md:basis-2/3 order-2 md:order-1">
                         <h1 className="text-3xl font-bold">Thư viện đề thi</h1>
@@ -127,10 +127,10 @@ const Tests: React.FC = () => {
 
                 {loading ? (
                     <div className="flex justify-center items-center h-64">
-                        <Spin></Spin>
+                        <Spin />
                     </div>
                 ) : (
-                    <div className="flex flex-col md:flex-row md:space-x-4 mt-4 gap-8">
+                    <div className="flex flex-col md:flex-row md:space-x-4 mt-4 gap-8 justify-center">
                         <div className="w-full md:w-64 order-2 md:order-2 mb-4 md:mb-0">
                             <Link href={'#'}>
                                 <Image
@@ -144,7 +144,7 @@ const Tests: React.FC = () => {
                         </div>
                         <div className="md:basis-2/3 order-1 md:order-1">
                             {tests.length > 0 ? (
-                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 ">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                                     {tests.map((test, index) => (
                                         <IELTSCard
                                             key={index}
@@ -163,16 +163,8 @@ const Tests: React.FC = () => {
                         </div>
                     </div>
                 )}
-                <div className="pt-4">
+                <div className="pt-4 flex justify-center">
                     <Pagination />
-                </div>
-                <div className="pt-8">
-                    <img
-                        src="/images/education-typography-banner-vector-26430325.jpg"
-                        alt="Avatar"
-                  
-                        className="bg-gray-300 mb-2 w-full object-cover h-[288] rounded-md shadow-md"
-                    />
                 </div>
             </div>
         </>
