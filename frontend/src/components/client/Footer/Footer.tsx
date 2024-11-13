@@ -41,8 +41,8 @@ const FooterComponent = () => {
                     <p className="text-base font-bold tracking-wide text-gray-900">
                         Hỗ trợ
                     </p>
-                    <Link href="/instruct/buying-guide">Hướng dẫn mua hàng</Link>
-                    <a href="#">Chăm sóc khách hàng</a>
+                    <Link href="/buying-guide">Hướng dẫn mua hàng</Link>
+                   
                 </div>
                 <div className="flex flex-col gap-2 text-sm text-gray-500">
                     <p className="text-base font-bold tracking-wide text-gray-900">
@@ -52,11 +52,10 @@ const FooterComponent = () => {
                     <a href="#">Liên hệ</a>
                     <a href="#">Điều khoản bảo mật</a>
                     <p className="text-base font-bold tracking-wide text-gray-900">
-                        Tài nguyên
+                        Liên hệ
                     </p>
-                    <a href="#">Thư viện đề thi</a>
-                    <a href="#">Blog</a>
-                    <a href="#">Kho tài liệu</a>
+                    <a href="#">Email: fstudy.team@gmail.com</a>
+                    <a href="#">Hotline: 096 369 5525</a>
                 </div>
             </div>
             <div className="flex flex-col-reverse justify-between pt-5 pb-10 border-t lg:flex-row">
@@ -65,22 +64,7 @@ const FooterComponent = () => {
                     reserved.
                 </p>
                 <ul className="flex flex-col mb-3 space-y-2 lg:mb-0 sm:space-y-0 sm:space-x-5 sm:flex-row">
-                    <li>
-                        <a
-                            href="#"
-                            className="text-sm text-gray-600 transition-colors duration-300 hover:text-deep-purple-accent-400"
-                        >
-                            Privacy &amp; Cookies Policy
-                        </a>
-                    </li>
-                    <li>
-                        <a
-                            href="#"
-                            className="text-sm text-gray-600 transition-colors duration-300 hover:text-deep-purple-accent-400"
-                        >
-                            Disclaimer
-                        </a>
-                    </li>
+                    
                 </ul>
             </div>
         </footer>
