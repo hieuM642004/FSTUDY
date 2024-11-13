@@ -1,6 +1,7 @@
 'use client';
 import { UpOutlined } from '@ant-design/icons';
 import { Popover, PopoverProps } from 'antd';
+import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 
 function SiteElevator() {
@@ -49,7 +50,8 @@ function SiteElevator() {
         if (scriptLoaded) return;
 
         const script = document.createElement('script');
-        script.src = 'https://stc-laban.zdn.vn/dictionary/js/plugin/lbdictplugin.frame.min.js';
+        script.src =
+            'https://stc-laban.zdn.vn/dictionary/js/plugin/lbdictplugin.frame.min.js';
         script.onload = () => {
             const lbDictPluginFrame = (window as any).lbDictPluginFrame;
             const dictElement = document.getElementById('lbdict_plugin_frame');
@@ -73,14 +75,24 @@ function SiteElevator() {
 
     return (
         <>
-            <div style={{ position: 'fixed', top: '45%', right: '20px', zIndex: 100 }}>
+            <div
+                style={{
+                    position: 'fixed',
+                    top: '45%',
+                    right: '20px',
+                    zIndex: 100,
+                }}
+            >
                 <div className="bg-white flex flex-col items-center w-11 shadow-2xl rounded-l-lg cursor-pointer py-[5px]">
                     <Popover
                         placement="leftTop"
                         title={'Từ điển'}
                         content={
                             <div>
-                                <div id="lbdict_plugin_frame" className='w-[260px] h-[260px] fixed top-3/4'></div>
+                                <div
+                                    id="lbdict_plugin_frame"
+                                    className="w-[260px] h-[260px] fixed top-3/4"
+                                ></div>
                             </div>
                         }
                         arrow={mergedArrow}
@@ -89,8 +101,17 @@ function SiteElevator() {
                     >
                         <p className="text-sm text-center">Từ điển</p>
                     </Popover>
-
-                    <div className="mt-1 border-t block w-[60%] text-center" onClick={handleScrollTop}>
+                    <Link
+                        className="mt-1 border-t"
+                        target="_blank"
+                        href="https://translate.google.com/?hl=vi&sl=en&tl=vi&op=translate"
+                    >
+                        <p className="text-sm text-center">Dịch</p>
+                    </Link>
+                    <div
+                        className="mt-1 border-t block w-[60%] text-center"
+                        onClick={handleScrollTop}
+                    >
                         {isSticky && <UpOutlined />}
                     </div>
                 </div>
