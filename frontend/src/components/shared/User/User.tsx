@@ -40,7 +40,7 @@ const User: React.FC<UserAvatarDropdownProps> = ({
                     <>
                         <Badge count={isAdmin ? <KeyOutlined className='text-amber-500'/> : ''}>
                             <Image
-                                src="https://study4.com/static/img/user_icon.png"
+                                src="/images/user_icon.png"
                                 width={30}
                                 height={30}
                                 alt="Default Avatar"
