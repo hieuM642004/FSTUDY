@@ -25,14 +25,14 @@ const RecordingList: React.FC<RecordingListProps> = ({
                         {orders.map((order) => (
                             <div
                                 key={order}
-                                className={`mr-1 mb-1 border-black font-normal border rounded-sm inline-block py-1 px-2 hover:cursor-pointer hover:text-white hover:bg-[#35509a] ${
+                                className={`mr-1 mb-1 border-black font-normal border rounded-sm inline-block py-1 px-2  hover:text-white hover:bg-[#35509a] ${
                                     activeQuestions.includes(order)
                                         ? 'bg-[#35509a] text-white border-[#35509a]'
                                         : ''
                                 }`}
-                                onClick={() =>
-                                    onQuestionClick(sessionId, order)
-                                }
+                                // onClick={() =>
+                                //     onQuestionClick(sessionId, order)
+                                // }
                             >
                                 {order}
                             </div>

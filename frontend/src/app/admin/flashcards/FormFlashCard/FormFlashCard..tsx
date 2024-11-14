@@ -32,14 +32,14 @@ function FormFlashCard({
     const [isWordValid, setIsWordValid] = useState<{
         [index: number]: boolean;
     }>({});
-const {isLoggedIn}=useAuth()
+    const { isLoggedIn } = useAuth();
     const [messageProps, setMessageProps] = useState<{
         type: 'success' | 'error' | 'warning';
         content: string;
     } | null>(null);
     const router = useRouter();
     const dataUser = useTypedSelector((state) => state.user);
-    const {}=dataUser
+    const {} = dataUser;
     useEffect(() => {
         if (id) {
             const fetchCardData = async () => {
@@ -414,7 +414,7 @@ const {isLoggedIn}=useAuth()
                     type: 'success',
                     content: 'Flashcard updated successfully!',
                 });
-                router.push('/flashcard');
+                router.push('/admin/flashcards');
                 console.log('Update success:', response);
             } else {
                 const response = await FlashCardService.addFlashCard(
@@ -424,7 +424,7 @@ const {isLoggedIn}=useAuth()
                     type: 'success',
                     content: 'Flashcard add successfully!',
                 });
-                router.push('/flashcard');
+                router.push('/admin/flashcards');
                 console.log('Add success:', response);
             }
         } catch (error) {

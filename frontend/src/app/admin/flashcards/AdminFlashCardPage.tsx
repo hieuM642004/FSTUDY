@@ -126,7 +126,7 @@ const AdminFlashCard = () => {
                             <Card
                                 title={
                                     <div className="flex justify-between">
-                                        <h2>{flashCard.nameCard}</h2>
+                                        <h2>{flashCard.nameCard.length > 20 ? `${flashCard.nameCard.slice(0, 20)}...` : flashCard.nameCard}</h2>
                                         <div className="card-actions">
                                             <Link
                                                 href={`/admin/flashcards/edit/${flashCard._id}`}
