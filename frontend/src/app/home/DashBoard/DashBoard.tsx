@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { SnippetsOutlined, EditOutlined } from '@ant-design/icons';
 import Link from 'next/link';
 
 import { useAppDispatch } from '@/hooks/useAppDispatch';
@@ -13,39 +12,44 @@ const Dashboard = () => {
     const [userCourse, SetUserCourse] = useState<[] | any>();
     const [listCourse, SetListCourse] = useState<[] | any>();
     const dataUser = useTypedSelector((state: RootState) => state.user);
-    useEffect(() => {
-        dispatch(fetchUserData());
-    }, [dispatch]);
-    useEffect(() => {
-        getUserCourse();
-        getAllCourse();
-    }, []);
-    const getUserCourse = async () => {
-        try {
-            if (dataUser.id) {
-                const userId = dataUser.id;
-                const response = await HomeService.getPurchasesByUserId({
-                    userId,
-                });
-                if (response) {
-                    SetUserCourse(response);
-                }
-            } else {
-                return;
-            }
-        } catch (error) {
-            console.log(error);
-        }
-    };
-    const getAllCourse = async () => {
-        try {
-            const response = await HomeService.getAllCourse();
-            SetListCourse(response);
-        } catch (error) {
-            console.log(error);
-        }
-    };
 
+    useEffect(() => {
+        if (!dataUser) {
+            dispatch(fetchUserData());
+        }
+    }, [dispatch, dataUser]);
+
+    useEffect(() => {
+        const fetchUserCourseData = async () => {
+            try {
+                if (dataUser?.id && !userCourse) {
+                    const response = await HomeService.getPurchasesByUserId({ userId: dataUser.id });
+                    if (response) {
+                        SetUserCourse(response);
+                    } else {
+                        await fetchAllCourses();
+                    }
+                }
+            } catch (error) {
+                console.error(error);
+            }
+        };
+
+        const fetchAllCourses = async () => {
+            try {
+                if (!listCourse) {
+                    const response = await HomeService.getAllCourse();
+                    SetListCourse(response);
+                }
+            } catch (error) {
+                console.error(error);
+            }
+        };
+
+        if (dataUser) {
+            fetchUserCourseData();
+        }
+    }, [dataUser, userCourse, listCourse]);
     return (
         <div className=" bg-blue-50 p-10">
             <div className="max-w-7xl m-auto">
@@ -55,9 +59,8 @@ const Dashboard = () => {
                             Xin chào, {dataUser?.name}
                         </h1>
                     </div>
-                   
                 </div>
-               
+
                 {userCourse ? (
                     <>
                         <h2 className="text-xl font-semibold #35509a  mb-2">
@@ -90,7 +93,6 @@ const Dashboard = () => {
                                                                                     .title
                                                                             }
                                                                         </span>
-                                                                      
                                                                     </div>
                                                                     <div className="bg-gray-300 h-2 rounded-full mb-2">
                                                                         <div
@@ -103,16 +105,23 @@ const Dashboard = () => {
                                                                     <div className="text-gray-600">
                                                                         Tiếp tục
                                                                         bài học:{' '}
-                                                                        {
-    item.course.detail_short_description.length > 50
-        ? item.course.detail_short_description.substring(0, 50) + '...'
-        : item.course.detail_short_description
-}
-
+                                                                        {item
+                                                                            .course
+                                                                            .detail_short_description
+                                                                            .length >
+                                                                        50
+                                                                            ? item.course.detail_short_description.substring(
+                                                                                  0,
+                                                                                  50,
+                                                                              ) +
+                                                                              '...'
+                                                                            : item
+                                                                                  .course
+                                                                                  .detail_short_description}
                                                                     </div>
                                                                     <span className="bg-orange-400 rounded-lg p-1 mt-2 text-white ">
-                                                                Học thử
-                                                            </span>
+                                                                        Học thử
+                                                                    </span>
                                                                 </div>
                                                             </Link>
                                                         </div>
@@ -127,7 +136,7 @@ const Dashboard = () => {
                             <>
                                 {' '}
                                 <Link
-                                    href="my-account"
+                                    href="courses-online"
                                     className="text-blue-500 mt-2 inline-block"
                                 >
                                     Xem tất cả &gt;&gt;
@@ -155,12 +164,10 @@ const Dashboard = () => {
                                                     href={`detailonlinecourse/${item._id}`}
                                                 >
                                                     <div className="bg-gray-100 p-4 rounded-lg">
-                                                  
                                                         <div className="flex justify-between items-center mb-2 text-black">
                                                             <span className="font-semibold">
                                                                 {item.title}
                                                             </span>
-                                                           
                                                         </div>
                                                         <div className="bg-gray-300 h-2 rounded-full mb-2">
                                                             <div
@@ -172,16 +179,18 @@ const Dashboard = () => {
                                                         </div>
                                                         <div className="text-gray-600">
                                                             Tiếp tục bài học:{' '}
-                                                            {
-    item.detail_short_description.length > 50
-        ? item.detail_short_description.substring(0, 50) + '...'
-        : item.detail_short_description
-}
-
+                                                            {item
+                                                                .detail_short_description
+                                                                .length > 50
+                                                                ? item.detail_short_description.substring(
+                                                                      0,
+                                                                      50,
+                                                                  ) + '...'
+                                                                : item.detail_short_description}
                                                         </div>
-                                                    <span className="bg-orange-400 rounded-lg p-1 mt-2 text-white ">
-                                                                Học thử
-                                                            </span>
+                                                        <span className="bg-orange-400 rounded-lg p-1 mt-2 text-white ">
+                                                            Học thử
+                                                        </span>
                                                     </div>
                                                 </Link>
                                             </div>
