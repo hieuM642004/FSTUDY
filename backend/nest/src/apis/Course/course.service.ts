@@ -1494,34 +1494,73 @@ export class CourseService {
         return purchases;
     }
     
-    async sendTemplateMessage(phone: string, templateId: string, templateData: object, trackingId: string) {
-        const url = 'http://127.0.0.1:8000/api/system/zalo/send-zalo-template-message'; // URL of your Laravel API
-        const accessToken = this.configService.get<string>('ZALO_ACCESS_TOKEN'); // Access token from .env
-    
-        const data = {
-          phone,
-          template_id: templateId,
-          template_data: templateData,
-          tracking_id: trackingId,
-        };
-        console.log(data);
+    // private async getAccessToken(): Promise<string> {
+    //     const refreshToken = this.configService.get<string>('ZALO_REFRESH_TOKEN');
+    //     const appId = this.configService.get<string>('ZALO_APP_ID');
+    //     const secretKey = this.configService.get<string>('ZALO_SECRET_KEY');
         
+    //     const url = 'https://oauth.zaloapp.com/v4/oa/access_token';
+    //     try {
+    //         const response = await firstValueFrom(
+    //             this.httpService.post(url, null, {
+    //                 params: {
+    //                     refresh_token: refreshToken,
+    //                     app_id: appId,
+    //                     grant_type: 'refresh_token',
+    //                 },
+    //                 headers: {
+    //                     'Content-Type': 'application/x-www-form-urlencoded',
+    //                     'secret_key': secretKey,
+    //                 },
+    //             })
+    //         );
+    
+    //         if (response.data.access_token) {
+    //             return response.data.access_token;
+    //         } else {
+    //             throw new Error('Access token not found in the response');
+    //         }
+    //     } catch (error) {
+    //         console.error('Error refreshing access token:', error.response?.data || error.message || error);
+    //         throw new Error('Error refreshing access token');
+    //     }
+    // }
+    
+    
+
+    // Hàm gửi tin nhắn template qua Zalo
+    async sendTemplateMessage(phone: string, templateId: string, templateData: object, trackingId: string) {
+        const url = 'http://127.0.0.1:8000/api/system/zalo/send-zalo-template-message'; // Laravel API URL
+        let accessToken = this.configService.get<string>('ZALO_ACCESS_TOKEN');
+
+        // if (!accessToken) {
+        //     accessToken = await this.getAccessToken(); // If access token is expired, fetch a new one
+        // }
+        
+        const data = {
+            phone,
+            template_id: templateId,
+            template_data: templateData,
+            tracking_id: trackingId,
+        };
     
         try {
-          const response = await firstValueFrom(
-            this.httpService.post(url, data, {
-              headers: {
-                'Content-Type': 'application/json',
-                access_token: accessToken,
-              },
-            }),
-          );
-          return response.data;
+            const response = await firstValueFrom(
+                this.httpService.post(url, data, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'access_token': accessToken,
+                    },
+                })
+            );
+            return response.data;
         } catch (error) {
-          throw new Error(`Error calling Laravel API: ${error.message}`);
+            console.error('Error calling Laravel API:', error.response?.data || error.message || error);
+            throw new Error(`Error calling Laravel API: ${error.message || error}`);
         }
-      }
-
+    }
+    
+    
     async sendSuccessEmail(email: string, key: string): Promise<void> {
         // Load MJML template from file
         const mjmlTemplate = fs.readFileSync('src/providers/mail/templates/activation.mjml', 'utf8');

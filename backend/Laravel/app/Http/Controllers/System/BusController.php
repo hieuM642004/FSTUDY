@@ -153,9 +153,8 @@ class BusController extends Controller
             'template_data' => 'required|array',
             'tracking_id' => 'nullable|string',
         ]);
-
+        $accessToken = config('services.zalo.access_token');
         $url = "https://business.openapi.zalo.me/message/template";
-        $accessToken = "1gvcFacKJXSBeseyJfn25mogQpn3YYz6RyjPFdsnD14urXrEFh5e5GduFqq6Z4OGCiKjJ2wOPnilqn9HCPXhVGNZ9JC4m5HBDBSQ02o9AZComL5KCgqvV3pgL30vjXPAUE9CULIPF35E-t5WKRus2nJzJt83f2iY5kDULY6V50zXgKDGPCqgA2M1Sqyok3OJDFTETG6_8YmbyqrY88qtEpxP7t0ak6Kg1E0hJI6eM0nW_Y9u8fbWBW6X9tL1dHSW1Q1EUp7UD3eTfcHo3iON5XlvJqqvlpCg2jLDSXsLFYLPtNnqRUeH1N3JHt50bJOiRzTXL2Y64IqBlZbqHCTD0bodE5yUp68nNwuH663IOcb_iaeaOUK4NLs0BdD6sbS6OEmWDMoAR61GuWXBHuzKD6Ei3q1sy3yPC7OE7Hv4ZaaI";
 
         $response = Http::withHeaders([
             'Content-Type' => 'application/json',

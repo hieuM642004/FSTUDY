@@ -12,6 +12,7 @@ import {
     UseInterceptors,
     UsePipes,
     ValidationPipe,
+    HttpException
 } from '@nestjs/common';
 import RegisterDto from './dto/user.dto';
 import { plainToClass } from 'class-transformer';
@@ -93,17 +94,24 @@ export class UserController {
             const newUser = new User();
             Object.assign(newUser, user);
             newUser.generateSlug();
+    
+            // Call the service method that handles the creation and duplicate check
             const saveUser = await this.userService.createUser(newUser, file);
+            
             return new ResponseData<User>(
                 saveUser,
-                HttpStatus.SUCCESS,
+                HttpStatus.CREATED,
                 HttpMessage.SUCCESS,
             );
         } catch (error) {
-            return new ResponseData<User>(
-                null,
-                HttpStatus.ERROR,
-                HttpMessage.ERROR,
+            // Determine status and message
+            const status = error instanceof HttpException ? error.getStatus() : HttpStatus.ERROR;
+            const message = error instanceof HttpException ? error.message : 'An unexpected error occurred';
+    
+            // Instead of returning a response directly, throw an HttpException with the desired status
+            throw new HttpException(
+                new ResponseData<User>(null, status, message),
+                status,
             );
         }
     }

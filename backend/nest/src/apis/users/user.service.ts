@@ -7,6 +7,7 @@ import { Readable } from 'stream';
 import * as bcrypt from 'bcrypt';
 import { GoogleDriveUploader } from 'src/providers/storage/drive/drive.upload';
 import * as jwt from 'jsonwebtoken';
+import { HttpException, HttpStatus } from '@nestjs/common';
 
 @Injectable()
 export class UserService {
@@ -22,51 +23,45 @@ export class UserService {
 
     // Create New use function
     async createUser(user: User, file: Express.Multer.File): Promise<User> {
-        try {
-            const checkExists = await this.userModel.findOne({
-                email: user.email,
-            });
-
-            if (checkExists) {
-                throw 'Email already exists';
-            }
-
-            const hashedPassword = await bcrypt.hash(user.password, 10);
-            const userWithHashedPassword = {
-                ...user,
-                typeLogin: TypeLogin.BASIC,
-                password: hashedPassword,
-            };
-
-            const fileStream = Readable.from(file.buffer);
-            const fileId = await this.googleDriveUploader.uploadImage(
-                fileStream,
-                file.originalname,
-                '1eHh70ah2l2JuqHQlA1riebJZiRS9L20q',
-            );
-
-            const avatarUrl = this.googleDriveUploader.getThumbnailUrl(fileId);
-            const userWithAvatar = {
-                ...userWithHashedPassword,
-                avatar: avatarUrl,
-            };
-
-            const createdUser = new this.userModel(userWithAvatar);
-            const savedUser = await createdUser.save();
-
-            const refreshToken = jwt.sign(
-                { userWithAvatar },
-                process.env.JWT_SECRET,
-            );
-            savedUser.refreshToken = refreshToken;
-
-            await savedUser.save();
-
-            return savedUser;
-        } catch (error) {
-            console.error('Error creating user:', error);
-            throw error;
+        // Check if the user already exists
+        const checkExists = await this.userModel.findOne({ email: user.email });
+        
+        if (checkExists) {
+            throw new HttpException('Email already exists', HttpStatus.CONFLICT);
         }
+
+        const hashedPassword = await bcrypt.hash(user.password, 10);
+        const userWithHashedPassword = {
+            ...user,
+            typeLogin: TypeLogin.BASIC,
+            password: hashedPassword,
+        };
+
+        const fileStream = Readable.from(file.buffer);
+        const fileId = await this.googleDriveUploader.uploadImage(
+            fileStream,
+            file.originalname,
+            '1eHh70ah2l2JuqHQlA1riebJZiRS9L20q',
+        );
+
+        const avatarUrl = this.googleDriveUploader.getThumbnailUrl(fileId);
+        const userWithAvatar = {
+            ...userWithHashedPassword,
+            avatar: avatarUrl,
+        };
+
+        const createdUser = new this.userModel(userWithAvatar);
+        const savedUser = await createdUser.save();
+
+        const refreshToken = jwt.sign(
+            { userWithAvatar },
+            process.env.JWT_SECRET,
+        );
+        savedUser.refreshToken = refreshToken;
+
+        await savedUser.save();
+
+        return savedUser;
     }
 
     // Update user function
