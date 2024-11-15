@@ -23,6 +23,12 @@ return [
         'secret' => env('AWS_SECRET_ACCESS_KEY'),
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
+    'zalo' => [
+        'app_id' => env('ZALO_APP_ID'),
+        'secret_key' => env('ZALO_SECRET_KEY'),
+        'access_token' => env('ZALO_ACCESS_TOKEN'),
+        'refresh_token' => env('ZALO_REFRESH_TOKEN'),
+    ],
 
     'resend' => [
         'key' => env('RESEND_KEY'),

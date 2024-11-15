@@ -676,15 +676,20 @@ export class CourseController {
         @Param('email') email: string,
         @Param('key') key: string,
     ) {
-        const { vnp_ResponseCode, message, partnerCode, orderId, vnp_Amount } =
-            req.query;
+        const {
+            vnp_ResponseCode,
+            message,
+            partnerCode,
+            orderId,
+            vnp_Amount,
+            vnp_TxnRef,
+        } = req.query;
         if (!vnp_ResponseCode || !email || !key) {
             throw new BadRequestException('Missing required parameters');
         }
 
         if (vnp_ResponseCode === '00') {
             try {
-                // Update the purchase to COMPLETED
                 const user = await this.userModel.findOne({ email });
                 if (!user) {
                     throw new InternalServerErrorException('User not found');
@@ -712,6 +717,8 @@ export class CourseController {
                         price: vnp_AmountNum / 100 + ' VNĐ', // Assuming the value is now a number
                         code: key,
                         coursename: course.title,
+                        orderId: vnp_TxnRef,
+                        name: user.fullname,
                     };
                     const trackingId = 'tracking id';
 
@@ -725,7 +732,7 @@ export class CourseController {
 
                     await this.courseService.sendTemplateMessage(
                         phone,
-                        '383152',
+                        '383358',
                         templateData,
                         trackingId,
                     );
@@ -740,7 +747,6 @@ export class CourseController {
                 );
             }
         } else {
-            console.log('Payment failed or cancelled:', vnp_ResponseCode);
             return res.status(400).json({ message: 'Payment failed' });
         }
     }
@@ -790,8 +796,10 @@ export class CourseController {
                         price: amount + ' VNĐ',
                         code: key,
                         coursename: course.title,
+                        orderId: orderId,
+                        name: user.fullname,
                     };
-                    const trackingId = 'tracking id';
+                    const trackingId = orderId;
 
                     const formatPhoneNumber = (phone: string) => {
                         return phone.startsWith('0')
@@ -803,7 +811,7 @@ export class CourseController {
 
                     await this.courseService.sendTemplateMessage(
                         phone,
-                        '383152',
+                        '383358',
                         templateData,
                         trackingId,
                     );
