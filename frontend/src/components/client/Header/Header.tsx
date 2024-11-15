@@ -1,15 +1,9 @@
 'use client';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import {
-    MenuFoldOutlined,
-    MenuUnfoldOutlined,
     UnorderedListOutlined,
-    UploadOutlined,
-    UserOutlined,
-    VideoCameraAddOutlined,
-    VideoCameraOutlined,
 } from '@ant-design/icons';
-import { Drawer, MenuProps, Tooltip } from 'antd';
+import { Drawer, MenuProps } from 'antd';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useTypedSelector } from '@/hooks/useTypedSelector';
@@ -21,14 +15,6 @@ import './Header.scss';
 import ButtonPrimary from '../../shared/ButtonPrimary/ButtonPrimary';
 import UserAvatarDropdown from '@/components/shared/User/User';
 
-const menuItems = [
-    { key: 1, label: 'Khoá học online', href: '/courses-online' },
-    { key: 2, label: 'Đề thi online', href: '/tests' },
-    { key: 3, label: 'Flashcards', href: '/flashcard' },
-    { key: 4, label: 'Blog', href: '/blogs' },
-    { key: 5, label: 'Kích hoạt khóa học', href: '/activate-courses' },
-];
-
 const Header = () => {
     const router = useRouter();
     const [visible, setVisible] = useState(false);
@@ -39,6 +25,7 @@ const Header = () => {
     useEffect(() => {
         dispatch(fetchUserData());
     }, [dispatch]);
+
     useEffect(() => {
         setIsAdmin(user.isAdmin);
     }, [user.isAdmin]);
@@ -55,10 +42,9 @@ const Header = () => {
         deleteCookie('token');
         deleteCookie('refreshToken');
         deleteCookie('typeLogin');
-deleteCookie('idU')
-deleteCookie('name')
+        deleteCookie('idU');
+        deleteCookie('name');
         dispatch(clearUser());
-
         router.push('/login');
     };
 
@@ -102,6 +88,26 @@ deleteCookie('name')
         },
     ];
 
+    const filteredMenuItems = useMemo(() => {
+        const baseItems = [
+            { key: 1, label: 'Khoá học online', href: '/courses-online' },
+            { key: 2, label: 'Đề thi online', href: '/tests' },
+            { key: 3, label: 'Flashcards', href: '/flashcard' },
+            { key: 5, label: 'Blog', href: '/blogs' },
+            { key: 6, label: 'Kích hoạt khóa học', href: '/activate-courses' },
+        ];
+
+        if (user.isLoggedIn) {
+            baseItems.splice(3, 0, {
+                key: 4,
+                label: 'Phòng học online',
+                href: '/meet',
+            });
+        }
+
+        return baseItems;
+    }, [user.isLoggedIn]);
+
     return (
         <header className="lg:px-16 bg-white flex flex-wrap items-center shadow-md z-50 fixed w-full top-0">
             <div className="flex-1 flex justify-between items-center p-1">
@@ -110,7 +116,7 @@ deleteCookie('name')
                 </Link>
             </div>
             <button
-                className="pointer-cursor p-1  md:hidden block text-gray-600 text-2xl"
+                className="pointer-cursor p-1 md:hidden block text-gray-600 text-2xl"
                 onClick={showDrawer}
             >
                 <UnorderedListOutlined />
@@ -124,7 +130,7 @@ deleteCookie('name')
             >
                 <nav>
                     <ul className="text-base text-gray-700 pt-4">
-                        {menuItems.map((item) => (
+                        {filteredMenuItems.map((item) => (
                             <li key={item.key}>
                                 <Link href={item.href}>
                                     <p className="md:p-4 py-3 px-0 block font-semibold">
@@ -145,7 +151,7 @@ deleteCookie('name')
             >
                 <nav>
                     <ul className="md:flex items-center justify-between text-base text-gray-700 pt-4 md:pt-0">
-                        {menuItems.map((item) => (
+                        {filteredMenuItems.map((item) => (
                             <li key={item.key}>
                                 <Link href={item.href}>
                                     <p className="md:p-4 py-3 px-0 block font-semibold">
@@ -157,20 +163,11 @@ deleteCookie('name')
                     </ul>
                 </nav>
                 {user.isLoggedIn ? (
-                    <>
-                        <Tooltip title='Tạo lớp học'>
-                           <Link href='/meet' >
-                                <button className="md:p-4 py-3 px-0 block font-semibold text-slate-950">
-                                    <VideoCameraAddOutlined />
-                                </button>
-                           </Link>
-                        </Tooltip>
-                        <UserAvatarDropdown
-                            user={user as any}
-                            isAdmin={isAdmin}
-                            itemsdropdown={itemsdropdown}
-                        />
-                    </>
+                    <UserAvatarDropdown
+                        user={user as any}
+                        isAdmin={isAdmin}
+                        itemsdropdown={itemsdropdown}
+                    />
                 ) : (
                     <ButtonPrimary to="/login" size="large" label="Đăng nhập" />
                 )}

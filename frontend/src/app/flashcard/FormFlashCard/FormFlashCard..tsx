@@ -473,7 +473,7 @@ function FormFlashCard({
         <Input
             placeholder="Tên flashcard"
             variant="borderless"
-            className="mb-4 shadow-md w-40 p-2"
+            className="mb-4 border-dotted text-xl w-52 h-12 p-2"
             value={nameCard}
             onChange={(e) => setNameCard(e.target.value)}
         />

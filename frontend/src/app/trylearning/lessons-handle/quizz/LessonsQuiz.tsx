@@ -176,43 +176,45 @@ const LessonsHandlePage = ({ id }: { id: string }) => {
                         const isCorrect =
                             selectedOptions[quizIndex] === quiz.correctAnswer;
                         return (
-                            <Card
-                                key={quiz._id}
-                                title={`Câu hỏi ${quizIndex + 1}: ${
-                                    quiz.question
-                                }`}
-                            >
-                                <Radio.Group
-                                    onChange={(e) =>
-                                        handleOptionChange(quizIndex, e)
-                                    }
-                                    value={selectedOptions[quizIndex]}
-                                    disabled={completed && isCorrect}
+                            <div className='mb-4'>
+                                <Card
+                                    key={quiz._id}
+                                    title={`Câu hỏi ${quizIndex + 1}: ${
+                                        quiz.question
+                                    }`}
                                 >
-                                    {quiz.options.map(
-                                        (option: string, index: number) => (
-                                            <Radio
-                                                key={index}
-                                                value={index}
-                                                style={
-                                                    completed &&
-                                                    quiz.correctAnswer === index
-                                                        ? { color: 'green' }
-                                                        : undefined
-                                                }
-                                            >
-                                                {option}
-                                            </Radio>
-                                        ),
+                                    <Radio.Group
+                                        onChange={(e) =>
+                                            handleOptionChange(quizIndex, e)
+                                        }
+                                        value={selectedOptions[quizIndex]}
+                                        disabled={completed && isCorrect}
+                                    >
+                                        {quiz.options.map(
+                                            (option: string, index: number) => (
+                                                <Radio
+                                                    key={index}
+                                                    value={index}
+                                                    style={
+                                                        completed &&
+                                                        quiz.correctAnswer === index
+                                                            ? { color: 'green' }
+                                                            : undefined
+                                                    }
+                                                >
+                                                    {option}
+                                                </Radio>
+                                            ),
+                                        )}
+                                    </Radio.Group>
+                                    {}
+                                    {isSubmitted && !isCorrect && (
+                                        <p style={{ color: 'red' }}>
+                                            Đáp án của bạn sai, hãy chọn lại!
+                                        </p>
                                     )}
-                                </Radio.Group>
-                                {}
-                                {isSubmitted && !isCorrect && (
-                                    <p style={{ color: 'red' }}>
-                                        Đáp án của bạn sai, hãy chọn lại!
-                                    </p>
-                                )}
-                            </Card>
+                                </Card>
+                            </div>
                         );
                     },
                 )}

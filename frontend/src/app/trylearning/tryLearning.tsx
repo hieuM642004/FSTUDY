@@ -172,9 +172,11 @@ const TryLearningPages = ({ id }: { id: any }) => {
                 break;
         }
         if (progressItem && progressItem.completed) {
-            return <CheckCircleTwoTone twoToneColor="#52c41a" />;
+            return (
+                <CheckCircleTwoTone className="ml-1" twoToneColor="#52c41a" />
+            );
         }
-        return <CheckCircleOutlined />;
+        return <CheckCircleOutlined className="ml-1" />;
     };
 
     const handleMenuClick = (key: string, component: React.ReactNode) => {
@@ -201,99 +203,97 @@ const TryLearningPages = ({ id }: { id: any }) => {
 
             lesson?.content?.forEach((content: any) => {
                 Object.keys(content).forEach((contentType) => {
+                    const item = {
+                        key: '',
+                        label: null,
+                        onClick: null,
+                    };
+
                     switch (contentType) {
                         case 'quiz':
                             if (content.quiz?.length > 0) {
-                                childrenItems.push({
-                                    key: `quiz-${content._id}`,
-                                    label: (
-                                        <>
-                                            Quiz{' '}
-                                            {getProgressStatus(
-                                                content._id,
-                                                'quiz',
-                                            )}
-                                        </>
-                                    ),
-                                    onClick: () =>
-                                        handleMenuClick(
-                                            `quiz-${content._id}`,
-                                            <LessonsHandlePage
-                                                id={content._id}
-                                            />,
-                                        ),
-                                });
+                                item.key = `quiz-${content._id}`;
+                                item.label = (
+                                    <>
+                                        Quiz{' '}
+                                        {getProgressStatus(content._id, 'quiz')}
+                                    </>
+                                );
+                                item.onClick = () =>
+                                    handleMenuClick(
+                                        `quiz-${content._id}`,
+                                        <LessonsHandlePage id={content._id} />,
+                                    );
                             }
                             break;
                         case 'fill_in_the_blank':
                             if (content.fill_in_the_blank?.length > 0) {
-                                childrenItems.push({
-                                    key: `fill_in_the_blank-${content._id}`,
-                                    label: (
-                                        <>
-                                            Fill in the Blank{' '}
-                                            {getProgressStatus(
-                                                content._id,
-                                                'fill_in_the_blank',
-                                            )}
-                                        </>
-                                    ),
-                                    onClick: () =>
-                                        handleMenuClick(
-                                            `fill_in_the_blank-${content._id}`,
-                                            <FillInTheBlankPage
-                                                id={content._id}
-                                            />,
-                                        ),
-                                });
+                                item.key = `fill_in_the_blank-${content._id}`;
+                                item.label = (
+                                    <>
+                                        Fill in the Blank{' '}
+                                        {getProgressStatus(
+                                            content._id,
+                                            'fill_in_the_blank',
+                                        )}
+                                    </>
+                                );
+                                item.onClick = () =>
+                                    handleMenuClick(
+                                        `fill_in_the_blank-${content._id}`,
+                                        <FillInTheBlankPage id={content._id} />,
+                                    );
                             }
                             break;
                         case 'video':
                             if (content.video?.length > 0) {
-                                childrenItems.push({
-                                    key: `video-${content._id}`,
-                                    label: (
-                                        <>
-                                            Video{' '}
-                                            {getProgressStatus(
-                                                content._id,
-                                                'video',
-                                            )}
-                                        </>
-                                    ),
-                                    onClick: () =>
-                                        handleMenuClick(
-                                            `video-${content._id}`,
-                                            <VideoPage id={content._id} />,
-                                        ),
-                                });
+                                item.key = `video-${content._id}`;
+                                item.label = (
+                                    <>
+                                        Video{' '}
+                                        {getProgressStatus(
+                                            content._id,
+                                            'video',
+                                        )}
+                                    </>
+                                );
+                                item.onClick = () =>
+                                    handleMenuClick(
+                                        `video-${content._id}`,
+                                        <VideoPage id={content._id} />,
+                                    );
+                                // Đưa item vào đầu danh sách
+                                childrenItems.unshift(item);
                             }
                             break;
                         case 'word_matching':
                             if (content.word_matching?.length > 0) {
-                                childrenItems.push({
-                                    key: `word_matching-${content._id}`,
-                                    label: (
-                                        <>
-                                            Word Matching{' '}
-                                            {getProgressStatus(
-                                                content._id,
-                                                'word_matching',
-                                            )}
-                                        </>
-                                    ),
-                                    onClick: () =>
-                                        handleMenuClick(
-                                            `word_matching-${content._id}`,
-                                            <WordMatchingPage
-                                                id={content._id}
-                                            />,
-                                        ),
-                                });
+                                item.key = `word_matching-${content._id}`;
+                                item.label = (
+                                    <>
+                                        Word Matching{' '}
+                                        {getProgressStatus(
+                                            content._id,
+                                            'word_matching',
+                                        )}
+                                    </>
+                                );
+                                item.onClick = () =>
+                                    handleMenuClick(
+                                        `word_matching-${content._id}`,
+                                        <WordMatchingPage id={content._id} />,
+                                    );
                             }
                             break;
                         default:
                             break;
+                    }
+
+                    if (item.key) {
+                        // Chỉ thêm item nếu không phải là "video"
+                        if (contentType !== 'video') {
+                            childrenItems.push(item);
+                        }
                     }
                 });
             });

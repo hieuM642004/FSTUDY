@@ -205,40 +205,42 @@ const FillInTheBlankPage = ({ id }: { id: string }) => {
                 {completed && <h3>Bạn đã hoàn thành bài tập này!</h3>}
                 {lessonsCourse?.fill_in_the_blank.map(
                     (item: FillInTheBlankData, index: number) => (
-                        <Card key={item._id} title={`Câu hỏi ${index + 1}`}>
-                            <p>{item.sentence}</p>
-                            {item.correctAnswers.map((_, answerIndex) => (
-                                <Input
-                                    key={answerIndex}
-                                    placeholder={`Nhập đáp án ${
-                                        answerIndex + 1
-                                    }`}
-                                    value={
-                                        userAnswers[index]?.[answerIndex] || ''
-                                    }
-                                    onChange={(e) =>
-                                        handleAnswerChange(
-                                            index,
-                                            answerIndex,
-                                            e.target.value,
-                                        )
-                                    }
-                                    disabled={
-                                        isSubmitted &&
-                                        answersDisplay[index]?.isCorrect
-                                    }
-                                    style={{
-                                        marginTop: answerIndex > 0 ? 8 : 0,
-                                    }}
-                                />
-                            ))}
-                            {isSubmitted &&
-                                !answersDisplay[index]?.isCorrect && (
-                                    <p style={{ color: 'red' }}>
-                                        Đáp án của bạn sai, hãy chọn lại!
-                                    </p>
-                                )}
-                        </Card>
+                       <div className='mb-4'>
+                            <Card key={item._id} title={`Câu hỏi ${index + 1}`}>
+                                <p>{item.sentence}</p>
+                                {item.correctAnswers.map((_, answerIndex) => (
+                                    <Input
+                                        key={answerIndex}
+                                        placeholder={`Nhập đáp án ${
+                                            index + 1
+                                        }`}
+                                        value={
+                                            userAnswers[index]?.[answerIndex] || ''
+                                        }
+                                        onChange={(e) =>
+                                            handleAnswerChange(
+                                                index,
+                                                answerIndex,
+                                                e.target.value,
+                                            )
+                                        }
+                                        disabled={
+                                            isSubmitted &&
+                                            answersDisplay[index]?.isCorrect
+                                        }
+                                        style={{
+                                            marginTop: answerIndex > 0 ? 8 : 0,
+                                        }}
+                                    />
+                                ))}
+                                {isSubmitted &&
+                                    !answersDisplay[index]?.isCorrect && (
+                                        <p style={{ color: 'red' }}>
+                                            Đáp án của bạn sai, hãy chọn lại!
+                                        </p>
+                                    )}
+                            </Card>
+                       </div>
                     ),
                 )}
                 <div style={{ marginTop: 16 }}>
