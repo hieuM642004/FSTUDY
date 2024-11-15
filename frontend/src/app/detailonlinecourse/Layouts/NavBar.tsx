@@ -234,7 +234,9 @@ function NavBar() {
                                 <ol className="text-base pl-10">
                                     {matchingCourses.map((course, index) => (
                                         <li key={course._id}>
-                                            <Link href="#">
+                                            <Link
+                                                href={`/detailonlinecourse/${course._id}`}
+                                            >
                                                 {index + 1}.{course.title}
                                             </Link>
                                         </li>
@@ -341,7 +343,7 @@ function NavBar() {
                                             id={`[ielts-fundamentals]-từ-vựng-và-ngữ-pháp-cơ-bản-ielts-${item.id}`}
                                         >
                                             <a
-                                                href={`/courses/${item.id}`}
+                                                href={`/detailonlinecourse/${item._id}`}
                                                 className="text-[#213261] font-bold"
                                             >
                                                 {item.title}
@@ -360,48 +362,6 @@ function NavBar() {
                                 </div>
                             ))}
                     </div>
-                    {/* đánh giá  */}
-                    {/* <div
-                        id="part-4"
-                        style={{
-                            width: '100%',
-                        }}
-                    >
-                        {' '}
-                        <h2 className="mb-4 font-bold text-[1.25rem]">
-                            Nhận xét của học viên
-                        </h2>
-                        <WapperItemCard>
-                            <div className="course-reviews-stats">
-                                <div className="flex justify-between flex-wrap items-center">
-                                    <div className="">
-                                        <div className="reviews-stats font-bold text-[1.5rem]">
-                                            <UserOutlined />
-                                            123,668
-                                        </div>
-                                        <div className="reviews-stats-text">
-                                            Học viên
-                                        </div>
-                                    </div>
-                                    <div className="">
-                                        <div className="reviews-stats font-bold text-[1.5rem]">
-                                            <CommentOutlined />
-                                            891
-                                        </div>
-                                        <div className="reviews-stats-text">
-                                            Nhận xét
-                                        </div>
-                                    </div>
-                                    <div className="">
-                                        <div className="reviews-stats-text"></div>
-                                    </div>
-                                </div>
-                            </div>
-                        </WapperItemCard>
-                        <WapperItemCard>
-                            <Evaluate />
-                        </WapperItemCard>
-                    </div> */}
                 </div>
             </div>
         </>
