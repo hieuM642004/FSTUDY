@@ -65,8 +65,14 @@ function AdminCoursesPage() {
                 _id: item._id,
                 title: item.title,
                 detail_title: item.detail_title,
-                price: item.price,
-                discount: item.discount,
+                price: item.price.toLocaleString('vi-VN', {
+                    style: 'currency',
+                    currency: 'VND',
+                }),
+                discount: item.discount.toLocaleString('vi-VN', {
+                    style: 'currency',
+                    currency: 'VND',
+                }),
                 createdAt: new Date(item.createdAt).toLocaleDateString(),
             }));
 

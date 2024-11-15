@@ -78,6 +78,7 @@ function MenuAdmin() {
                 {
                     key: '4-2',
                     label: <Link href="/admin/course/quizzes">Quizzes</Link>,
+                    id: 'intro-1',
                 },
                 {
                     key: '4-3',
@@ -86,6 +87,7 @@ function MenuAdmin() {
                             Word matchings
                         </Link>
                     ),
+                    id: 'intro-2',
                 },
                 {
                     key: '4-4',
@@ -94,18 +96,22 @@ function MenuAdmin() {
                             Fill in the blanks
                         </Link>
                     ),
+                    id: 'intro-3',
                 },
                 {
                     key: '4-5',
                     label: <Link href="/admin/course/videos">Videos</Link>,
+                    id: 'intro-4',
                 },
                 {
                     key: '4-6',
                     label: <Link href="/admin/course/contents">Contents</Link>,
+                    id: 'intro-5',
                 },
                 {
                     key: '4-7',
                     label: <Link href="/admin/course/lessons">Lessons</Link>,
+                    id: 'intro-6',
                 },
                 {
                     key: '4-8',
@@ -114,10 +120,12 @@ function MenuAdmin() {
                             Course Types
                         </Link>
                     ),
+                    id: 'intro-7',
                 },
                 {
                     key: '4-9',
                     label: <Link href="/admin/course/courses">Courses</Link>,
+                    id: 'intro-8',
                 },
             ],
         },
