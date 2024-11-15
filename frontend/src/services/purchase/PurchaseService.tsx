@@ -1,8 +1,7 @@
 import { nestApiInstance } from '@/constant/api';
-import withTokenRefresh from '@/decorator/withAuth';
 
 class PurchaseService {
-    @withTokenRefresh
+    
     static async purchaseMomo({
         userId,
         courseId,
@@ -22,7 +21,7 @@ class PurchaseService {
             return error.response
         }
     }
-    @withTokenRefresh
+   
     static async purchaseVnpay({
         userId,
         courseId,
@@ -40,7 +39,7 @@ class PurchaseService {
             return error.response
         }
     }
-    @withTokenRefresh
+    
     static async activeCourse({
         key,
     }: String | any): Promise<string | undefined> {

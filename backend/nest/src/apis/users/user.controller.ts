@@ -112,7 +112,7 @@ export class UserController {
 
     @Put('/update-user/:id')
     @UseInterceptors(FileInterceptor('avatar'))
-    @UseGuards(AuthGuard('jwt'))
+    // @UseGuards(AuthGuard('jwt'))
     async updateAdmin(
         @Param('id') id: string,
         @Body() user: User,

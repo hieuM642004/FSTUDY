@@ -3,7 +3,7 @@ import withTokenRefresh from '@/decorator/withAuth';
 import type { CreatedUSer, UpdateUser } from '@/types/user/User';
 
 class UserService {
-    @withTokenRefresh
+   
     static async updateUser(
         dataUpdate: UpdateUser, id : string 
     ): Promise<UpdateUser | undefined> {
@@ -20,7 +20,7 @@ class UserService {
             console.error('Error fetching register:', error);
         }
     }
-    @withTokenRefresh
+   
     static async changePassword(
         PasswordandFullname: object, id : string 
     ): Promise<UpdateUser | undefined> {
@@ -38,7 +38,7 @@ class UserService {
             console.error('Error fetching register:', error);
         }
     }
-    // role admin
+
     @withTokenRefresh
     static async getAllUser({page = 1 , limit = 0 } : string| any[] |any): Promise<string | undefined> {
         try {
@@ -51,7 +51,7 @@ class UserService {
             console.error('Error fetching register:', error);
         }
     }   
-    @withTokenRefresh
+   
     static async createUser(dataUser : CreatedUSer): Promise<string | undefined> {
         try {
             const response = await nestApiInstance.post(
@@ -64,7 +64,7 @@ class UserService {
             console.error('Error fetching register:', error);
         }
     }
-    @withTokenRefresh
+    
     static async deleteUser(id : string | null): Promise<string | undefined> {
         try {
             const response = await nestApiInstance.delete(
@@ -77,7 +77,7 @@ class UserService {
             console.error('Error fetching register:', error);
         }
     }
-    @withTokenRefresh
+
     static async restoreUser(id : string | null): Promise<string | undefined> {
         try {
             const response = await nestApiInstance.put(
