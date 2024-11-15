@@ -10,7 +10,8 @@ import ExamService from '@/services/exams/ExamsService';
 import { Exams } from '@/types/Exams';
 import Target from '@/components/client/Target/Target';
 import './Tests.scss';
-
+import { SearchOutlined } from '@ant-design/icons';
+const { Search } = Input;
 const Tests: React.FC = () => {
     const [activeTab, setActiveTab] = useState('all');
     const [tests, setTests] = useState<Exams[]>([]);
@@ -109,18 +110,14 @@ const Tests: React.FC = () => {
                             ))}
                         </div>
                         <div className="mt-4 flex flex-wrap items-center space-x-2">
-                            <Input
-                                type="text"
-                                placeholder="Tìm kiếm"
-                                className="flex-1 p-1 border rounded-lg"
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                            />
-                            <ButtonPrimary
-                                onClick={handleSearch}
-                                size={'large'}
-                                label={'Tìm kiếm'}
-                                className="px-4 py-2 bg-blue-500 text-white rounded-lg"
-                            />
+                        <Search
+                placeholder="Tìm kiếm"
+                onSearch={handleSearch}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                enterButton={<SearchOutlined />}
+               size="large"
+                className="flex-1 border rounded-lg"
+            />
                         </div>
                     </div>
                 </div>
