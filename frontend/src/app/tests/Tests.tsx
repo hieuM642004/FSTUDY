@@ -110,14 +110,8 @@ const Tests: React.FC = () => {
                             ))}
                         </div>
                         <div className="mt-4 flex flex-wrap items-center space-x-2">
-                        <Search
-                placeholder="Tìm kiếm"
-                onSearch={handleSearch}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                enterButton={<SearchOutlined />}
-               size="large"
-                className="flex-1 border rounded-lg"
-            />
+                        
+             <Search placeholder="Tìm kiếm đề thi" onSearch={handleSearch} size='large'  onChange={(e) => setSearchQuery(e.target.value)} className="flex-1 border rounded-lg" />
                         </div>
                     </div>
                 </div>

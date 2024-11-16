@@ -166,6 +166,7 @@ class BusController extends Controller
             'tracking_id' => $validated['tracking_id'] ?? null,
         ]);
 
+        dd($response);
         if ($response->successful()) {
             return response()->json([
                 'status' => 'success',
