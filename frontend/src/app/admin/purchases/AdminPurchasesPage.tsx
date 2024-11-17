@@ -118,9 +118,10 @@ function AdminPurchasesPage() {
             <Modal
                 title="Thông tin khóa học"
                 open={isModalOpen}
-                onOk={handleOk}
                 onCancel={handleCancel}
                 width={800} // Đặt chiều rộng modal
+                cancelText="Thoát"
+                footer={null}
             >
                 {selectedPurchaseDetail && (
                     <Descriptions bordered column={1}>

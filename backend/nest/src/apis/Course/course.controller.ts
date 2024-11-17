@@ -788,7 +788,7 @@ export class CourseController {
                     const course = await this.courseService.findOneCourse(
                         purchase.course.toString(),
                     );
-                    purchase.paymentStatus = PaymentStatus.SUCCESS;
+                    purchase.paymentStatus = PaymentStatus.COMPLETED;
                     await purchase.save();
                     await this.courseService.sendSuccessEmail(email, key);
 

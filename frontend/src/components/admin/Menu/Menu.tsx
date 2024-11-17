@@ -69,7 +69,7 @@ function MenuAdmin() {
         {
             key: '4',
             icon: <VideoCameraOutlined />,
-            label: 'Khóa học nâng cao',
+            label: 'Khóa học',
             children: [
                 {
                     key: '4-1',
@@ -77,14 +77,14 @@ function MenuAdmin() {
                 },
                 {
                     key: '4-2',
-                    label: <Link href="/admin/course/quizzes">Quizzes</Link>,
+                    label: <Link href="/admin/course/quizzes">Trắc nghiệm</Link>,
                     id: 'intro-1',
                 },
                 {
                     key: '4-3',
                     label: (
                         <Link href="/admin/course/word-matching">
-                            Word matchings
+                            Ghép từ
                         </Link>
                     ),
                     id: 'intro-2',
@@ -93,7 +93,7 @@ function MenuAdmin() {
                     key: '4-4',
                     label: (
                         <Link href="/admin/course/fill-in-the-blank">
-                            Fill in the blanks
+                            Điền từ vào chỗ trống
                         </Link>
                     ),
                     id: 'intro-3',
@@ -105,26 +105,26 @@ function MenuAdmin() {
                 },
                 {
                     key: '4-6',
-                    label: <Link href="/admin/course/contents">Contents</Link>,
+                    label: <Link href="/admin/course/contents">Nội dung</Link>,
                     id: 'intro-5',
                 },
                 {
                     key: '4-7',
-                    label: <Link href="/admin/course/lessons">Lessons</Link>,
+                    label: <Link href="/admin/course/lessons">Bài học</Link>,
                     id: 'intro-6',
                 },
                 {
                     key: '4-8',
                     label: (
                         <Link href="/admin/course/course-type">
-                            Course Types
+                            Loại khóa học
                         </Link>
                     ),
                     id: 'intro-7',
                 },
                 {
                     key: '4-9',
-                    label: <Link href="/admin/course/courses">Courses</Link>,
+                    label: <Link href="/admin/course/courses">Khóa học</Link>,
                     id: 'intro-8',
                 },
             ],
@@ -142,22 +142,28 @@ function MenuAdmin() {
         {
             key: '7',
             icon: <SnippetsOutlined />,
-            label: <Link href="/admin/blog">Trang Blog</Link>,
+            label: 'Trang Blog',
+            children: [
+                {
+                    key: '7-1',
+                    label: <Link href="/admin/blog">Bài viết</Link>,
+                },
+                {
+                    key: '7-2',
+                    label: <Link href="/admin/topics">Chủ đề</Link>, 
+                },
+            ],
         },
         {
             key: '8',
             icon: <CommentOutlined />,
             label: <Link href="/admin/comment">Bình luận</Link>,
         },
+       
         {
             key: '9',
-            icon: <PicLeftOutlined />,
-            label: <Link href="/admin/topics">Topic</Link>,
-        },
-        {
-            key: '10',
             icon: <ShoppingCartOutlined />,
-            label: <Link href="/admin/purchases">Purchases</Link>,
+            label: <Link href="/admin/purchases">Khóa học đã bán</Link>,
         },
     ];
 
