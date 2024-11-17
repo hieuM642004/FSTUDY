@@ -51,7 +51,17 @@ class UserService {
             console.error('Error fetching register:', error);
         }
     }   
-   
+    static async getAllUserSreach(sreachUser?: string): Promise<string | undefined> {
+        try {
+            const response = await nestApiInstance.get(
+                `/users${sreachUser}` );
+            if(response.status === 200){                 
+                return response.data.data;
+            }
+        } catch (error) {
+            console.error('Error fetching register:', error);
+        }
+    }   
     static async createUser(dataUser : CreatedUSer): Promise<string | undefined> {
         try {
             const response = await nestApiInstance.post(

@@ -1,6 +1,7 @@
 'use client';
 import { Form, Input, message, Select, Typography } from 'antd';
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 import ButtonPrimary from '@/components/shared/ButtonPrimary/ButtonPrimary';
 import UserService from '@/services/user/UserService';
@@ -17,13 +18,11 @@ const formItemLayout = {
 };
 
 function PageAddUser() {
+    const router = useRouter();
     const [form] = Form.useForm();
     const [file, setFile] = useState<File | null>(null);
     const [fileMess, setFileMess] = useState<string | null>(null);
-    const [messageProps, setMessageProps] = useState<{
-        type: 'success' | 'error' | 'warning';
-        content: string;
-    } | null>(null);
+   
 
     const [loadings, setLoadings] = useState<boolean[]>([]);
     const [messageApi, contextHolder] = message.useMessage();
@@ -69,6 +68,9 @@ function PageAddUser() {
                 });
                 form.resetFields();
                 setFile(null);
+                setTimeout(()=>{
+                    router.push('/admin/user');
+                },2000)
             } else {
                 messageApi.open({
                     type: 'error',
@@ -78,9 +80,9 @@ function PageAddUser() {
         } catch (error) {
             console.log('Error:', error);
 
-            setMessageProps({
+            messageApi.open({
                 type: 'error',
-                content: 'USER THÊM THẤT BẠI',
+                content: 'USER THÊM THẤT BẠI!',
             });
         }
     };

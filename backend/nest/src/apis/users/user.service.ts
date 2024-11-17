@@ -121,14 +121,25 @@ export class UserService {
     async findAllPanigation(
         page: number,
         limit: number,
+        email?: string,
+        userType?: string,
     ): Promise<{ users: User[]; total: number }> {
         const skip = (page - 1) * limit;
+        
+        const filter: Record<string, any> = {};
+        if (email) {
+            filter.email = { $regex: email, $options: 'i' }; // Sreach email không phân biệt hoa thường
+        }
+        if (userType) {
+            filter.role = userType; 
+        }
+        const total = await this.userModel.countDocuments(filter).exec();
+
         const users = await this.userModel
-            .find()
+            .find(filter)
             .skip(skip)
             .limit(limit)
             .exec();
-        const total = await this.userModel.countDocuments().exec();
         return { users, total };
     }
 

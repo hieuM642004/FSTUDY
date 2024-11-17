@@ -3,6 +3,7 @@ import { Form, Input, message, Select } from 'antd';
 import { useEffect, useState } from 'react';
 import { Alert } from 'antd';
 import { Typography } from 'antd';
+import { useRouter } from 'next/navigation';
 
 import AuthService from '@/services/auth/AuthService';
 import UserService from '@/services/user/UserService';
@@ -20,6 +21,7 @@ const formItemLayout = {
 };
 
 function PageAddEditUser({ params }: { params: { slug: string } }) {
+    const router = useRouter();
     const [messageApi, contextHolder] = message.useMessage();
     const [form] = Form.useForm();
     const [file, setFile] = useState<File | null>(null);
@@ -62,6 +64,9 @@ function PageAddEditUser({ params }: { params: { slug: string } }) {
                     type: 'success',
                     content: 'USER CẬP NHẬT THÀNH CÔNG',
                 });
+                setTimeout(()=>{
+                    router.push('/admin/user');
+                },2000)
             } else {
                 messageApi.open({
                     type: 'error',
