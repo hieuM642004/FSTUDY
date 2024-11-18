@@ -87,7 +87,7 @@ function Register() {
                                 },
                             ]}
                         >
-                            <Input placeholder="nhập Họ và tên" />
+                            <Input placeholder="Nhập Họ và tên" />
                         </Form.Item>
                         <Form.Item
                             name="email"
@@ -109,7 +109,7 @@ function Register() {
                                 },
                             ]}
                         >
-                            <Input placeholder="nhập email" />
+                            <Input placeholder="Nhập email" />
                         </Form.Item>
 
                         <Form.Item
@@ -135,7 +135,7 @@ function Register() {
                             ]}
                             hasFeedback
                         >
-                            <Input.Password placeholder="nhập mật khẩu" />
+                            <Input.Password placeholder="Nhập mật khẩu" />
                         </Form.Item>
 
                         <Form.Item
@@ -165,7 +165,7 @@ function Register() {
                                 }),
                             ]}
                         >
-                            <Input.Password placeholder="nhập xác nhận mật khẩu" />
+                            <Input.Password placeholder="Nhập xác nhận mật khẩu" />
                         </Form.Item>
 
                         <ButtonPrimary

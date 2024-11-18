@@ -55,8 +55,8 @@ function AdminBlogPage() {
             const data: DataType[] = response.data.data.blogs;
 
             const tableData: DataType[] = data.map((item: any) => ({
-                _id: item._id,
-                user: item.user.fullname,
+                _id: item?._id,
+                user: item?.user?.fullname,
                 content: (
                     <p
                         className="mb-4 italic"
@@ -74,7 +74,7 @@ function AdminBlogPage() {
                         : item.title,
                 avatar: (
                     <Image
-                        src={item.avatar}
+                        src={item?.avatar}
                         height={80}
                         width={80}
                         alt={item.title}

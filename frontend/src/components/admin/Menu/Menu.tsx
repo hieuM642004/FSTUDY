@@ -142,7 +142,7 @@ function MenuAdmin() {
         {
             key: '7',
             icon: <SnippetsOutlined />,
-            label: 'Trang Blog',
+            label: 'Blog',
             children: [
                 {
                     key: '7-1',
