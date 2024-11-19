@@ -39,7 +39,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'role.check' => RoleCheckMiddleware::class,
             'secret.key' => SecretKeyMiddleware::class,
-
+            'check.zalo.token' => \App\Http\Middleware\EnsureZaloAccessTokenValid::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
