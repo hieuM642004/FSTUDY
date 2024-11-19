@@ -241,19 +241,19 @@ function FlashCard({ id }: { id: string }) {
                     <Flex gap="4px 0" wrap>
                         <Tag color="magenta">
                             <p className="py-2 text-sm">
-                                Flashcard:{' '}
-                                {flashCard && flashCard.nameCard }
+                                Flashcard: {flashCard && flashCard.nameCard}
                             </p>
                         </Tag>
-
-                        <Link
-                            href={`/flashcard/${flashCard?._id}/multiple-choice`}
-                            id="test-link"
-                        >
-                            <Tag color="red">
-                                <p className="py-2 text-sm">Kiểm tra</p>
-                            </Tag>
-                        </Link>
+                        {flashCard?.words.length > 4 && (
+                            <Link
+                                href={`/flashcard/${flashCard?._id}/multiple-choice`}
+                                id="test-link"
+                            >
+                                <Tag color="red">
+                                    <p className="py-2 text-sm">Kiểm tra</p>
+                                </Tag>
+                            </Link>
+                        )}
 
                         <Link
                             href={`/flashcard/${flashCard?._id}/video`}

@@ -165,6 +165,8 @@ const Recording: React.FC<ExtendedRecordingProps> = React.memo(
                                 rows={4}
                                 placeholder="Nhập đáp án"
                                 onChange={(e) => onChange(e, question._id)}
+                                maxLength={4000}
+                                showCount
                             />
                         );
                 }

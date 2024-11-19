@@ -17,7 +17,7 @@ function ForgotPass() {
         setLoadings((prevLoadings) => {
             const newLoadings = [...prevLoadings];
             newLoadings[index] = true;
-            return newLoadings;
+            return newLoadings;     
         });
 
         setTimeout(() => {
