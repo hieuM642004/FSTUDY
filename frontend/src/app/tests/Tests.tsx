@@ -57,6 +57,7 @@ const Tests: React.FC = () => {
                 title: exam.title,
                 examType: exam.examType,
                 description: exam.description,
+                view: exam.view,
                 slug: exam.slug,
                 durition: exam.durition,
                 idSession: exam.idSession.map((session: any) => ({
@@ -144,6 +145,7 @@ const Tests: React.FC = () => {
                                             durition={test.durition}
                                             examType={test.examType}
                                             description={test.description}
+                                            view={test.view || 0}
                                             slug={test.slug}
                                         />
                                     ))}

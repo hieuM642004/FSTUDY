@@ -8,7 +8,7 @@ import {
 import ButtonPrimary from '@/components/shared/ButtonPrimary/ButtonPrimary';
 import { Exams } from '@/types/Exams';
 
-const IELTSCard = ({ title, idSession, durition, slug, examType, description }: Exams) => {
+const IELTSCard = ({ title, idSession, durition, slug, examType, description, view }: Exams) => {
     return (
         <div className="test-card-item border max-h-60 p-4 rounded-lg shadow-lg hover:scale-105 transition ease-in-out delay-150 duration-300 flex flex-col justify-between">
             <Link href={`tests/${slug}`} className="flex flex-col h-full justify-between">
@@ -17,7 +17,7 @@ const IELTSCard = ({ title, idSession, durition, slug, examType, description }: 
                         {title}
                     </h3>
                     <p className="text-sm !text-black mt-2">
-                        <ClockCircleOutlined /> {durition} | <EyeOutlined /> {10} |{' '}
+                        <ClockCircleOutlined /> {durition} | <EyeOutlined /> {view} |{' '}
                         <CommentOutlined /> {10}
                     </p>
                     <p className="text-sm !text-black mt-1">{idSession?.length} phần thi | 40 câu hỏi</p>

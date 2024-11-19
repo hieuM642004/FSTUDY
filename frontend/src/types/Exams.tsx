@@ -7,6 +7,7 @@ export interface Exams{
     durition: string,
     idSession: string[],
     slug: string
+    view: number
 }
 
 export type Question = {

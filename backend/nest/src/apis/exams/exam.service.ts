@@ -58,6 +58,8 @@ export class ExamService {
         if (!exam) {
             throw new NotFoundException('Exam not found.');
         }
+        exam.view+=1
+        await this.examModel.findByIdAndUpdate(exam._id, { view: exam.view }).exec();
         return exam;
     }
     async searchExams(

@@ -4,7 +4,8 @@ import { generateSlug } from 'src/utils/generateSlug';
 
 //Exams
 @Schema({ timestamps: true })
-export class Exams {
+export class Exams{
+   _id?: any;
     @Prop({ enum: ['ielst', 'toeic'] })
     examType: string;
 
@@ -16,6 +17,9 @@ export class Exams {
 
     @Prop()
     durition: string;
+
+    @Prop({default: 0})
+    view?: number;
 
     @Prop([{
         type: mongoose.Schema.Types.ObjectId,

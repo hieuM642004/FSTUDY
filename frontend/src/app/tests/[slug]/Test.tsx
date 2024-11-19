@@ -92,8 +92,7 @@ function Test({ slug }: { slug: string }) {
                     </h2>
 
                     <p className="text-sm">
-                        <ClockCircleOutlined /> {exam?.durition} phút |{' '}
-                        <EyeOutlined /> {10} | <CommentOutlined /> {10}
+                        <ClockCircleOutlined /> {exam?.durition} phút
                     </p>
                     <p className="text-sm">
                         {exam?.idSession?.length || 0} phần thi |{' '}
