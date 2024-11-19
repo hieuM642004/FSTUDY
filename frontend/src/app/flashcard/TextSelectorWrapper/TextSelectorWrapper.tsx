@@ -4,6 +4,7 @@ import { Modal, Select } from 'antd';
 import FlashCardService from '@/services/FlashCardService';
 import FormFlashCard from '../FormFlashCard/FormFlashCard.';
 import FlashCardInterface from '@/types/FlashCard';
+import { useTypedSelector } from '@/hooks/useTypedSelector';
 
 function TextSelectorWrapper({ children }:{children:React.ReactNode}) {
     const [showButton, setShowButton] = useState(false);
@@ -13,11 +14,14 @@ function TextSelectorWrapper({ children }:{children:React.ReactNode}) {
     const [flashCards, setFlashCards] = useState<FlashCardInterface[]>([]);
     const [selectedFlashCardId, setSelectedFlashCardId] = useState<string | null>(null);
     const buttonRef = useRef<HTMLButtonElement | null>(null);
-
+    const dataUser = useTypedSelector((state) => state.user);
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const data = await FlashCardService.getAllFlashCards();
+                const data =
+                await FlashCardService.getAllFlashCardsOfUser(
+                    dataUser?.id || '',
+                );
                 setFlashCards(data);
             } catch (error) {
                 console.error('Error fetching flashcards:', error);

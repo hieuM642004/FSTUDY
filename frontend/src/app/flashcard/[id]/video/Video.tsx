@@ -43,7 +43,7 @@ function Video({ id }: { id: string }) {
             setCurrentVideoIndex(0);
         } catch (error) {
             console.error('Error searching video:', error);
-            setError('Error searching video');
+            setError('Không tìm thấy từ này');
         } finally {
             setLoading(false);
         }
@@ -104,7 +104,6 @@ function Video({ id }: { id: string }) {
                         <Spin tip="Loading..." />
                     </div>
                 )}
-                {error && <Alert message={error} type="error" />}
 
                 {searchResults.length > 0 && (
                     <>
@@ -165,10 +164,7 @@ function Video({ id }: { id: string }) {
                 )}
 
                 {!loading && selectedWord && searchResults.length === 0 && (
-                    <Alert
-                        message="Không tìm thấy video liên quan."
-                        type="info"
-                    />
+                  <p className='text-xl text-center my-44 italic'>Không tìm thấy video liên quan.</p>
                 )}
                 {!selectedWord && (
                     <>
