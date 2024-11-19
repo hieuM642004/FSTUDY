@@ -1476,7 +1476,7 @@ export class CourseService {
     }
     async getPurchasesByUserId(userId: Types.ObjectId): Promise<Purchase[]> {
         const purchases = await this.purchaseModel
-            .find({ user: userId , paymentStatus: PaymentStatus.COMPLETED })
+            .find({ user: userId , paymentStatus: PaymentStatus.SUCCESS })
             .populate('user')
             .populate('course')
             .exec();
