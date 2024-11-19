@@ -44,6 +44,8 @@ export class UserController {
         limit: number = process.env.PAGE_LIMIT
             ? parseInt(process.env.PAGE_LIMIT)
             : 10,
+        @Query('email') email?: string,
+        @Query('userType') userType?: string, 
     ): Promise<
         ResponseData<{
             users: User[];
@@ -56,6 +58,8 @@ export class UserController {
             const { users, total } = await this.userService.findAllPanigation(
                 page,
                 limit,
+                email, 
+                userType,
             );
             return new ResponseData<{
                 users: User[];
@@ -120,7 +124,7 @@ export class UserController {
 
     @Put('/update-user/:id')
     @UseInterceptors(FileInterceptor('avatar'))
-    @UseGuards(AuthGuard('jwt'))
+    // @UseGuards(AuthGuard('jwt'))
     async updateAdmin(
         @Param('id') id: string,
         @Body() user: User,

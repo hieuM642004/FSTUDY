@@ -1,15 +1,14 @@
 'use client';
 import React, { useEffect, useState, useMemo } from 'react';
-import {
-    UnorderedListOutlined,
-} from '@ant-design/icons';
+import { UnorderedListOutlined } from '@ant-design/icons';
 import { Drawer, MenuProps } from 'antd';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useTypedSelector } from '@/hooks/useTypedSelector';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { clearUser, fetchUserData } from '@/lib/redux/features/user/userSlice';
-import { deleteCookie } from 'cookies-next';
+import { deleteCookie, getCookie } from 'cookies-next';
+import AuthService from '@/services/auth/AuthService';
 
 import './Header.scss';
 import ButtonPrimary from '../../shared/ButtonPrimary/ButtonPrimary';
@@ -39,6 +38,8 @@ const Header = () => {
     };
 
     const handleLogout = () => {
+        const refreshToken = (getCookie('refreshToken') as string) ?? '';
+        AuthService.logout(refreshToken);
         deleteCookie('token');
         deleteCookie('refreshToken');
         deleteCookie('typeLogin');

@@ -7,12 +7,13 @@ import { useTypedSelector } from '@/hooks/useTypedSelector';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { clearUser, fetchUserData } from '@/lib/redux/features/user/userSlice';
 import User from '@/components/shared/User/User';
-import { deleteCookie } from 'cookies-next';
+import { deleteCookie, getCookie } from 'cookies-next';
 import { useRouter } from 'next/navigation';
 
 const { Header, Sider, Content } = Layout;
 import './AdminLayout.scss';
 import MenuAdmin from '@/components/admin/Menu/Menu';
+import AuthService from '@/services/auth/AuthService';
 const AdminLayout = ({ children }: { children: React.ReactNode }) => {
     const [collapsed, setCollapsed] = useState(false);
     const [isAdmin, setIsAdmin] = useState(false);
@@ -32,6 +33,8 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
     }, [user.isAdmin]);
 
     const handleLogout = () => {
+        const refreshToken = (getCookie('refreshToken') as string) ?? '';
+        AuthService.logout(refreshToken);
         deleteCookie('token');
         deleteCookie('refreshToken');
         deleteCookie('typeLogin');
