@@ -4,7 +4,10 @@ import {
     Controller,
     Delete,
     Get,
+    HttpCode,
+    HttpException,
     InternalServerErrorException,
+    NotFoundException,
     Param,
     Patch,
     Post,
@@ -42,11 +45,14 @@ import { createContentDto } from './dto/content/createContent.dto';
 import { updateContentDto } from './dto/content/updateContent.dto';
 import { createLessonDto } from './dto/lesson/createLesson.dto';
 import { updateLessonDto } from './dto/lesson/updateLesson.dto';
+import { ContentType } from 'src/utils/constants';
+import { error, log } from 'console';
 import { CreateCourseDto } from './dto/course/create-course.dto';
 import { UpdateCourseDto } from './dto/course/update-course.dto';
 const crypto = require('crypto');
+import * as multer from 'multer';
 
-import mongoose, { Types } from 'mongoose';
+import mongoose, { Model, Types } from 'mongoose';
 import axios from 'axios';
 import { CreateRatingDto } from './dto/rating/rating.dto';
 import { UpdateRatingDto } from './dto/rating/updateRating.dto';
@@ -62,34 +68,6 @@ export class CourseController {
         @InjectModel(Purchase.name)
         private readonly purchaseModel: mongoose.Model<Purchase>,
     ) {}
-    //Static
-    @Get('statistics/count-all-course')
-    async countCourse(): Promise<number> {
-        try {
-            return await this.courseService.countCourse();
-        } catch (error) {
-            console.error('Error counting courses:', error);
-            throw new InternalServerErrorException('Failed to count courses');
-        }
-    }
-    @Get('statistics/count-all-course-has-sell')
-    async countCourseHasSell(): Promise<number> {
-        try {
-            return await this.courseService.countCourseHasSell();
-        } catch (error) {
-            console.error('Error counting courses:', error);
-            throw new InternalServerErrorException('Failed to count courses');
-        }
-    }
-    @Get('statistics/total-purchase')
-    async totalPurchase(): Promise<string> {
-        try {
-            return await this.courseService.totalPurchase();
-        } catch (error) {
-            console.error('Error counting courses:', error);
-            throw new InternalServerErrorException('Failed to count courses');
-        }
-    }
 
     /**
      * Quizzes
@@ -678,78 +656,66 @@ export class CourseController {
     ) {
         const {
             vnp_ResponseCode,
+            vnp_Amount,
+            vnp_TxnRef,
             message,
             partnerCode,
             orderId,
-            vnp_Amount,
-            vnp_TxnRef,
         } = req.query;
+    
         if (!vnp_ResponseCode || !email || !key) {
             throw new BadRequestException('Missing required parameters');
         }
-
+    
         if (vnp_ResponseCode === '00') {
-            try {
+         
                 const user = await this.userModel.findOne({ email });
                 if (!user) {
                     throw new InternalServerErrorException('User not found');
                 }
-
-                // Use the user's ObjectId to find the purchase
-                const purchase = await this.purchaseModel.findOne({
+                    const purchase = await this.purchaseModel.findOne({
                     user: user._id,
                     purchaseKey: key,
                 });
-                if (purchase) {
-                    const course = await this.courseService.findOneCourse(
-                        purchase.course.toString(),
-                    );
-                    purchase.paymentStatus = PaymentStatus.SUCCESS; // Sử dụng enum
-                    await purchase.save();
-                    await this.courseService.sendSuccessEmail(email, key);
-
-                    const vnp_AmountNum =
-                        typeof vnp_Amount === 'string'
-                            ? parseFloat(vnp_Amount)
-                            : 0;
-
-                    const templateData = {
-                        price: vnp_AmountNum / 100 + ' VNĐ', // Assuming the value is now a number
-                        code: key,
-                        coursename: course.title,
-                        orderId: vnp_TxnRef,
-                        name: user.fullname,
-                    };
-                    const trackingId = 'tracking id';
-
-                    const formatPhoneNumber = (phone: string) => {
-                        return phone.startsWith('0')
-                            ? '84' + phone.slice(1)
-                            : phone;
-                    };
-                    const phone = formatPhoneNumber(user.phone);
-                    console.log(phone, course, templateData);
-
-                    await this.courseService.sendTemplateMessage(
-                        phone,
-                        '383358',
-                        templateData,
-                        trackingId,
-                    );
+                if (!purchase) {
+                    throw new InternalServerErrorException('Purchase not found');
                 }
-
+                    purchase.paymentStatus = PaymentStatus.SUCCESS;
+                await purchase.save();
+                    const course = await this.courseService.findOneCourse(
+                    purchase.course.toString(),
+                );
+                if (!course) {
+                    throw new InternalServerErrorException('Course not found');
+                }
+                await this.courseService.sendSuccessEmail(email, key);
+                const vnp_AmountNum = typeof vnp_Amount === 'string' ? parseFloat(vnp_Amount) : 0;
+                const templateData = {
+                    price: (vnp_AmountNum / 100).toFixed(0) + ' VNĐ',
+                    code: key,
+                    coursename: course.title,
+                    orderId: vnp_TxnRef,
+                    name: user.fullname,
+                };
+                const formatPhoneNumber = (phone: string) =>
+                    phone.startsWith('0') ? '84' + phone.slice(1) : phone;
+                const phone = formatPhoneNumber(user.phone);
+                const trackingId = 'tracking id';
+                await this.courseService.sendTemplateMessage(
+                    phone,
+                    '383358',
+                    templateData,
+                    trackingId,
+                );
+                console.log(phone , templateData);
+                
+                let price = vnp_AmountNum / 100;
                 return res.redirect(
-                    `${process.env.BASEURL_FE}/paid?email=${email}&message=${message}&partnerCode=${partnerCode}&orderId=${orderId}&amount=${vnp_Amount}`,
+                    `${process.env.BASEURL_FE}/paid?email=${email}&message=${message}&partnerCode=${partnerCode}&orderId=${orderId}&amount=${price}`,
                 );
-            } catch (error) {
-                throw new InternalServerErrorException(
-                    'Error processing payment',
-                );
-            }
-        } else {
-            return res.status(400).json({ message: 'Payment failed' });
-        }
+            } 
     }
+    
 
     @Get('/callback/:email/:key')
     async handlePostCallback(
@@ -767,66 +733,71 @@ export class CourseController {
         },
     ) {
         const { resultCode, message, partnerCode, orderId, amount } = query;
-
+    
         if (!resultCode || !email || !key) {
             throw new BadRequestException('Invalid parameters');
         }
-
+    
         if (resultCode === '0') {
             try {
                 const user = await this.userModel.findOne({ email });
                 if (!user) {
                     throw new InternalServerErrorException('User not found');
                 }
-
+    
                 const purchase = await this.purchaseModel.findOne({
                     user: user._id,
                     purchaseKey: key,
                 });
-
+    
                 if (purchase) {
                     const course = await this.courseService.findOneCourse(
                         purchase.course.toString(),
                     );
-                    purchase.paymentStatus = PaymentStatus.COMPLETED;
+    
+                    purchase.paymentStatus = PaymentStatus.SUCCESS;
                     await purchase.save();
-                    await this.courseService.sendSuccessEmail(email, key);
-
-                    const templateData = {
-                        price: amount + ' VNĐ',
-                        code: key,
-                        coursename: course.title,
-                        orderId: orderId,
-                        name: user.fullname,
-                    };
-                    const trackingId = orderId;
-
-                    const formatPhoneNumber = (phone: string) => {
-                        return phone.startsWith('0')
-                            ? '84' + phone.slice(1)
-                            : phone;
-                    };
-                    const phone = formatPhoneNumber(user.phone);
-                    console.log(phone, course, templateData);
-
-                    await this.courseService.sendTemplateMessage(
-                        phone,
-                        '383358',
-                        templateData,
-                        trackingId,
-                    );
-                    return res.redirect(
-                        `${process.env.BASEURL_FE}/paid?email=${email}&message=${message}&partnerCode=${partnerCode}&orderId=${orderId}&amount=${amount}`,
-                    );
+    
+                    try {
+                        await this.courseService.sendSuccessEmail(email, key);
+    
+                        const templateData = {
+                            price: `${amount} VNĐ`,
+                            code: key,
+                            coursename: course?.title,
+                            orderId,
+                            name: user?.fullname,
+                        };
+                        const formatPhoneNumber = (phone: string) => {
+                            return phone.startsWith('0')
+                                ? '84' + phone.slice(1)
+                                : phone;
+                        };
+                        const phone = formatPhoneNumber(user.phone);
+                        console.log(phone, course, templateData);
+    
+                        await this.courseService.sendTemplateMessage(
+                            phone,
+                            '383358',
+                            templateData,
+                            orderId,
+                        );
+                    } catch (error) {
+                        console.error('Email or SMS sending failed:', error);
+                    }
                 }
             } catch (error) {
-                console.error('Failed to send success email:', error);
-                throw new InternalServerErrorException('Error sending email');
+                console.error('Error processing callback:', error);
+            } finally {
+                return res.redirect(
+                    `${process.env.BASEURL_FE}/paid?email=${email}&message=${message}&partnerCode=${partnerCode}&orderId=${orderId}&amount=${amount}`,
+                );
             }
         }
-
+    
         return res.status(204).json(req.body);
     }
+    
 
     @Get('purchase/:userId')
     async getPurchasesByUserId(
