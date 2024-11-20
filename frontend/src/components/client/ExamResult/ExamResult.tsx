@@ -9,7 +9,7 @@ import { RootState } from '@/lib/redux/store';
 
 const ExamResults: React.FC<{ id?: string }> = ({ id }) => {
     const [result, setResult] = useState([]);
-    const { isLoggedIn, userId } = useAuth();
+    const { isLoggedIn } = useAuth();
     const dataUser = useTypedSelector((state: RootState) => state.user);
 
     useEffect(() => {
@@ -85,6 +85,7 @@ const ExamResults: React.FC<{ id?: string }> = ({ id }) => {
                             columns={columns}
                             pagination={false}
                             bordered
+                            scroll={{ y: 300 }}
                         />
                     </div>
                 )

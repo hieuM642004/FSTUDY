@@ -13,10 +13,6 @@ export async function middleware(req: NextRequest) {
 
     try {
         const decoded: any = jwtDecode(token);
-
-        if (!decoded.id || decoded.role === 'user') {
-            return NextResponse.next();
-        }
         
         if (!decoded.id || decoded.role !== 'admin') {
             return NextResponse.redirect(new URL('/not-found', req.url));
@@ -30,6 +26,6 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-    matcher: ['/admin/:path*','/my-account/:path*'],
+    matcher: ['/admin/:path*'],
     
 };

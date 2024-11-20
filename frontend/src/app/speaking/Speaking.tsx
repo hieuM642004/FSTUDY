@@ -6,7 +6,7 @@ import FlashCardService from '@/services/FlashCardService';
 import WavEncoder from 'wav-encoder';
 import { AudioOutlined, LoadingOutlined, RobotOutlined, SendOutlined, SoundOutlined, StopOutlined, UserOutlined } from '@ant-design/icons';
 import { Spin, Row, Col } from 'antd'; // Import thêm Row và Col từ Ant Design
-
+import './Speaking.scss'
 interface Message {
     sender: 'user' | 'system';
     content: string;
@@ -154,7 +154,7 @@ function Speaking() {
 
     return (
         <div className='p-10'>
-            <h2 className='text-2xl font-semibold p-4 shadow-md rounded-md mb-3'>Luyện tập speaking</h2>
+            <div id='banner-speaking' className='w-full h-96 bg-cover bg-center mb-2 rounded-md shadow-md'></div>
             {!selectedTopic && (
                 <div className='mb-4'>
                     {topics && topics.length > 0 ? (
