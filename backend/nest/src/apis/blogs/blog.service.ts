@@ -264,9 +264,10 @@ export class BlogService {
     }
 
     async searchBlogByName(key: string): Promise<Blog[]> {
-        const blogs = await this.blogModel.find({ slug: key }).populate({
-            path: 'user', 
-            model: 'User'  
+        const regex = new RegExp(`^${key}`, 'i');
+        const blogs = await this.blogModel.find({ title: { $regex: regex } }).populate({
+            path: 'user',
+            model: 'User',
         });
         return blogs;
     }
