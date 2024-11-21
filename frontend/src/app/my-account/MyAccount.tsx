@@ -6,23 +6,32 @@ import { EditOutlined } from '@ant-design/icons';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { RootState } from '@/lib/redux/store';
 import { fetchUserData } from '@/lib/redux/features/user/userSlice';
+import { useRouter } from 'next/navigation';
 
 import './MyAccount.scss';
 import PageMyCourses from './courses/Courses';
 import PageMyStatistics from './examstatistics/ExamStatistics';
 import { useTypedSelector } from '@/hooks/useTypedSelector';
 import { Tooltip } from 'antd';
+import { useAuth } from '@/hooks/useAuth';
 
 const PageMyAccountInfo: React.FC = () => {
+    const router = useRouter();
+
     const [activeTab, setActiveTab] = useState('courses');
     const dispatch = useAppDispatch();
 
     const dataUser = useTypedSelector((state: RootState) => state.user);
+    const { isLoggedIn } = useAuth();
 
     useEffect(() => {
         dispatch(fetchUserData());
     }, [dispatch]);
-
+    useEffect(() => {
+        if (isLoggedIn === false) {
+            router.push('/login');
+        }
+    }, []);
     const handleChangePage = (pageName: string) => {
         setActiveTab(pageName);
     };
