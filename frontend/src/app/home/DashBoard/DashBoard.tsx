@@ -72,7 +72,7 @@ const Dashboard = () => {
                             {userCourse?.length > 0 &&
                                 userCourse.map(
                                     (item: any) =>
-                                        item?.paymentStatus === 'SUCCESS' && (
+                                        item?.paymentStatus === 'COMPLETED' && (
                                             <div
                                                 key={item.course._id}
                                                 className="bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
