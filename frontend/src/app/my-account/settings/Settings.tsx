@@ -28,13 +28,15 @@ const items: TabsProps['items'] = [
 ];
 function Settings() {
     const router = useRouter();
-    const { isLoggedIn } = useAuth();
+    const { isLoggedIn , loading} = useAuth();
 
     useEffect(() => {
-        if (isLoggedIn === false) {
-            router.push('/login');
+        if (!loading) {
+            if (!isLoggedIn) {
+                router.push('/login');
+            }
         }
-    }, []);
+    }, [isLoggedIn, loading, router]);
     return (
         <>
             <div className="w-full pt-[2rem] pb-[3rem] ">

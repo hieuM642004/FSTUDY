@@ -22,16 +22,19 @@ const PageMyAccountInfo: React.FC = () => {
     const dispatch = useAppDispatch();
 
     const dataUser = useTypedSelector((state: RootState) => state.user);
-    const { isLoggedIn } = useAuth();
+    const { isLoggedIn , loading } = useAuth();
 
     useEffect(() => {
         dispatch(fetchUserData());
     }, [dispatch]);
     useEffect(() => {
-        if (isLoggedIn === false) {
-            router.push('/login');
+        if (!loading) {
+            if (!isLoggedIn) {
+                router.push('/login');
+            }
         }
-    }, []);
+    }, [isLoggedIn, loading, router]);
+
     const handleChangePage = (pageName: string) => {
         setActiveTab(pageName);
     };
