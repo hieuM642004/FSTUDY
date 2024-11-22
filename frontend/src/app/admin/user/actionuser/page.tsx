@@ -58,10 +58,9 @@ function PageAddUser() {
             PostData.append('role', values.role);
             PostData.append('email', values.email);
 
-            const response = await UserService.createUser(PostData);
-            console.log('check response', response);
+            const response : any = await UserService.createUser(PostData);
 
-            if (response) {
+            if (response._id) {
                 messageApi.open({
                     type: 'success',
                     content: 'USER THÊM THÀNH CÔNG!',
@@ -70,11 +69,11 @@ function PageAddUser() {
                 setFile(null);
                 setTimeout(()=>{
                     router.push('/admin/user');
-                },2000)
+                },1000)
             } else {
                 messageApi.open({
                     type: 'error',
-                    content: 'USER THÊM THẤT BẠI!',
+                    content: `${response.data.message}`,
                 });
             }
         } catch (error) {
