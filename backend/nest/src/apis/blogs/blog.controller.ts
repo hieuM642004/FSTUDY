@@ -415,12 +415,12 @@ export class BlogController {
         }
     }
     // Search Blog by name route
-    @Get('search/:slug')
+    @Get('search/:title')
     async searchUserByName(
-        @Param('slug') slug: string,
+        @Param('title') title: string,
     ): Promise<ResponseData<Blog[]>> {
         try {
-            const blogs = await this.blogService.searchBlogByName(slug);
+            const blogs = await this.blogService.searchBlogByName(title);
             return new ResponseData<Blog[]>(
                 blogs,
                 HttpStatus.SUCCESS,

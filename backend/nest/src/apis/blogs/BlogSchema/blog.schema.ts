@@ -6,6 +6,8 @@ import slugify from 'slugify';
 export class Topic {
     @Prop({ type: String })
     name: string;
+    @Prop({ type: String })
+    title: string;
 
     @Prop({ type: String })
     description: string;

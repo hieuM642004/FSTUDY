@@ -39,10 +39,12 @@ function LearnAbout({ onSearch }: any) {
         const timeoutId = setTimeout(async () => {
             if (searchTerm.trim()) {
                 try {
-                    const response = await nestApiInstance.post(
-                        '/blog/search',
-                        { key: searchTerm },
+                    const response = await nestApiInstance.get(
+                        // '/blog/search/ { key: searchTerm }',
+                        `/blog/search/${searchTerm}`,
+                        // { key: searchTerm },
                     );
+                    console.log('check', response);
 
                     const filteredBlogs = response?.data?.data?.filter(
                         (blog: any) => !blog?.reply || blog?.reply.length === 0,
@@ -168,7 +170,7 @@ function LearnAbout({ onSearch }: any) {
                         sizes="100vw"
                         style={{ width: '100%', height: 'auto' }}
                         alt="Learning English"
-                        className='rounded-md shadow-md'
+                        className="rounded-md shadow-md"
                     />
                 </Link>
                 {/* <Link href="" className="mb-3 block">
