@@ -46,8 +46,7 @@ function Paid() {
                                         Thông tin chuyển khoản
                                     </h3>
                                     <div className="text-sm font-medium text-red-500">
-                                        Vui lòng check email để kích hoạt khóa
-                                        học{' '}
+                                        Vui lòng kiểm tra email hoặc zalo để kích hoạt khóa học{' '}
                                     </div>
                                 </header>
 
