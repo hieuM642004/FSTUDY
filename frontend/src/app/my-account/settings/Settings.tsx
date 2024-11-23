@@ -5,6 +5,9 @@ import WapperItemCard from '@/components/client/WapperItemCard/WapperItemCard';
 import UserInfo from './Labels/UserInfo';
 import ChangePass from './Labels/ChangePass';
 import Tab from '@/components/client/Tabs/Tabs';
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/hooks/useAuth';
 
 const items: TabsProps['items'] = [
     {
@@ -24,6 +27,16 @@ const items: TabsProps['items'] = [
     },
 ];
 function Settings() {
+    const router = useRouter();
+    const { isLoggedIn , loading} = useAuth();
+
+    useEffect(() => {
+        if (!loading) {
+            if (!isLoggedIn) {
+                router.push('/login');
+            }
+        }
+    }, [isLoggedIn, loading, router]);
     return (
         <>
             <div className="w-full pt-[2rem] pb-[3rem] ">
