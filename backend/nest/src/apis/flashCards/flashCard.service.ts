@@ -11,7 +11,6 @@ import {
 import { CreateFlashCardDto, WordDto } from './dto/CreateFlashCard.dto';
 import { Observable } from 'rxjs';
 import { AxiosResponse } from 'axios';
-import * as YouTubeTranscript from 'youtube-transcript';
 import { map, catchError } from 'rxjs/operators';
 import { UpdateWordReviewDto } from './dto/UpdateWordReviewDto';
 import { transporter } from 'src/providers/mail/mailler';
