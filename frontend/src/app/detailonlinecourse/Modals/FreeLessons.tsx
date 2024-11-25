@@ -62,7 +62,7 @@ const FreeLessons = ({ data }: { data: any }) => {
                                     <ol>
                                         {stateData.lessons?.map(
                                             (item: any, index: any) => (
-                                                <li className="flex justify-between hover:bg-[#ececec] p-2 cursor-pointer">
+                                                <li key={index} className="flex justify-between hover:bg-[#ececec] p-2 cursor-pointer">
                                                     <Link
                                                         href={`/trylearning/${stateData._id}`}
                                                         className="text-black"

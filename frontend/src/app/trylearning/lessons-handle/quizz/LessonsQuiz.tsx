@@ -176,7 +176,7 @@ const LessonsHandlePage = ({ id }: { id: string }) => {
                         const isCorrect =
                             selectedOptions[quizIndex] === quiz.correctAnswer;
                         return (
-                            <div className='mb-4'>
+                            <div className='mb-4' key={quiz._id}>
                                 <Card
                                     key={quiz._id}
                                     title={`Câu hỏi ${quizIndex + 1}: ${
