@@ -205,7 +205,7 @@ const FillInTheBlankPage = ({ id }: { id: string }) => {
                 {completed && <h3>Bạn đã hoàn thành bài tập này!</h3>}
                 {lessonsCourse?.fill_in_the_blank.map(
                     (item: FillInTheBlankData, index: number) => (
-                       <div className='mb-4'>
+                       <div className='mb-4'  key={item._id}>
                             <Card key={item._id} title={`Câu hỏi ${index + 1}`}>
                                 <p>{item.sentence}</p>
                                 {item.correctAnswers.map((_, answerIndex) => (

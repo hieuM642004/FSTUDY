@@ -1,7 +1,8 @@
 'use client';
 import Script from 'next/script';
+import logoFSTUDY from '/public/images/LOGOFSTUDY.png';
 
-const LiveChatScript = () => {
+const LiveChatScript = () => {    
     return (
         <>
             <Script id="live-chat-config" strategy="afterInteractive">
@@ -28,7 +29,7 @@ const LiveChatScript = () => {
                             bodyBackgroundLink: '',
                             avatarBot: 'https://cdn-icons-png.flaticon.com/512/149/149071.png',
                             sendMessagePlaceholder: 'Nhập nội dung tại đây',
-                            floatButtonLogo: 'https://cdn-icons-png.flaticon.com/512/3379/3379870.png',
+                            floatButtonLogo: '${logoFSTUDY.src}',
                             floatButtonTooltip: 'Bạn có cần giúp gì?',
                             floatButtonTooltipEnable: true,
                             customerLogo: 'https://chatbot-tools.fpt.ai/livechat-builder/img/bot.png',
