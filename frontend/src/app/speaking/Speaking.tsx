@@ -5,7 +5,7 @@ import { ReactMic, ReactMicStopEvent } from 'react-mic';
 import FlashCardService from '@/services/FlashCardService';
 import WavEncoder from 'wav-encoder';
 import { AudioOutlined, LoadingOutlined, RobotOutlined, SendOutlined, SoundOutlined, StopOutlined, UserOutlined } from '@ant-design/icons';
-import { Spin, Row, Col } from 'antd'; // Import thêm Row và Col từ Ant Design
+import { Spin, Row, Col } from 'antd'; 
 import './Speaking.scss'
 interface Message {
     sender: 'user' | 'system';
@@ -23,8 +23,8 @@ function Speaking() {
     const [selectedTopic, setSelectedTopic] = useState<string | null>(null);
     const [loadingSend, setLoadingSend] = useState(false);
     const [loadingRecieve, setLoadingRecieve] = useState(false);
-    const [evaluation, setEvaluation] = useState<string | null>(null); // Đánh giá từ backend
-    const [conversationHistory, setConversationHistory] = useState<string | null>(null); // Lịch sử hội thoại từ backend
+    const [evaluation, setEvaluation] = useState<string | null>(null); 
+    const [conversationHistory, setConversationHistory] = useState<string | null>(null); 
 
     useEffect(() => {
         const fetchTopics = async () => {
@@ -42,16 +42,16 @@ function Speaking() {
         setLoadingRecieve(true);
         setSelectedTopic(topic);
         setStep(0);
-        setEvaluation(null); // Reset evaluation when a new topic is selected
-        setConversationHistory(null); // Reset conversation history
+        setEvaluation(null); 
+        setConversationHistory(null); 
         try {
             const response = await FlashCardService.startConversation(topic);
             const { text_response, audio_file_url } = response.data;
     
-            // Thêm phản hồi từ hệ thống vào hội thoại
+           
             setConversation([{ sender: 'system', content: text_response, audioUrl: audio_file_url }]);
     
-            // Tự động phát âm thanh từ backend
+        
             if (audio_file_url) {
                 const audio = new Audio(audio_file_url);
                 audio.play();
@@ -91,37 +91,37 @@ function Speaking() {
         if (!audioBlob || !selectedTopic || !conversation.length) return;
         setLoadingSend(true);
     
-        // Tạo FormData để gửi file âm thanh
+      
         const formData = new FormData();
-        formData.append('audio_file', audioBlob, 'user_audio.wav'); // Gửi file âm thanh với tên 'user_audio.wav'
+        formData.append('audio_file', audioBlob, 'user_audio.wav'); 
     
-        // Lấy câu hỏi của hệ thống từ hội thoại hiện tại
+        
         const system_response = conversation[conversation.length - 1]?.content || '';
         if (!system_response) {
             console.error('System response is empty');
             setLoadingSend(false);
             return;
         }
-        formData.append('system_response', system_response); // Gửi câu hỏi của hệ thống
+        formData.append('system_response', system_response); 
     
         try {
             const response = await FlashCardService.speaking(formData);
-            console.log(response); // Log toàn bộ phản hồi để kiểm tra dữ liệu
+            console.log(response); 
     
             const { text_response, audio_file_url, user_response_text, evaluation, conversation_history } = response.data;
     
             if (evaluation && conversation_history) {
                 setEnd('Kết thúc');
-                setEvaluation(evaluation); // Hiển thị đánh giá từ mô hình
-                setConversationHistory(conversation_history); // Lưu lịch sử hội thoại
+                setEvaluation(evaluation); 
+                setConversationHistory(conversation_history);
                 console.log("Conversation has ended");
                 return;
             }
     
-            // Thêm phản hồi của người dùng và câu trả lời tiếp theo của hệ thống vào hội thoại
+           
             setConversation((prev) => [
                 ...prev,
-                { sender: 'user', content: user_response_text }, // Sử dụng nội dung văn bản từ âm thanh
+                { sender: 'user', content: user_response_text },
                 { sender: 'system', content: text_response, audioUrl: audio_file_url }
             ]);
     
@@ -192,6 +192,8 @@ function Speaking() {
                             </div>
                         ))}
                     </div>
+                    {evaluation && conversationHistory && (
+                        
                     <Row gutter={16}>
                         <Col span={12}>
                             <div className="border p-4 rounded bg-gray-100">
@@ -214,6 +216,7 @@ function Speaking() {
                             </div>
                         </Col>
                     </Row>
+                    )}
                 </div>
             )}
             <div className='flex justify-center mb-2'>
