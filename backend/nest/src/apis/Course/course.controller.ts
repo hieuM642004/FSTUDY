@@ -658,8 +658,8 @@ export class CourseController {
             vnp_ResponseCode,
             vnp_Amount,
             vnp_TxnRef,
-            message,
-            partnerCode,
+            message = 'Successful',
+            vnp_OrderInfo,
             orderId,
         } = req.query;
     
@@ -707,11 +707,9 @@ export class CourseController {
                     templateData,
                     trackingId,
                 );
-                console.log(phone , templateData);
-                
                 let price = vnp_AmountNum / 100;
                 return res.redirect(
-                    `${process.env.BASEURL_FE}/paid?email=${email}&message=${message}&partnerCode=${partnerCode}&orderId=${orderId}&amount=${price}`,
+                    `${process.env.BASEURL_FE}/paid?email=${email}&message=${message}&partnerCode=${vnp_OrderInfo}&orderId=${vnp_TxnRef}&amount=${price}`,
                 );
             } 
     }
