@@ -1,7 +1,8 @@
 'use client';
 import React, { useEffect, useState } from 'react';
-import { Table, Input, message, Spin } from 'antd';
+import { Table, Input, message, Spin, Modal } from 'antd';
 import GoogleSheetsService from '@/services/sheet/sheet';
+import { DeleteOutlined } from '@ant-design/icons';
 
 const GoogleSheetsManager: React.FC = () => {
   const [data, setData] = useState<any[]>([]);
@@ -59,17 +60,25 @@ const GoogleSheetsManager: React.FC = () => {
     setData([...data, newRow]);
   };
 
-  const handleDelete = async (key: number) => {
-    const newData = data.filter((item) => item.key !== key);
-    try {
-      await GoogleSheetsService.deleteRow(key);
-      setData(newData);
-      message.success('Row deleted successfully!');
-    } catch (error) {
-      console.error('Error deleting row:', error);
-      message.error('Failed to delete row!');
-    }
+  const handleDelete = (key: number) => {
+    Modal.confirm({
+      title: 'Bạn có chắc chắn muốn xóa dòng này?',
+      okText: 'Xóa',
+      cancelText: 'Hủy',
+      onOk: async () => {
+        const newData = data.filter((item) => item.key !== key);
+        try {
+          await GoogleSheetsService.deleteRow(key);
+          setData(newData);
+          message.success('Row deleted successfully!');
+        } catch (error) {
+          console.error('Error deleting row:', error);
+          message.error('Failed to delete row!');
+        }
+      },
+    });
   };
+  
 
   const EditableCell = ({
     title,
@@ -129,7 +138,7 @@ const GoogleSheetsManager: React.FC = () => {
           style={{ color: 'red', cursor: 'pointer' }}
           onClick={() => handleDelete(record.key)}
         >
-          Delete
+           <DeleteOutlined />
         </span>
       ),
     },
@@ -171,7 +180,7 @@ const GoogleSheetsManager: React.FC = () => {
               style={{ color: 'blue', cursor: 'pointer' }}
               onClick={handleAddRow}
             >
-              + Add Row
+              + Thêm
             </span>
           )}
         />
