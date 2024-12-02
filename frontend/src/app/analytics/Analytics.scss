@@ -1,0 +1,50 @@
+.container-header {
+    background: linear-gradient(1turn, #e7f1ff, hsla(0, 0%, 100%, .13) 100%, #fff 0, #fdfeff 0);
+    height: 158px;
+    padding: 0;
+
+    .container-title {
+        width: 100%;
+        padding-right: .75rem;
+        padding-left: .75rem;
+        max-width: 1200px;
+        padding-top: 2rem;
+        padding-bottom: 3rem;
+        margin-right: auto;
+        margin-left: auto;
+
+    }
+
+    .container-tab {
+        width: 100%;
+        padding-right: .75rem;
+        padding-left: .75rem;
+        max-width: 1200px;
+        margin-right: auto;
+        margin-left: auto;
+        color: #35509a;
+    }
+}
+
+.container-body {
+    width: 100%;
+    max-width: 1200px;
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+    margin-right: auto;
+    margin-left: auto;
+
+
+}
+
+.ant-card {
+    // width: 150px;
+
+    justify-items: center;
+}
+
+.ant-card-body {
+    max-width: 100%;
+    overflow-x: auto;
+    padding: 15px 5px !important;
+}

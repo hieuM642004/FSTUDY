@@ -1,0 +1,83 @@
+<mjml>
+  <mj-head>
+    <mj-title>Discount Light</mj-title>
+    <mj-preview>Pre-header Text</mj-preview>
+    <mj-attributes>
+      <mj-all font-family="'Helvetica Neue', Helvetica, Arial, sans-serif"></mj-all>
+      <mj-text font-weight="400" font-size="16px" color="#000000" line-height="24px" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif"></mj-text>
+    </mj-attributes>
+    <mj-style inline="inline">.body-section {
+      -webkit-box-shadow: 1px 4px 11px 0px rgba(0, 0, 0, 0.15);
+      -moz-box-shadow: 1px 4px 11px 0px rgba(0, 0, 0, 0.15);
+      box-shadow: 1px 4px 11px 0px rgba(0, 0, 0, 0.15);
+      }</mj-style>
+    <mj-style inline="inline">.text-link {
+      color: #5e6ebf
+      }</mj-style>
+    <mj-style inline="inline">.footer-link {
+      color: #888888
+      }</mj-style>
+  </mj-head>
+  <mj-body background-color="#E7E7E7" width="600px">
+    <mj-section full-width="full-width" background-color="#040B4F" padding-bottom="0px">
+      <mj-column width="100%">
+        <mj-text color="#ffffff" font-weight="bold" align="center" text-transform="uppercase" font-size="50px" letter-spacing="1px">FSTUDY
+        </mj-text>
+        <mj-text color="#ffffff" font-weight="bold" align="center" text-transform="uppercase" font-size="16px" letter-spacing="1px" padding-top="30px">Xin chào {{name}}
+          <br />
+          <span style="color: #979797; font-weight: normal">-</span>
+        </mj-text>
+      
+      </mj-column>
+    </mj-section>
+    <mj-section >
+      <mj-column width="100%">
+        <mj-image src="https://firebasestorage.googleapis.com/v0/b/podcast-4073a.appspot.com/o/Images%2FN%E1%BB%99i%20dung%20%C4%91o%E1%BA%A1n%20v%C4%83n%20b%E1%BA%A3n%20c%E1%BB%A7a%20b%E1%BA%A1n%20(1).png?alt=media&token=a85e0db0-66ac-49f2-9cbb-62cd68a1772b" width="600px" alt="" padding="0px" href="http://localhost:3000/"></mj-image>
+      </mj-column>
+    </mj-section>
+    <mj-wrapper padding-top="0" padding-bottom="0px" css-class="body-section">
+      <mj-section background-color="#ffffff" padding-left="15px" padding-right="15px">
+        <mj-column width="100%">
+   <mj-text color="#445566" font-size="25px" font-weight="bold" align="center">Đã đến lúc ôn tập flashcard: <strong>{{cardName}}</strong></mj-text>
+          <mj-button background-color="#5e6ebf" align="center" color="#ffffff" font-size="17px" font-weight="bold" href="{{reviewLink}}" width="300px">
+          Ôn tập ngay
+           </mj-button>
+        
+        </mj-column>
+      </mj-section>
+
+      <mj-section background-color="#ffffff" padding-left="15px" padding-right="15px" padding-top="0">
+        <mj-column width="100%">
+          <mj-divider border-color="#DFE3E8" border-width="1px"></mj-divider>
+        </mj-column>
+      </mj-section>
+      <mj-section background-color="#ffffff" padding="0 15px 0 15px">
+      </mj-section>
+      <mj-section background-color="#ffffff" padding-left="15px" padding-right="15px">
+       
+      </mj-section>
+      <mj-section background-color="#ffffff" padding-left="15px" padding-right="15px">
+      </mj-section>
+    </mj-wrapper>
+    <mj-wrapper full-width="full-width">
+      <mj-section>
+        <mj-column width="100%" padding="0px">
+          <mj-social font-size="15px" icon-size="30px" mode="horizontal" padding="0px" align="center">
+            <mj-social-element name="facebook"></mj-social-element>
+            <mj-social-element name="twitter"></mj-social-element>
+            <mj-social-element name="google"></mj-social-element>
+          </mj-social>
+       
+      
+        </mj-column>
+      </mj-section>
+      <mj-section padding-top="0">
+        <mj-group>
+          <mj-column width="100%" padding-right="0px">
+         
+          </mj-column>
+        </mj-group>
+      </mj-section>
+    </mj-wrapper>
+  </mj-body>
+</mjml>

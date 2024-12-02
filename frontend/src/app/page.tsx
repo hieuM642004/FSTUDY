@@ -1,10 +1,14 @@
 'use client';
 import React from 'react';
+import HomePage from './home/Home/HomePage';
 
 export default function Home() {
     return (
-        <main className="flex min-h-screen flex-col items-center justify-between p-24">
-            <p>Content</p>
+        <main >
+             <div className="flex justify-center ">
+                 <HomePage />
+             </div>
+           
         </main>
     );
 }
