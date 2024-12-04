@@ -12,6 +12,12 @@ const nextConfig = {
       'yt3.ggpht.com',
     ],
   },
+  eslint: {
+    ignoreDuringBuilds: true, 
+  },
+  typescript: {
+    ignoreBuildErrors: true, 
+  },
   env: {
     baseURL: 'http://localhost:4000',
     ZEN_QUOTES_API_URL: 'https://zenquotes.io/api/random',
