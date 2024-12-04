@@ -1430,6 +1430,7 @@ export class CourseService {
         const vnpUrl = process.env.VNP_URL;
         const returnUrl = `http://localhost:4000/course/callbackvnpay/${user.email}/${purchaseKey}`;
         const date = new Date();
+        const partnerCode = 'VNPAY';
         const padZero = (num: number) => num.toString().padStart(2, '0');
         const createDate = `${date.getFullYear()}${padZero(date.getMonth() + 1)}${padZero(date.getDate())}${padZero(date.getHours())}${padZero(date.getMinutes())}${padZero(date.getSeconds())}`;
         const orderId = `${padZero(date.getHours())}${padZero(date.getMinutes())}${padZero(date.getSeconds())}`;
@@ -1443,7 +1444,7 @@ export class CourseService {
             vnp_Locale: locale,
             vnp_CurrCode: currCode,
             vnp_TxnRef: orderId,
-            vnp_OrderInfo: 'thanhtoan',
+            vnp_OrderInfo: 'VNPAY',
             vnp_OrderType: 'billpayment',
             vnp_Amount: finalPrice * 100,
             vnp_ReturnUrl: returnUrl,
@@ -1476,7 +1477,7 @@ export class CourseService {
     }
     async getPurchasesByUserId(userId: Types.ObjectId): Promise<Purchase[]> {
         const purchases = await this.purchaseModel
-            .find({ user: userId , paymentStatus: PaymentStatus.SUCCESS })
+            .find({ user: userId , paymentStatus: PaymentStatus.COMPLETED })
             .populate('user')
             .populate('course')
             .exec();

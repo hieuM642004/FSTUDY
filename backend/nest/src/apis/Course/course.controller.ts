@@ -69,6 +69,35 @@ export class CourseController {
         private readonly purchaseModel: mongoose.Model<Purchase>,
     ) {}
 
+ //Static
+ @Get('statistics/count-all-course')
+ async countCourse(): Promise<number> {
+     try {
+         return await this.courseService.countCourse();
+     } catch (error) {
+         console.error('Error counting courses:', error);
+         throw new InternalServerErrorException('Failed to count courses');
+     }
+ }
+ @Get('statistics/count-all-course-has-sell')
+ async countCourseHasSell(): Promise<number> {
+     try {
+         return await this.courseService.countCourseHasSell();
+     } catch (error) {
+         console.error('Error counting courses:', error);
+         throw new InternalServerErrorException('Failed to count courses');
+     }
+ }
+ @Get('statistics/total-purchase')
+ async totalPurchase(): Promise<string> {
+     try {
+         return await this.courseService.totalPurchase();
+     } catch (error) {
+         console.error('Error counting courses:', error);
+         throw new InternalServerErrorException('Failed to count courses');
+     }
+ }
+
     /**
      * Quizzes
      */
@@ -658,8 +687,8 @@ export class CourseController {
             vnp_ResponseCode,
             vnp_Amount,
             vnp_TxnRef,
-            message,
-            partnerCode,
+            message = 'Successful',
+            vnp_OrderInfo,
             orderId,
         } = req.query;
     
@@ -707,11 +736,9 @@ export class CourseController {
                     templateData,
                     trackingId,
                 );
-                console.log(phone , templateData);
-                
                 let price = vnp_AmountNum / 100;
                 return res.redirect(
-                    `${process.env.BASEURL_FE}/paid?email=${email}&message=${message}&partnerCode=${partnerCode}&orderId=${orderId}&amount=${price}`,
+                    `${process.env.BASEURL_FE}/paid?email=${email}&message=${message}&partnerCode=${vnp_OrderInfo}&orderId=${vnp_TxnRef}&amount=${price}`,
                 );
             } 
     }
