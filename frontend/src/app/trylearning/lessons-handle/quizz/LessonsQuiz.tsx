@@ -29,6 +29,8 @@ const LessonsHandlePage = ({ id }: { id: string }) => {
 
     // Fetch lesson course and user's quiz progress
     const fetchLessonsCourse = async () => {
+        console.log('check id:', id);
+
         try {
             // Fetch quiz data
             const response = await nestApiInstance.get(`/course/content/${id}`);
@@ -176,7 +178,7 @@ const LessonsHandlePage = ({ id }: { id: string }) => {
                         const isCorrect =
                             selectedOptions[quizIndex] === quiz.correctAnswer;
                         return (
-                            <div className='mb-4' key={quiz._id}>
+                            <div className="mb-4" key={quiz._id}>
                                 <Card
                                     key={quiz._id}
                                     title={`Câu hỏi ${quizIndex + 1}: ${
@@ -197,7 +199,8 @@ const LessonsHandlePage = ({ id }: { id: string }) => {
                                                     value={index}
                                                     style={
                                                         completed &&
-                                                        quiz.correctAnswer === index
+                                                        quiz.correctAnswer ===
+                                                            index
                                                             ? { color: 'green' }
                                                             : undefined
                                                     }
