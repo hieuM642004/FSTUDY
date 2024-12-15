@@ -209,11 +209,13 @@ const FillInTheBlankPage = ({ id }: { id: string }) => {
                     (item: FillInTheBlankData, index: number) => (
                         <div className="mb-4" key={item._id}>
                             <Card key={item._id} title={`Câu hỏi ${index + 1}`}>
-                                <p>{item.sentence}</p>
+                                <p className="pb-5">{item.sentence}</p>
                                 {item.correctAnswers.map((_, answerIndex) => (
                                     <Input
                                         key={answerIndex}
-                                        placeholder={`Nhập đáp án ${index + 1}`}
+                                        placeholder={`Nhập đáp án câu ${
+                                            index + 1
+                                        }`}
                                         value={
                                             userAnswers[index]?.[answerIndex] ||
                                             ''

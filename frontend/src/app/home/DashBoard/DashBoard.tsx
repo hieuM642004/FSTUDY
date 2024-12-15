@@ -74,18 +74,18 @@ const Dashboard = () => {
                                     (item: any) =>
                                         item?.paymentStatus === 'COMPLETED' && (
                                             <div
-                                                key={item.course._id}
+                                                key={item.course?._id}
                                                 className="bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
                                             >
                                                 <Link
-                                                    href={`learning/${item.course._id}`}
+                                                    href={`learning/${item.course?._id}`}
                                                 >
                                                     <div className="p-6">
                                                         <div className="flex justify-between items-start mb-4">
                                                             <h3 className="font-semibold text-gray-900">
                                                                 {
                                                                     item.course
-                                                                        .title
+                                                                        ?.title
                                                                 }
                                                             </h3>
                                                         </div>
@@ -102,15 +102,16 @@ const Dashboard = () => {
                                                                 Tiếp tục bài
                                                                 học:{' '}
                                                                 {item.course
-                                                                    .detail_short_description
-                                                                    .length > 50
+                                                                    ?.detail_short_description
+                                                                    ?.length >
+                                                                50
                                                                     ? item.course.detail_short_description.substring(
                                                                           0,
                                                                           50,
                                                                       ) + '...'
                                                                     : item
-                                                                          .course
-                                                                          .detail_short_description}
+                                                                          ?.course
+                                                                          ?.detail_short_description}
                                                             </p>
                                                         </div>
                                                     </div>

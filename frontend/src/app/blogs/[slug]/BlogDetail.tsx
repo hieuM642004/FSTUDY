@@ -74,16 +74,27 @@ function BlogDetail({ id }: string | any) {
                                         {/* user information */}
                                         <div className="flex items-center border-b-[1px] py-2 mb-4">
                                             <div>
-                                                <Image
-                                                    width={35}
-                                                    height={35}
-                                                    src={
-                                                        blogDetail &&
-                                                        blogDetail?.user?.avatar
-                                                    }
-                                                    alt="Picture of the author"
-                                                    className="rounded-full"
-                                                />
+                                                {blogDetail.user?.avatar ? (
+                                                    <Image
+                                                        width={35}
+                                                        height={35}
+                                                        src={
+                                                            blogDetail &&
+                                                            blogDetail?.user
+                                                                ?.avatar
+                                                        }
+                                                        alt="Picture of the author"
+                                                        className="rounded-full"
+                                                    />
+                                                ) : (
+                                                    <Image
+                                                        src="/images/user_icon.png"
+                                                        width={30}
+                                                        height={30}
+                                                        alt="Default Avatar"
+                                                        className="mr-2 rounded-full"
+                                                    />
+                                                )}
                                             </div>
                                             <div className="ml-3">
                                                 <p>
