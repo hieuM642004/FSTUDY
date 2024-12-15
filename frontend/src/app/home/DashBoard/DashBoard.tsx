@@ -74,18 +74,18 @@ const Dashboard = () => {
                                     (item: any) =>
                                         item?.paymentStatus === 'COMPLETED' && (
                                             <div
-                                                key={item.course._id}
+                                                key={item?.course?._id}
                                                 className="bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
                                             >
                                                 <Link
-                                                    href={`learning/${item.course._id}`}
+                                                    href={`learning/${item?.course?._id}`}
                                                 >
                                                     <div className="p-6">
                                                         <div className="flex justify-between items-start mb-4">
                                                             <h3 className="font-semibold text-gray-900">
                                                                 {
-                                                                    item.course
-                                                                        .title
+                                                                    item?.course
+                                                                        ?.title
                                                                 }
                                                             </h3>
                                                         </div>
@@ -101,16 +101,16 @@ const Dashboard = () => {
                                                             <p className="text-gray-600 text-sm">
                                                                 Tiếp tục bài
                                                                 học:{' '}
-                                                                {item.course
-                                                                    .detail_short_description
+                                                                {item?.course
+                                                                    ?.detail_short_description
                                                                     .length > 50
-                                                                    ? item.course.detail_short_description.substring(
+                                                                    ? item?.course?.detail_short_description.substring(
                                                                           0,
                                                                           50,
                                                                       ) + '...'
                                                                     : item
-                                                                          .course
-                                                                          .detail_short_description}
+                                                                          ?.course
+                                                                          ?.detail_short_description}
                                                             </p>
                                                         </div>
                                                     </div>
@@ -130,7 +130,7 @@ const Dashboard = () => {
                                 {listCourse?.length > 0 &&
                                     listCourse?.map((item: any) => (
                                         <div
-                                            key={item._id}
+                                            key={item?._id}
                                             className="bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
                                         >
                                             <Link
@@ -139,7 +139,7 @@ const Dashboard = () => {
                                                 <div className="p-6">
                                                     <div className="flex justify-between items-start mb-4">
                                                         <h3 className="font-semibold text-gray-900">
-                                                            {item.title}
+                                                            {item?.title}
                                                         </h3>
                                                     </div>
                                                     <div className="space-y-4">
@@ -156,11 +156,11 @@ const Dashboard = () => {
                                                             {item
                                                                 .detail_short_description
                                                                 .length > 50
-                                                                ? item.detail_short_description.substring(
+                                                                ? item?.detail_short_description.substring(
                                                                       0,
                                                                       50,
                                                                   ) + '...'
-                                                                : item.detail_short_description}
+                                                                : item?.detail_short_description}
                                                         </p>
                                                         <span className="inline-block bg-orange-400 text-white text-sm px-3 py-1 rounded-lg">
                                                             Học thử

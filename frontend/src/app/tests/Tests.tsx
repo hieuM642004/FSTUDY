@@ -21,7 +21,9 @@ const Tests: React.FC = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [empty, setEmpty] = useState('');
     const [loading, setLoading] = useState(true);
-
+    const [currentPage, setCurrentPage] = useState<number>(1);  
+    const [totalPages, setTotalPages] = useState<number>(1);  
+    const itemsPerPage = 12;
     useEffect(() => {
         const fetchExamTypes = async () => {
             setLoading(true);
@@ -68,6 +70,7 @@ const Tests: React.FC = () => {
             }));
 
             setTests(formattedTests);
+            setTotalPages(testsData?.totalPages );
             setLoading(false);
         };
 
@@ -87,6 +90,30 @@ const Tests: React.FC = () => {
         }
         setLoading(false);
     };
+    const handlePageChange = async (page: number) => {
+       
+        setCurrentPage(page);
+    
+        setLoading(true);
+        try {
+    
+            const searchExams = await ExamService.getAllExams(
+                `page=${page}&limit=${itemsPerPage}`
+            );
+    
+            if (searchExams.data.length === 0) {
+                setEmpty('Không tìm thấy đề thi');
+                setTests([]);
+            } else {
+                setTests(searchExams.data);
+            }
+        } catch (error) {
+            console.error('Lỗi khi tải dữ liệu trang:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+    
 
     return (
         <>
@@ -135,7 +162,7 @@ const Tests: React.FC = () => {
                             </Link>
                         </div>
                         <div className="md:basis-2/3 order-1 md:order-1">
-                            {tests.length > 0 ? (
+                            {tests?.length > 0 ? (
                                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                                     {tests.map((test, index) => (
                                         <IELTSCard
@@ -157,7 +184,12 @@ const Tests: React.FC = () => {
                     </div>
                 )}
                 <div className="pt-4 flex justify-center">
-                    <Pagination />
+                <Pagination
+    currentPage={currentPage}
+    totalPages={totalPages > 0 ? totalPages : 1}
+    onPageChange={handlePageChange}
+/>
+
                 </div>
             </div>
         </>

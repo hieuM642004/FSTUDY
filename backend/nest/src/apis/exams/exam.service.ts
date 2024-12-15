@@ -64,7 +64,7 @@ export class ExamService {
     }
     async searchExams(
         page: number = 1,
-        limit: number = 10,
+        limit: number = 12,
         searchQuery?: string,
         examType?: string,
     ): Promise<PaginatedResult<Exams>> {
@@ -192,28 +192,34 @@ export class ExamService {
     async createSession(session: ExamSession): Promise<ExamSession> {
         try {
             session.slug = generateSlug(session.title);
+    
+          
             const existingSession = await this.examSessionModel
-                .findOne({ title: session.title })
+                .findOne({ title: session.title, idExam: session.idExam })
                 .exec();
+    
             if (existingSession) {
-                throw new ConflictException(
-                    'Exam session title already exists.',
+                throw new Error(
+                    'Exam session title already exists for this exam.',
                 );
             }
+    
             const savedSession = await this.examSessionModel.create(session);
-
+    
+          
             await this.examModel
                 .updateMany(
                     { _id: { $in: session.idExam } },
                     { $push: { idSession: savedSession._id } },
                 )
                 .exec();
-
+    
             return savedSession;
         } catch (error) {
             throw error;
         }
     }
+    
 
     async updateSession(
         id: string,

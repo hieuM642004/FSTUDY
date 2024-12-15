@@ -583,7 +583,10 @@ export class CourseController {
         @Body() createCourseDto: CreateCourseDto,
         @UploadedFile() file: Express.Multer.File,
     ): Promise<Course> {
-        return this.courseService.createCourse(createCourseDto, file);
+        console.log(file);
+        const res= this.courseService.createCourse(createCourseDto, file);
+        console.log(res)
+        return res;
     }
 
     @Get()
@@ -730,12 +733,12 @@ export class CourseController {
                     phone.startsWith('0') ? '84' + phone.slice(1) : phone;
                 const phone = formatPhoneNumber(user.phone);
                 const trackingId = 'tracking id';
-                await this.courseService.sendTemplateMessage(
-                    phone,
-                    '383358',
-                    templateData,
-                    trackingId,
-                );
+                // await this.courseService.sendTemplateMessage(
+                //     phone,
+                //     '383358',
+                //     templateData,
+                //     trackingId,
+                // );
                 let price = vnp_AmountNum / 100;
                 return res.redirect(
                     `${process.env.BASEURL_FE}/paid?email=${email}&message=${message}&partnerCode=${vnp_OrderInfo}&orderId=${vnp_TxnRef}&amount=${price}`,

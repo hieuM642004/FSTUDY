@@ -17,10 +17,9 @@ const IELTSCard = ({ title, idSession, durition, slug, examType, description, vi
                         {title}
                     </h3>
                     <p className="text-sm !text-black mt-2">
-                        <ClockCircleOutlined /> {durition} | <EyeOutlined /> {view} |{' '}
-                        <CommentOutlined /> {10}
+                        <ClockCircleOutlined /> {durition} | <EyeOutlined /> {view}
                     </p>
-                    <p className="text-sm !text-black mt-1">{idSession?.length} phần thi | 40 câu hỏi</p>
+                    <p className="text-sm !text-black mt-1">{idSession?.length} phần thi</p>
                     <div className="mt-2">
                         <span className="bg-blue-100 text-xs font-semibold mr-2 px-2.5 py-0.5 rounded">
                             #{examType}

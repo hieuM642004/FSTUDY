@@ -80,7 +80,7 @@ export class ExamController {
     @Get('search-exams')
     async searchExams(
         @Query('page') page: number = 1,
-        @Query('limit') limit: number = 10,
+        @Query('limit') limit: number = 12,
         @Query('title') title?: string,
         @Query('examType') examType?: string,
     ): Promise<ResponseData<PaginatedResult<Exams>>> {

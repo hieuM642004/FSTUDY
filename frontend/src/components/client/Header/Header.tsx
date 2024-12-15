@@ -141,7 +141,7 @@ const Header = () => {
                             </li>
                         ))}
                         {!user.isLoggedIn && (
-                            <ButtonPrimary label="Đăng nhập" />
+                            <ButtonPrimary to="/login" label="Đăng nhập" />
                         )}
                     </ul>
                 </nav>

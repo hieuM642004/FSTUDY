@@ -63,16 +63,23 @@ function FormExamSession({ id }: { id?: string }) {
                     description: 'Phiên thi đã được cập nhật thành công!',
                 });
             } else {
-                await ExamSessionService.addExamSession({
+             const res=   await ExamSessionService.addExamSession({
                     ...values,
                     idExam: values.idExam,
                 });
+             if(res === null){
+                notification.error({
+                    message: 'Thất bại',
+                    description: 'Có lỗi xảy ra khi xử lý phiên thi!',
+                });
+                return
+             }
                 notification.success({
                     message: 'Thành công',
                     description: 'Phiên thi đã được thêm thành công!',
                 });
             }
-            router.push('/admin/exams');
+            router.push('/admin/exams/exams-session');
         } catch (error) {
             notification.error({
                 message: 'Thất bại',

@@ -127,7 +127,7 @@ function TextSelectorWrapper({ children }:{children:React.ReactNode}) {
                     optionFilterProp="label"
                     className="w-full mt-2"
                     onChange={handleSelectFlashCard}
-                    options={flashCards.map((card) => ({
+                    options={flashCards?.map((card) => ({
                         value: card._id,
                         label: card.nameCard,
                     }))}

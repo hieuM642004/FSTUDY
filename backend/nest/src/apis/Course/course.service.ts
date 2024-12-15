@@ -1012,6 +1012,7 @@ export class CourseService {
         createCourseDto: CreateCourseDto,
         file: Express.Multer.File,
     ): Promise<Course> {
+        // console.log(file);
         const fileStream = Readable.from(file.buffer);
         createCourseDto.slug = generateSlug(createCourseDto.title);
         createCourseDto.discount = createCourseDto.discount || 0;
