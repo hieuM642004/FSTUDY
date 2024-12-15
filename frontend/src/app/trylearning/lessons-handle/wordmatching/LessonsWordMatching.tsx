@@ -1,7 +1,15 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Card, Button, message, Select, Progress, Input } from 'antd';
+import {
+    Card,
+    Button,
+    message,
+    Select,
+    Progress,
+    Input,
+    Typography,
+} from 'antd';
 import { nestApiInstance } from '../../../../constant/api';
 import { getCookie } from 'cookies-next';
 import { jwtDecode } from 'jwt-decode';
@@ -34,7 +42,7 @@ const WordMatchingPage = ({ id }: { id: string }) => {
     const [progress, setProgress] = useState<number>(0);
     const [completed, setCompleted] = useState<boolean>(false);
     const [userId, setUserId] = useState<string | null>(null);
-
+    const { Title } = Typography;
     useEffect(() => {
         const token = getCookie('token') as string;
         if (token) {
@@ -165,6 +173,11 @@ const WordMatchingPage = ({ id }: { id: string }) => {
 
     return (
         <div className="p-10">
+            <div style={{ textAlign: 'left', marginTop: '20px' }}>
+                <Title level={2} style={{ color: 'black', fontWeight: 'bold' }}>
+                    HÃY CHỈNH SỬA LỖI CÚ PHÁP
+                </Title>
+            </div>
             {questions.length > 0 && (
                 <>
                     {questions.map((lesson, questionIndex) => (
@@ -179,7 +192,7 @@ const WordMatchingPage = ({ id }: { id: string }) => {
                                         key={word}
                                         className="flex items-center gap-2"
                                     >
-                                        <span>{word}</span>
+                                        <span className="w-[20%]">{word}</span>
 
                                         <Input
                                             placeholder="Nhập đáp án"

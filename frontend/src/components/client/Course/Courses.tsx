@@ -83,11 +83,13 @@ function Courses({
                                                             }
                                                         >
                                                             <Image
+                                                                loading="eager"
                                                                 src={
                                                                     course?.thumbnail
                                                                 }
                                                                 width={0}
                                                                 height={0}
+                                                                layout="responsive"
                                                                 sizes="100vw"
                                                                 style={{
                                                                     width: '100%',

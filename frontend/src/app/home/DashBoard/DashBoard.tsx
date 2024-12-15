@@ -79,12 +79,14 @@ const Dashboard = () => {
                                             >
                                                 <Link
                                                     href={`learning/${item?.course?._id}`}
+
                                                 >
                                                     <div className="p-6">
                                                         <div className="flex justify-between items-start mb-4">
                                                             <h3 className="font-semibold text-gray-900">
                                                                 {
                                                                     item?.course
+
                                                                         ?.title
                                                                 }
                                                             </h3>
@@ -105,6 +107,7 @@ const Dashboard = () => {
                                                                     ?.detail_short_description
                                                                     .length > 50
                                                                     ? item?.course?.detail_short_description.substring(
+
                                                                           0,
                                                                           50,
                                                                       ) + '...'

@@ -35,12 +35,10 @@ const TryLearningPages = ({ id }: { id: any }) => {
     const fetchLessonsCourse = async () => {
         try {
             const response = await nestApiInstance.get(`/course/${id}`);
-            console.log('check data:', response.data.lessons);
             const res = response.data;
 
             res?.lessons?.some((lesson: any) => {
                 if (lesson?.isFree) {
-                    console.log('checked');
                     setCheckIsFree(true);
                     return;
                 }
@@ -52,6 +50,8 @@ const TryLearningPages = ({ id }: { id: any }) => {
     };
 
     const fetchProgressData = async () => {
+        console.log('userID', userId);
+
         if (userId) {
             try {
                 const response = await nestApiInstance.get(
@@ -70,7 +70,10 @@ const TryLearningPages = ({ id }: { id: any }) => {
                 const response = await nestApiInstance.get(
                     `/course/check/${userId}/${id}`,
                 );
-                setUserPurchased(response.data.paymentStatus === 'COMPLETED');
+                console.log('mua', response.data.paymentStatus);
+                if (response.data.paymentStatus === 'COMPLETED') {
+                    setUserPurchased(true);
+                }
             } catch (error) {
                 console.error('Error checking user purchase:', error);
             }
@@ -112,6 +115,8 @@ const TryLearningPages = ({ id }: { id: any }) => {
                 firstLesson.content.length > 0
             ) {
                 const firstContent = firstLesson.content[0];
+                console.log('check data:', firstContent);
+
                 if (firstContent) {
                     selectContentBasedOnType(firstContent);
                 }
@@ -202,6 +207,7 @@ const TryLearningPages = ({ id }: { id: any }) => {
             }
 
             lesson?.content?.forEach((content: any) => {
+                // console.log('check content', content);
                 Object.keys(content).forEach((contentType) => {
                     const item = {
                         key: '',
@@ -215,7 +221,7 @@ const TryLearningPages = ({ id }: { id: any }) => {
                                 item.key = `quiz-${content._id}`;
                                 item.label = (
                                     <>
-                                        Quiz{' '}
+                                        Trắc nghiệm{' '}
                                         {getProgressStatus(content._id, 'quiz')}
                                     </>
                                 );
@@ -231,7 +237,7 @@ const TryLearningPages = ({ id }: { id: any }) => {
                                 item.key = `fill_in_the_blank-${content._id}`;
                                 item.label = (
                                     <>
-                                        Fill in the Blank{' '}
+                                        Điền vào ô trống{' '}
                                         {getProgressStatus(
                                             content._id,
                                             'fill_in_the_blank',
@@ -250,7 +256,7 @@ const TryLearningPages = ({ id }: { id: any }) => {
                                 item.key = `video-${content._id}`;
                                 item.label = (
                                     <>
-                                        Video{' '}
+                                        Bài học{' '}
                                         {getProgressStatus(
                                             content._id,
                                             'video',
@@ -271,7 +277,7 @@ const TryLearningPages = ({ id }: { id: any }) => {
                                 item.key = `word_matching-${content._id}`;
                                 item.label = (
                                     <>
-                                        Word Matching{' '}
+                                        Điền từ vựng{' '}
                                         {getProgressStatus(
                                             content._id,
                                             'word_matching',
@@ -323,7 +329,7 @@ const TryLearningPages = ({ id }: { id: any }) => {
                 className="bg-white border-solid border-r-2 border-zinc-200"
             >
                 <Menu
-                    className="bg-white mt-3"
+                    className="custom-menu bg-white mt-3"
                     mode="inline"
                     selectedKeys={[selectedKey || '1']}
                     items={items}
@@ -356,11 +362,9 @@ const TryLearningPages = ({ id }: { id: any }) => {
                         background: '#fff',
                     }}
                 >
-                    {/* {checkIsFree
-                        ? selectedContent
-                        : 'Hãy đăng ký khóa học để bắt đầu.'} */}
-
                     {checkIsFree ? (
+                        selectedContent
+                    ) : userPurchased ? (
                         selectedContent
                     ) : (
                         <p className="text-lg text-center font-bold text-gray-600 mt-4">
@@ -371,7 +375,17 @@ const TryLearningPages = ({ id }: { id: any }) => {
                             khóa học để bắt đầu.
                         </p>
                     )}
-                    {/* {selectedContent || 'Chọn một bài học để hiển thị nội dung'} */}
+                    {/* {checkIsFree ? (
+                        selectedContent
+                    ) : (
+                        <p className="text-lg text-center font-bold text-gray-600 mt-4">
+                            Hãy{' '}
+                            <Link href={`/detailonlinecourse/${id}`}>
+                                Đăng ký
+                            </Link>{' '}
+                            khóa học để bắt đầu.
+                        </p>
+                    )} */}
                 </Content>
             </Layout>
         </Layout>

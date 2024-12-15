@@ -57,6 +57,8 @@ const FillInTheBlankPage = ({ id }: { id: string }) => {
                     const response = await nestApiInstance.get(
                         `/course/content/${id}`,
                     );
+                    console.log('check data:', response);
+
                     setLessonsCourse(response.data);
 
                     const progressResponse = await nestApiInstance.get(
@@ -205,17 +207,18 @@ const FillInTheBlankPage = ({ id }: { id: string }) => {
                 {completed && <h3>Bạn đã hoàn thành bài tập này!</h3>}
                 {lessonsCourse?.fill_in_the_blank.map(
                     (item: FillInTheBlankData, index: number) => (
-                       <div className='mb-4'  key={item._id}>
+                        <div className="mb-4" key={item._id}>
                             <Card key={item._id} title={`Câu hỏi ${index + 1}`}>
-                                <p>{item.sentence}</p>
+                                <p className="pb-5">{item.sentence}</p>
                                 {item.correctAnswers.map((_, answerIndex) => (
                                     <Input
                                         key={answerIndex}
-                                        placeholder={`Nhập đáp án ${
+                                        placeholder={`Nhập đáp án câu ${
                                             index + 1
                                         }`}
                                         value={
-                                            userAnswers[index]?.[answerIndex] || ''
+                                            userAnswers[index]?.[answerIndex] ||
+                                            ''
                                         }
                                         onChange={(e) =>
                                             handleAnswerChange(
@@ -240,7 +243,7 @@ const FillInTheBlankPage = ({ id }: { id: string }) => {
                                         </p>
                                     )}
                             </Card>
-                       </div>
+                        </div>
                     ),
                 )}
                 <div style={{ marginTop: 16 }}>
