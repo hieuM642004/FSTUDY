@@ -129,7 +129,7 @@ const Dashboard = () => {
                             </h2>
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                                 {listCourse?.length > 0 &&
-                                    listCourse?.map((item: any) => (
+                                    listCourse?.slice(0, 3).map((item: any) => (
                                         <div
                                             key={item._id}
                                             className="bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
@@ -171,6 +171,11 @@ const Dashboard = () => {
                                             </Link>
                                         </div>
                                     ))}
+                                <div>
+                                    <Link href={`courses-online/`}>
+                                        Xem thêm khóa học
+                                    </Link>
+                                </div>
                             </div>
                         </div>
                     </>
